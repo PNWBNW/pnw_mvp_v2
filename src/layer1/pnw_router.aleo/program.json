@@ -1,0 +1,12 @@
+{
+  "program": "pnw_router.aleo",
+  "version": "0.1.0",
+  "description": "Layer 1 protocol router for PNW MVP v2 (testnet-first). Routes agreement creation, payroll execution, and audit anchoring.",
+  "license": "Proprietary",
+  "dependencies": {
+    "employer_agreement.aleo": "../employer_agreement.aleo",
+    "payroll_core.aleo": "../payroll_core.aleo",
+    "payroll_audit_log.aleo": "../payroll_audit_log.aleo"
+  }
+}
+```0
