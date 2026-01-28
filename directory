@@ -10,6 +10,10 @@ pnw_mvp_v2/
 │  │  │  ├─ main.leo
 │  │  │  └─ program.json
 │  │  │
+│  │  ├─ employer_license_registry.aleo/              
+│  │  │  ├─ main.leo
+│  │  │  └─ program.json
+│  │  │
 │  │  ├─ pnw_name_registry.aleo/         # .pnw naming registry (hashed identifiers only)
 │  │  │  ├─ main.leo
 │  │  │  └─ program.json
