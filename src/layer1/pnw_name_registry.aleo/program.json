@@ -1,0 +1,10 @@
+{
+  "program": "pnw_name_registry.aleo",
+  "version": "0.1.0",
+  "description": "Layer 1 PNW naming registry (testnet-first). Soulbound hashed names for workers and employers with USDCx-based pricing and registrar-only employer sellback.",
+  "license": "PROPRIETARY",
+  "dependencies": {
+    "employer_license_registry.aleo": "../employer_license_registry.aleo",
+    "test_usdcx_stablecoin.aleo": "../test_usdcx_stablecoin.aleo"
+  }
+}
