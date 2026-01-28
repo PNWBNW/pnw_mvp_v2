@@ -66,33 +66,96 @@ Layer 2 tooling:
 pnw_mvp_v2/
 ├─ README.md
 ├─ ARCHITECTURE.md
+├─ .gitignore
 ├─ .env.example
 │
 ├─ src/
-│  ├─ layer1/                # Canonical on-chain programs (Leo)
-│  │  ├─ pnw_router.aleo
-│  │  ├─ pnw_name_registry.aleo
-│  │  ├─ worker_profiles.aleo
-│  │  ├─ employer_profiles.aleo
-│  │  ├─ employer_agreement.aleo
-│  │  ├─ payroll_core.aleo
-│  │  ├─ paystub_receipts.aleo
-│  │  └─ payroll_audit_log.aleo
+│  ├─ layer1/                            # Canonical on-chain business logic (private receipts + public anchors)
+│  │  ├─ pnw_router.aleo/                # Orchestrates layer1 workflows (no analytics)
+│  │  │  ├─ main.leo
+│  │  │  └─ program.json
+│  │  │
+│  │  ├─ pnw_name_registry.aleo/         # .pnw naming registry (hashed identifiers only)
+│  │  │  ├─ main.leo
+│  │  │  └─ program.json
+│  │  │
+│  │  ├─ worker_profiles.aleo/           # Worker profile commitments + eligibility anchors
+│  │  │  ├─ main.leo
+│  │  │  └─ program.json
+│  │  │
+│  │  ├─ employer_profiles.aleo/         # Employer profile commitments + role anchors
+│  │  │  ├─ main.leo
+│  │  │  └─ program.json
+│  │  │
+│  │  ├─ employer_agreement.aleo/        # Relationship / scope commitments (hashed)
+│  │  │  ├─ main.leo
+│  │  │  └─ program.json
+│  │  │
+│  │  ├─ payroll_core.aleo/              # Executes payroll + mints private receipts (USDCx-native transfers)
+│  │  │  ├─ main.leo
+│  │  │  └─ program.json
+│  │  │
+│  │  ├─ paystub_receipts.aleo/          # Private receipts (records) + minimal public anchors (hash index)
+│  │  │  ├─ main.leo
+│  │  │  └─ program.json
+│  │  │
+│  │  └─ payroll_audit_log.aleo/         # Hash-only log (event_hash -> bool/u32), immutable anchors
+│  │     ├─ main.leo
+│  │     └─ program.json
 │  │
-│  └─ layer2/                # Commitment & permission NFTs (Leo)
-│     ├─ receipt_nft.aleo
-│     ├─ credential_nft.aleo
-│     └─ audit_nft.aleo
+│  └─ layer2/                            # On-chain NFTs/records: commitments + permissions only (no payroll math)
+│     ├─ receipt_nft.aleo/               # Paystub/PayrollCycle/Invoice receipt NFTs (commitment objects)
+│     │  ├─ main.leo
+│     │  └─ program.json
+│     │
+│     ├─ credential_nft.aleo/            # Employer/Employment/Auditor credentials (capabilities + revocation)
+│     │  ├─ main.leo
+│     │  └─ program.json
+│     │
+│     └─ audit_nft.aleo/                 # Audit authorization, audit report anchor, audit result attestation
+│        ├─ main.leo
+│        └─ program.json
 │
-├─ portal/                   # Off-chain router, aggregation, reporting
-│  ├─ router/
-│  │  ├─ layer1_router.ts
-│  │  └─ layer2_router.ts
-│  ├─ receipts/
-│  ├─ reports/
-│  └─ commitments/
+├─ portal/                               # Off-chain Layer 2 router + report builder (private aggregation)
+│  ├─ README.md
+│  ├─ package.json
+│  ├─ tsconfig.json
+│  ├─ src/
+│  │  ├─ config/
+│  │  │  ├─ env.ts                       # reads .env, network selection, program IDs
+│  │  │  └─ programs.ts                  # layer1 + layer2 program addresses/ids
+│  │  │
+│  │  ├─ router/
+│  │  │  ├─ layer1_router.ts             # orchestrates on-chain actions (register, agreement, payroll)
+│  │  │  └─ layer2_router.ts             # builds summaries + mints NFTs (receipt/credential/audit)
+│  │  │
+│  │  ├─ receipts/
+│  │  │  ├─ decrypt.ts                   # decrypts private receipt records (employer/worker views)
+│  │  │  ├─ normalize.ts                 # canonical “base events” format
+│  │  │  └─ indexer.ts                   # pulls anchors + receipts from chain
+│  │  │
+│  │  ├─ reports/
+│  │  │  ├─ paystub_builder.ts           # builds paystub doc + root + doc_hash + inputs_hash
+│  │  │  ├─ employer_quarterly.ts        # quarterly report builder
+│  │  │  └─ subdao_quarterly.ts          # subDAO report builder
+│  │  │
+│  │  ├─ commitments/
+│  │  │  ├─ merkle.ts                    # Merkle tree builder (deterministic)
+│  │  │  ├─ hash.ts                      # domain-separated hashing helpers
+│  │  │  └─ token_id.ts                  # deterministic token_id builder
+│  │  │
+│  │  └─ cli/
+│  │     ├─ run_payroll.ts               # example workflow runner (dev)
+│  │     ├─ mint_paystub_nft.ts          # calls receipt_nft.aleo
+│  │     └─ mint_audit_report.ts         # calls audit_nft.aleo
+│  │
+│  └─ testdata/
+│     └─ fixtures/                       # non-sensitive fixtures (no raw identities)
 │
 └─ scripts/
+   ├─ init_repo.sh                       # scaffolding helper
+   ├─ build_all.sh                       # build layer1 + layer2 programs
+   └─ deploy_order.md                    # deterministic deploy order notes
 
 
 
