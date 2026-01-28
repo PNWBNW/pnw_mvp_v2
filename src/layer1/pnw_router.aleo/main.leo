@@ -1,3 +1,6 @@
+import pnw_name_registry.aleo;
+import employer_license_registry.aleo;
+
 import employer_agreement.aleo;
 import payroll_core.aleo;
 import payroll_audit_log.aleo;
@@ -24,14 +27,45 @@ program pnw_router.aleo {
         epoch_id: u32
     }
 
+    // ------------------------------------
+    // Naming Registry Routes (Layer 1)
+    // ------------------------------------
+
+    async transition route_register_worker_name(name_hash: field, fee_amount: u128) -> Future {
+        let f: Future = pnw_name_registry.aleo/register_worker_name(name_hash, fee_amount);
+        return f;
+    }
+
+    transition route_release_worker_name() {
+        pnw_name_registry.aleo/release_worker_name();
+    }
+
+    async transition route_register_employer_name(name_hash: field, suffix_code: u8, fee_amount: u128) -> Future {
+        let f: Future = pnw_name_registry.aleo/register_employer_name(name_hash, suffix_code, fee_amount);
+        return f;
+    }
+
+    transition route_request_employer_sellback(name_hash: field) {
+        pnw_name_registry.aleo/request_employer_sellback(name_hash);
+    }
+
+    async transition route_fulfill_employer_sellback(name_hash: field) -> Future {
+        let f: Future = pnw_name_registry.aleo/fulfill_employer_sellback(name_hash);
+        return f;
+    }
+
+    // ------------------------------------------
+    // Employer License Registry Routes (Layer 1)
+    // ------------------------------------------
+
+    transition route_set_employer_verified(wallet: address, license_hash: [u8; 32], verified: bool) {
+        employer_license_registry.aleo/set_verified(wallet, license_hash, verified);
+    }
+
     // ---------------------------------
     // Route: create employment agreement
     // ---------------------------------
-    //
-    // Notes:
-    // - Router only coordinates the on-chain workflow.
-    // - Agreement details remain commitment-based.
-    //
+
     async transition route_create_employment_agreement(route: AgreementRoute) -> Future {
         let f: Future = employer_agreement.aleo/create_employment_agreement(
             route.worker_id,
@@ -47,12 +81,7 @@ program pnw_router.aleo {
     // -------------------------
     // Route: execute payroll
     // -------------------------
-    //
-    // Notes:
-    // - Router does NOT call USDCx directly.
-    // - payroll_core.aleo is responsible for calling:
-    //   test_usdcx_stablecoin.aleo (testnet) or usdcx_stablecoin.aleo (mainnet).
-    //
+
     async transition route_run_payroll(route: PayrollRoute) -> Future {
         let f: Future = payroll_core.aleo/execute_payroll(
             route.employer_id,
@@ -66,11 +95,7 @@ program pnw_router.aleo {
     // ---------------------------------------
     // Route: record hash-only audit anchor
     // ---------------------------------------
-    //
-    // Notes:
-    // - event_hash is a commitment produced by payroll_core and/or the portal.
-    // - audit log stores only hash -> height/bool (no identities/amounts).
-    //
+
     async transition route_record_payroll_anchor(event_hash: [u8; 32]) -> Future {
         let f: Future = payroll_audit_log.aleo/record_event_hash(event_hash);
         return f;
