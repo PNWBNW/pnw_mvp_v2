@@ -13,7 +13,7 @@ program employer_license_registry.aleo {
     //
 
     // Update this to the authorized issuer address for your environment.
-    const AUTHORITY: address = 0address;
+    const AUTHORITY: address = aleo1s8t86aza932zah3mv5knclvnn5zy4gedpl5a4wn5h2yrt08mxqzsw5amdd;
 
     // wallet -> verified flag
     mapping is_verified:
