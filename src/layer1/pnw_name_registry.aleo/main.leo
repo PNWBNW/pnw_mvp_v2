@@ -36,7 +36,7 @@ program pnw_name_registry.aleo {
 
     // Update this to the registrar treasury address that receives payments
     // and later fulfills sellback refunds.
-    const REGISTRAR_TREASURY: address = 0address;
+    const REGISTRAR_TREASURY: address = aleo1s8t86aza932zah3mv5knclvnn5zy4gedpl5a4wn5h2yrt08mxqzsw5amdd;
 
     // USDCx base unit scaling (assumes 6-decimal stablecoin units).
     // If test_usdcx_stablecoin uses a different scale, update this constant.
