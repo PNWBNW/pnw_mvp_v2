@@ -81,125 +81,72 @@ Layer 2 explicitly does **not**:
 - publish raw payroll or identity data on-chain
 
 ---
-4. Routing Model (On-Chain vs Off-Chain)
 
-The system intentionally contains two distinct routing mechanisms, each operating in a different execution environment and solving a different class of problem.
+## 4. Routing Model (On-Chain vs Off-Chain)
 
-Although both are referred to as “routers,” they are not interchangeable and do not duplicate responsibility.
+The system intentionally contains **two distinct routing mechanisms**, each operating in a different execution environment and solving a different problem.
 
-4.1 On-Chain Protocol Router (pnw_router.aleo)
+### 4.1 On-Chain Protocol Router (`pnw_router.aleo`)
 
-The on-chain router is a protocol-level control plane implemented in Leo and executed on Aleo.
+The on-chain router is a **protocol-level control plane**.
 
-Its purpose is to:
+It exists to:
+- Orchestrate multi-step on-chain workflows
+- Enforce prerequisite checks consistently
+- Provide a single canonical entrypoint for critical state transitions
 
-Orchestrate multi-step on-chain workflows
-
-Enforce prerequisite checks consistently
-
-Provide a single canonical entrypoint for critical state transitions
-
-Typical responsibilities include:
-
-Routing payroll execution calls
-
-Routing employer–worker agreement creation
-
-Coordinating private receipt issuance
-
-Writing immutable audit anchors
-
-The on-chain router exists to ensure that:
-
-protocol rules are enforced regardless of client implementation
-
-authorization and gating logic is not duplicated across programs
-
-no client-side workflow can bypass required checks
+Responsibilities include:
+- Routing payroll execution calls
+- Routing agreement creation and validation
+- Coordinating receipt issuance and audit anchor writes
+- Ensuring required credentials and agreements exist before execution
 
 The on-chain router:
+- Runs entirely inside Aleo
+- Does not perform aggregation or reporting
+- Does not inspect or compute Layer 2 artifacts
+- Exists to reduce duplicated logic and prevent inconsistent client behavior
 
-Operates entirely within Aleo
+### 4.2 Off-Chain Portal Routers (Workflow Routers)
 
-Does not perform aggregation or reporting
-
-Does not compute Layer 2 artifacts
-
-Does not inspect decrypted payroll data
-
-It exists strictly to coordinate state transitions, not analytics.
-
-4.2 Off-Chain Portal Routers (Workflow Routers)
-
-The portal contains routing logic implemented off-chain (e.g., TypeScript).
-These routers coordinate user workflows, not protocol rules.
-
-Their responsibilities include:
-
-Determining which on-chain transitions to call and in what order
-
-Fetching and decrypting authorized private receipts
-
-Normalizing receipt data into deterministic base events
-
-Constructing reports, paystubs, and summaries
-
-Deciding whether to mint Layer 2 commitment NFTs
-
-In practice, the portal routers typically separate concerns as:
-
-Protocol router: orchestrates calls into Layer 1 on-chain programs
-
-Report router: builds Layer 2 artifacts and optionally anchors them on-chain
+The portal contains routing logic implemented off-chain (e.g., TypeScript), sometimes referred to as “routers” but serving a **different purpose**.
 
 These routers:
+- Decide *which* on-chain transitions to call and *when*
+- Fetch and decrypt private receipts
+- Assemble deterministic report artifacts
+- Decide whether to mint Layer 2 commitment NFTs
 
-Do not define protocol correctness
+Typical responsibilities:
+- `protocol_router` (formerly `layer1_router`):  
+  Orchestrates calls into Layer 1 on-chain programs.
+- `report_router` (formerly `layer2_router`):  
+  Builds reports, paystubs, and audit artifacts and optionally anchors them on-chain.
 
-Do not replace on-chain validation
+These routers:
+- Do not define protocol rules
+- Do not replace on-chain validation
+- Exist to coordinate user workflows and private computation
 
-Do not store or publish sensitive data
+### 4.3 Why There Is No Layer 2 On-Chain Router
 
-They exist to manage UX flow and private computation.
-
-4.3 Why There Is No Layer 2 On-Chain Router
-
-Layer 2 on-chain programs (receipt_nft.aleo, credential_nft.aleo, audit_nft.aleo) are intentionally:
-
-Small
-
-Single-purpose
-
-Limited to commitment storage and permission primitives
+Layer 2 on-chain programs (`receipt_nft.aleo`, `credential_nft.aleo`, `audit_nft.aleo`) are intentionally:
+- Small
+- Single-purpose
+- Commitment- and permission-focused
 
 They do not require an on-chain router because:
+- They do not orchestrate complex state transitions
+- They do not perform computation or aggregation
+- They are invoked only after off-chain Layer 2 logic has already produced deterministic artifacts
 
-They do not orchestrate complex state transitions
+Introducing an on-chain Layer 2 router would:
+- Increase surface area and complexity
+- Provide no additional privacy guarantees
+- Duplicate logic better handled off-chain
 
-They do not perform aggregation or analytics
+For these reasons, **Layer 2 routing exists exclusively in the portal**, not in Leo.
 
-They are invoked only after off-chain Layer 2 logic has already produced deterministic artifacts
-
-Introducing a Layer 2 on-chain router would:
-
-Increase surface area and complexity
-
-Duplicate logic better handled off-chain
-
-Provide no additional privacy or correctness guarantees
-
-For these reasons, Layer 2 routing exists exclusively in the portal, while Layer 2 on-chain programs remain minimal, auditable, and narrowly scoped.
-
-4.4 Design Boundary Summary
-
-On-chain routing enforces protocol correctness and authorization
-
-Off-chain routing orchestrates workflows and private computation
-
-Layer 2 on-chain contracts store commitments and permissions only
-
-This separation is intentional and foundational to the system’s privacy, auditability, and long-term maintainability.
----
 
 ## 5. Canonical Data Objects
 
