@@ -1,13 +1,12 @@
 {
   "program": "pnw_router.aleo",
-  "version": "0.1.0",
-  "description": "Layer 1 router for PNW MVP v2. Orchestrates naming, licensing, agreements, payroll execution, and audit anchoring.",
+  "version": "0.2.0",
+  "description": "Layer 1 orchestration router for PNW MVP v2. Routes agreement creation, acceptance, status control, and resume approvals across core Layer 1 programs. Contains no business state or aggregation logic.",
   "license": "PROPRIETARY",
   "dependencies": {
-    "pnw_name_registry.aleo": "../pnw_name_registry.aleo",
-    "employer_license_registry.aleo": "../employer_license_registry.aleo",
     "employer_agreement.aleo": "../employer_agreement.aleo",
-    "payroll_core.aleo": "../payroll_core.aleo",
-    "payroll_audit_log.aleo": "../payroll_audit_log.aleo"
+    "employer_profiles.aleo": "../employer_profiles.aleo",
+    "worker_profiles.aleo": "../worker_profiles.aleo",
+    "pnw_name_registry.aleo": "../pnw_name_registry.aleo"
   }
 }
