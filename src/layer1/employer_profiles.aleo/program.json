@@ -1,0 +1,10 @@
+{
+  "program": "employer_profiles.aleo",
+  "version": "0.1.0",
+  "description": "Layer 1 employer profiles for PNW MVP v2. Mints private EmployerProfile records anchored by hash commitments and bound to verified employer name ownership. Enforces industry_code == suffix_code.",
+  "license": "PROPRIETARY",
+  "dependencies": {
+    "pnw_name_registry.aleo": "../pnw_name_registry.aleo",
+    "employer_license_registry.aleo": "../employer_license_registry.aleo"
+  }
+}
