@@ -1,4 +1,3 @@
-````markdown
 # ARCHITECTURE.md  
 **PNW MVP v2 – Aleo-Native Payroll, Receipts, and Audit Framework**
 
@@ -6,10 +5,10 @@
 
 ## 1. Purpose
 
-PNW MVP v2 is a privacy-first payroll and compliance framework built on Aleo. It executes payroll using USDCx, issues private receipts, and enables permissible auditability through commitment-based NFTs and selective disclosure.
+PNW MVP v2 is a privacy-first payroll and compliance framework built on Aleo. It executes payroll using **USDCx**, issues private receipts, and enables permissible auditability through commitment-based NFTs and selective disclosure.
 
 The architecture is intentionally split into:
-- **Layer 1 (On-chain canonical logic):** state transitions, settlement, receipts, anchors
+- **Layer 1 (On-chain canonical logic):** settlement, receipts, anchors, minimal guards
 - **Layer 2 (Off-chain aggregation + optional on-chain commitments):** reporting, summaries, and audit artifacts
 
 ---
@@ -22,13 +21,13 @@ The system is designed so that the following are **not publicly observable** on-
 - Employer identity (e.g., `.pnw` name)
 - Customer identity
 - Wage amounts, hours, invoices, deductions
-- Employment terms, scope-of-work text
+- Employment terms / scope-of-work text
 - Aggregated payroll totals or reports
 
 ### 2.2 Publicly Observable (Allowed)
 The system allows only **non-sensitive public state**, typically:
 - Commitments (hashes) to events and documents
-- Existence flags (e.g., “this receipt token exists”)
+- Existence flags (e.g., “this receipt exists”)
 - Minimal metadata such as epoch IDs and versions (where non-linkable)
 
 ### 2.3 Linkability Minimization
@@ -47,300 +46,303 @@ Selective disclosure is supported via:
 ## 3. System Layers
 
 ## 3.1 Layer 1 – On-Chain Canonical Logic (Leo / Aleo)
-Layer 1 programs are the sole source of truth for payroll and authorization.
+Layer 1 programs are the sole source of truth for payroll execution and state transitions.
 
 Layer 1 responsibilities:
-- Validate identity commitments and role gating
-- Validate employer–worker agreements
+- Validate identity ownership (name registry)
+- Validate worker/employer profile existence (anchored state)
+- Validate employer–worker agreements (status, terms anchors)
 - Execute payroll settlement using USDCx
 - Issue private receipts (records)
 - Emit public hash anchors for auditability
 - Maintain minimal immutable audit logs (hash-only)
+- Maintain minimal guards (e.g., prevent double pay per epoch)
 
 Layer 1 explicitly does **not**:
 - compute reports or analytics
 - store plaintext identities
 - store balances in mappings
 - publish payroll amounts publicly
+- custody pooled payroll funds
 
 ## 3.2 Layer 2 – Off-Chain Router & Reporting (Portal)
-Layer 2 runs in the employer/subDAO portal and performs private aggregation.
+Layer 2 runs in the employer portal and performs private aggregation and reporting.
 
 Layer 2 responsibilities:
 - Fetch and decrypt Layer 1 receipts (authorized only)
-- Normalize receipt data into deterministic “base events”
-- Build paystubs, invoices, and reports off-chain
+- Normalize receipts into deterministic “base events”
+- Build paystubs and reports off-chain
 - Create commitment artifacts:
   - `doc_hash`
   - `root` (Merkle root)
   - `inputs_hash` (hash of included receipt anchors)
-- Optionally mint on-chain NFT anchors (Layer 2 on-chain contracts)
+- Optionally mint on-chain commitment NFTs (Layer 2 on-chain contracts)
 
 Layer 2 explicitly does **not**:
-- move funds (except calling Layer 1 payroll transitions)
+- define protocol rules
+- replace Layer 1 validation
 - publish raw payroll or identity data on-chain
 
 ---
 
-## 4. Routing Model (On-Chain vs Off-Chain)
+## 4. Money Flow Model (No Pools)
 
-The system intentionally contains **two distinct routing mechanisms**, each operating in a different execution environment and solving a different problem.
+PNW MVP v2 intentionally avoids centralized or pooled payroll funds.
 
-### 4.1 On-Chain Protocol Router (`pnw_router.aleo`)
+- Payroll is **employer-funded** using USDCx records.
+- The protocol **does not** mirror balances or maintain ledgers in mappings.
+- The protocol **does not** custody pooled funds on behalf of multiple employers or workers.
 
+This reduces:
+- custodial / pooled fund risk (large attack surface “honeypots”)
+- systemic blast radius
+- regulatory complexity
+- governance coupling to treasury mechanics
+
+Future “employer-controlled pools” (for employer transparency or budgeting views) are treated as an **optional extension**, not a requirement of MVP v2.
+
+---
+
+## 5. Routing Model (On-Chain vs Off-Chain)
+
+The system contains **two distinct routing mechanisms**, each operating in a different environment and solving a different problem.
+
+### 5.1 On-Chain Protocol Router (`pnw_router.aleo`)
 The on-chain router is a **protocol-level control plane**.
 
 It exists to:
 - Orchestrate multi-step on-chain workflows
 - Enforce prerequisite checks consistently
-- Provide a single canonical entrypoint for critical state transitions
-
-Responsibilities include:
-- Routing payroll execution calls
-- Routing agreement creation and validation
-- Coordinating receipt issuance and audit anchor writes
-- Ensuring required credentials and agreements exist before execution
+- Provide a single canonical entrypoint for critical transitions
 
 The on-chain router:
-- Runs entirely inside Aleo
-- Does not perform aggregation or reporting
-- Does not inspect or compute Layer 2 artifacts
-- Exists to reduce duplicated logic and prevent inconsistent client behavior
+- runs entirely inside Aleo
+- does not perform aggregation or reporting
+- does not compute Layer 2 artifacts
+- exists to reduce duplicated client logic and prevent inconsistent behavior across portals
 
-### 4.2 Off-Chain Portal Routers (Workflow Routers)
-
-The portal contains routing logic implemented off-chain (e.g., TypeScript), sometimes referred to as “routers” but serving a **different purpose**.
-
-These routers:
-- Decide *which* on-chain transitions to call and *when*
-- Fetch and decrypt private receipts
-- Assemble deterministic report artifacts
-- Decide whether to mint Layer 2 commitment NFTs
+### 5.2 Off-Chain Portal Routers (Workflow Routers)
+The portal contains routing logic implemented off-chain (e.g., TypeScript). These routers:
+- decide *which* on-chain transitions to call and *when*
+- fetch and decrypt private receipts
+- assemble deterministic report artifacts
+- decide whether to mint Layer 2 commitment NFTs
 
 Typical responsibilities:
-- `protocol_router` (formerly `layer1_router`):  
-  Orchestrates calls into Layer 1 on-chain programs.
-- `report_router` (formerly `layer2_router`):  
-  Builds reports, paystubs, and audit artifacts and optionally anchors them on-chain.
+- **protocol_router:** orchestrates calls into Layer 1 programs
+- **report_router:** builds reports/paystubs and optionally anchors them on-chain
 
 These routers:
-- Do not define protocol rules
-- Do not replace on-chain validation
-- Exist to coordinate user workflows and private computation
+- do not define protocol rules
+- do not replace on-chain validation
+- exist to coordinate user workflows and private computation
 
-### 4.3 Why There Is No Layer 2 On-Chain Router
-
+### 5.3 Why There Is No Layer 2 On-Chain Router
 Layer 2 on-chain programs (`receipt_nft.aleo`, `credential_nft.aleo`, `audit_nft.aleo`) are intentionally:
-- Small
-- Single-purpose
-- Commitment- and permission-focused
+- small
+- single-purpose
+- commitment- and permission-focused
 
 They do not require an on-chain router because:
-- They do not orchestrate complex state transitions
-- They do not perform computation or aggregation
-- They are invoked only after off-chain Layer 2 logic has already produced deterministic artifacts
+- they do not orchestrate complex state transitions
+- they do not perform computation or aggregation
+- they are invoked only after off-chain Layer 2 logic produces deterministic artifacts
 
-Introducing an on-chain Layer 2 router would:
-- Increase surface area and complexity
-- Provide no additional privacy guarantees
-- Duplicate logic better handled off-chain
+---
 
-For these reasons, **Layer 2 routing exists exclusively in the portal**, not in Leo.
+## 6. Canonical Data Objects
 
-
-## 5. Canonical Data Objects
-
-### 5.1 Identity Hashes
-
+### 6.1 Identity Hashes
 All identities are represented as hashed identifiers:
+- `worker_id: field`
+- `employer_id: field`
+- `customer_id: field` (optional)
+- `agent_id: field` (auditor/tax agent, optional)
 
-* `worker_id: field`
-* `employer_id: field`
-* `customer_id: field` (optional)
-* `agent_id: field` (auditor/tax agent)
+Domain separation example:
+- `H("pnw:v2:worker_id" || <name-encoding> || salt)`
+- `H("pnw:v2:employer_id" || <name-encoding> || salt)`
 
-These should be domain-separated, e.g.:
+### 6.2 Epoch IDs
+Payroll periods are referenced via:
+- `epoch_id: u32`
 
-* `H("pnw:v2:worker_id" || <name-encoding> || salt)`
-* `H("pnw:v2:employer_id" || <name-encoding> || salt)`
+Layer 2 defines epoch encoding rules (weekly, biweekly, monthly, quarterly).  
+Layer 1 enforces only minimal constraints (e.g., epoch uniqueness per agreement).
 
-### 5.2 Epoch IDs
-
-Payroll periods are referenced via `epoch_id`:
-
-* `epoch_id: u32` (recommended)
-* Layer 2 defines epoch encoding rules (weekly, biweekly, monthly, quarterly)
-* Layer 1 enforces only consistency and ordering constraints where required
-
-### 5.3 Commitments
-
+### 6.3 Commitments
 Standard commitments used across Layer 2 NFTs:
+- `doc_hash: [u8; 32]` – commitment to full document representation
+- `root: [u8; 32]` – Merkle root for selective disclosure
+- `inputs_hash: [u8; 32]` – commitment to the set of underlying receipts/events
 
-* `doc_hash: [u8; 32]` – commitment to full document representation
-* `root: [u8; 32]` – Merkle root for selective disclosure
-* `inputs_hash: [u8; 32]` – commitment to the set of underlying receipts/events
-
-### 5.4 Versioning
-
+### 6.4 Versioning
 All commitment artifacts include:
-
-* `schema_v: u16` – document schema version
-* `calc_v: u16` – calculation recipe version
-* `policy_v: u16` – policy/compliance ruleset version (when applicable)
-
----
-
-## 6. Layer 1 Programs (Responsibilities)
-
-### 6.1 `pnw_router.aleo`
-
-* Routes top-level workflows (create agreement, run payroll, mint receipts, write anchors)
-* Ensures required prerequisites exist (credential, agreement state)
-* Minimizes repeated logic across modules
-
-### 6.2 `payroll_core.aleo`
-
-* Executes payroll settlement via USDCx records
-* Validates agreement and eligibility conditions
-* Produces worker USDCx output records
-* Emits private receipt records (directly or via `paystub_receipts.aleo`)
-* Writes audit anchors to `payroll_audit_log.aleo`
-
-### 6.3 `paystub_receipts.aleo`
-
-* Defines private receipt record formats used by Layer 2 reporting
-* Optionally maintains minimal public indexes of receipt existence via hash keys
-
-### 6.4 `payroll_audit_log.aleo`
-
-* Hash-only audit anchors
-* Minimal mapping such as:
-
-  * `event_hash -> bool` or `event_hash -> u32` (block height)
-* No identity or amount storage
+- `schema_v: u16` – document schema version
+- `calc_v: u16` – calculation recipe version
+- `policy_v: u16` – policy/compliance ruleset version (when applicable)
 
 ---
 
-## 7. Layer 2 NFTs (On-Chain Anchors & Permissions)
+## 7. Layer 1 Programs (Responsibilities)
+
+### 7.1 `pnw_name_registry.aleo`
+- Registers `.pnw` identities as non-transferable ownership
+- Enforces naming rules and suffix taxonomy constraints
+- Provides ownership assertions for protocol guards
+
+### 7.2 `worker_profiles.aleo`
+- Stores worker profile anchors (hash-only commitments)
+- Provides existence and anchored-state assertions
+
+### 7.3 `employer_profiles.aleo`
+- Stores employer profile anchors (hash-only commitments)
+- Provides existence and anchored-state assertions
+
+### 7.4 `employer_agreement.aleo`
+- Defines agreement lifecycle (offer → active → pause/terminate → resume)
+- Anchors agreement terms (doc commitments)
+- Provides `ACTIVE` status checks for payroll gating
+
+### 7.5 `payroll_core.aleo`
+- Executes payroll settlement via **USDCx records**
+- Validates:
+  - worker profile exists
+  - employer profile exists
+  - agreement exists and status == `ACTIVE`
+- Prevents double-pay per `(agreement_id, epoch_id)`
+- Mints private paystub receipts (worker + employer)
+- Anchors immutable payroll audit events
+
+### 7.6 `paystub_receipts.aleo`
+- Defines private receipt record formats used by Layer 2 reporting
+- Stores minimal public receipt anchors and anchor heights (for ordering and existence proofs)
+
+### 7.7 `payroll_audit_log.aleo`
+- Hash-only audit anchors
+- Minimal mapping:
+  - `event_hash -> u32` (first-seen block height)
+- No identity or amount storage
+
+### 7.8 `pnw_router.aleo`
+- Provides a stable on-chain entry surface for orchestrated flows
+- Minimizes duplicated client behavior across portals
+- Performs prerequisite assertions and routes to:
+  - agreement transitions
+  - profile/name assertions
+  - payroll execution (when invoked by portal workflows)
+
+---
+
+## 8. Layer 2 NFTs (On-Chain Anchors & Permissions)
 
 Layer 2 contracts store **commitments and permission primitives**, not raw payroll data.
 
-### 7.1 Receipt NFTs (`receipt_nft.aleo`)
+### 8.1 Receipt NFTs (`receipt_nft.aleo`)
+Used for anchoring:
+- paystub commitments
+- payroll cycle summaries
+- invoice receipts (optional)
 
-* Paystub receipt NFTs
-* Payroll cycle receipt NFTs
-* Invoice receipt NFTs (optional)
+Stores:
+- identity hashes
+- epoch
+- `doc_hash`, `root`, `inputs_hash`
+- versions and block height
+- revocation status
 
-Each stores:
+### 8.2 Credential NFTs (`credential_nft.aleo`)
+Used for:
+- employer verification credential (future governance repo)
+- employment relationship credential (optional)
+- auditor/tax agent credentials (optional)
 
-* identity hashes
-* epoch
-* `doc_hash`, `root`, `inputs_hash`
-* versions and block height
-* revocation status
+Stores:
+- identity hashes
+- scope or agreement commitments
+- issuer commitments
+- revocation fields
 
-### 7.2 Credential NFTs (`credential_nft.aleo`)
+### 8.3 Audit NFTs (`audit_nft.aleo`)
+Used for:
+- audit authorization tokens (scope + expiration)
+- audit report anchors (commitment to report)
+- audit result attestations (auditor statement commitment)
 
-* Employer verification credential
-* Employment relationship credential
-* Auditor/tax agent credentials
-
-Each stores:
-
-* identity hashes
-* scope or agreement commitments
-* issuer commitments
-* revocation fields
-
-### 7.3 Audit NFTs (`audit_nft.aleo`)
-
-* Audit authorization token (permission scope)
-* Audit report anchor (commitment to report)
-* Audit result attestation (auditor statement commitment)
-
-Each stores:
-
-* subject identifiers and scope
-* commitment hashes/roots
-* optional expirations and revocation
+Stores:
+- subject identifiers and scope
+- commitment hashes/roots
+- optional expirations and revocation
 
 ---
 
-## 8. Canonical Workflows
+## 9. Canonical Workflows
 
-## 8.1 Onboarding Workflow (Employer & Worker)
+## 9.1 Onboarding Workflow (Employer & Worker)
+1. Register `.pnw` identity (name registry)
+2. Create worker profile / employer profile anchors
+3. Create an employment job offer and finalize agreement (agreement program)
 
-1. Register `.pnw` identity (hashed identifier)
-2. Create employer profile / worker profile commitments
-3. Issue employer verification credential (oversight/subDAO authority)
-4. Create employment agreement (worker_id ↔ employer_id)
+MVP v2 intentionally treats “issuer / governance credentials” as **external** (extension point).
 
-## 8.2 Payroll Execution Workflow
-
+## 9.2 Payroll Execution Workflow
 1. Employer funds wallet with USDCx records
-2. Employer triggers payroll via Layer 1 router
-3. Payroll program validates:
+2. Portal calls Layer 1 router / payroll core
+3. Payroll core validates:
+   - worker and employer profiles exist
+   - agreement status == `ACTIVE`
+   - `(agreement_id, epoch_id)` not previously paid
+4. Payroll core consumes employer USDCx and outputs worker USDCx
+5. Payroll core mints private paystub receipts (worker + employer)
+6. Payroll core anchors payroll audit event hash
 
-   * employer credential
-   * active agreement
-   * payroll period rules
-4. Payroll consumes employer USDCx records and outputs worker USDCx records
-5. Payroll emits private receipt records
-6. Payroll writes hash anchors to audit log
-
-## 8.3 Paystub & Reporting Workflow (Layer 2)
-
+## 9.3 Paystub & Reporting Workflow (Layer 2)
 1. Portal fetches Layer 1 receipts and anchors
 2. Portal decrypts authorized receipts
 3. Portal builds paystub/report documents deterministically
 4. Portal computes `doc_hash`, `root`, `inputs_hash`
 5. Portal optionally mints receipt/audit NFTs on-chain
 
-## 8.4 Audit Workflow (Permissible Auditability)
-
-1. Issuer mints Audit Authorization NFT (scope + expiration)
-2. Auditor requests specific proof scopes
+## 9.4 Audit Workflow (Permissible Auditability)
+1. Authorized issuer mints Audit Authorization NFT (scope + expiration)
+2. Auditor requests proof scopes
 3. Portal provides:
-
-   * Merkle membership proofs for disclosed sections, or
-   * optional ZK proofs for high-level claims
+   - Merkle membership proofs for disclosed sections, and/or
+   - optional ZK proofs for high-level claims (future)
 4. Auditor verifies against on-chain commitments
 5. Auditor optionally mints Audit Result NFT (attestation)
 
 ---
 
-## 9. USDCx Integration Notes
+## 10. USDCx Integration Notes
 
-* USDCx is treated as a native Aleo stable asset settled via records.
-* The protocol does not mirror balances or manage ledgers.
-* USDCx identifier/program reference is configured as a placeholder until the canonical reference is officially published.
+- USDCx is treated as a native Aleo stable asset settled via records.
+- The protocol does not mirror balances or manage ledgers.
+- Network references:
+  - **Testnet:** `test_usdcx_stablecoin.aleo`
+  - **Mainnet:** `usdcx_stablecoin.aleo`
 
 ---
 
-## 10. Non-Goals (MVP)
+## 11. Non-Goals (MVP)
 
 The MVP intentionally excludes:
+- On-chain analytics and aggregation
+- Public financial reporting
+- Cross-chain payout adapters
+- Centralized or pooled payroll treasuries
+- Full governance systems (DAOs, voting, dispute courts, treasury policy)
 
-* On-chain analytics and aggregation
-* Public financial reporting
-* Cross-chain payout adapters
-* Heavy ZK proofs for complex statements (reserved for later extensions)
-* Full governance systems (subDAO governance beyond credential issuance is out of scope)
+Governance is planned as a **separate interoperable repository** that issues credentials and authority proofs consumed by MVP v2.
 
 ---
 
-## 11. Extension Points
+## 12. Extension Points
 
 Future enhancements can add:
-
-* ZK proofs for compliance claims (wage floor, tax reserve ratios, etc.)
-* Worker-controlled selective disclosure primitives
-* Advanced invoice/billing workflows
-* SubDAO reporting and governance-driven credential issuance
-* Token registry resolution for USDCx identifier/program reference
-
----
-
-```
-::contentReference[oaicite:0]{index=0}
-```
+- Governance repo interoperability (issuer credentials, revocation, disputes)
+- Employer-controlled pools (budget views / earmarked funds) without protocol custody
+- ZK proofs for compliance claims (wage floor, tax reserve ratios, etc.)
+- Worker-controlled selective disclosure primitives
+- Advanced invoice/billing workflows
+- Token registry resolution and formal USDCx metadata bindings
