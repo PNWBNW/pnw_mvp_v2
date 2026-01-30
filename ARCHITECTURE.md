@@ -304,14 +304,81 @@ MVP v2 intentionally treats “issuer / governance credentials” as **external*
 5. Portal optionally mints receipt/audit NFTs on-chain
 
 ## 9.4 Audit Workflow (Permissible Auditability)
-1. Authorized issuer mints Audit Authorization NFT (scope + expiration)
-2. Auditor requests proof scopes
-3. Portal provides:
-   - Merkle membership proofs for disclosed sections, and/or
-   - optional ZK proofs for high-level claims (future)
-4. Auditor verifies against on-chain commitments
-5. Auditor optionally mints Audit Result NFT (attestation)
 
+This system supports audits without exposing raw payroll or identity data on-chain.
+
+### 9.4.1 On-Chain Request + Authorization (Official)
+1. **Auditor creates an official audit request on-chain**:
+   - Includes `request_id`, `scope_hash`, `subject_binding_hash`, and `expiry_height`.
+2. Required approvals are recorded on-chain:
+   - Employer approval
+   - Worker approval
+   - Presiding SubDAO approval (vote-gated; the vote mechanics live outside MVP v2, but the approval is committed on-chain)
+3. After approvals, an **Audit Authorization NFT** is minted on-chain:
+   - Stores only commitment metadata (e.g., `request_id`, `scope_hash`, `issuer_set_hash`, `expiry_height`)
+   - Does **not** contain private payroll data and does **not** decrypt receipts
+
+### 9.4.2 Time-of-Access Release (Off-Chain, Scoped)
+Even after an Audit Authorization NFT exists, **actual disclosure requires fresh “release” confirmation** from both parties at time-of-access:
+
+1. When the auditor attempts to access information, the tooling/portal generates a `release_hash` bound to:
+   - `request_id`
+   - `scope_hash`
+   - auditor identity (hash/address)
+   - a session identifier / nonce
+   - a short-lived session expiry (e.g., 12 hours)
+2. The **worker** and **employer** each sign the `release_hash` (off-chain).
+3. Only after both signatures are received does the tooling produce a disclosure bundle:
+   - strictly limited to the approved scope (`scope_hash`)
+   - redacted and/or proven via Merkle membership proofs against document roots
+   - optionally encrypted to an auditor session key to prevent replay/leakage beyond the approved session
+
+This ensures:
+- authorization ≠ disclosure
+- disclosure is scoped, explicit, and time-limited
+- compromised auditor credentials alone are insufficient to extract data
+
+### 9.4.3 Confidential Activity Logging (Off-Chain)
+Each scoped disclosure action produces an **Access Event** recorded off-chain in an append-only log.
+
+An Access Event commits to (non-exhaustive):
+- `request_id`
+- `scope_hash`
+- authorization reference (commitment to the Audit Authorization NFT)
+- auditor identity hash
+- session identifier
+- `bundle_hash` (hash of the disclosed bundle)
+- hashes of worker/employer release signatures
+- auditor receipt/acknowledgement signature hash
+
+The log is treated as confidential operational security data and is not published in real time.
+
+### 9.4.4 Monthly Delayed Batched Anchoring (On-Chain, Non-Real-Time)
+To provide immutable accountability **without revealing real-time audit activity**, access events are anchored on-chain in **monthly batches**:
+
+1. At the end of each month, the tooling:
+   - computes `access_event_hash` for each off-chain access event
+   - sorts deterministically
+   - builds a Merkle tree over all `access_event_hash` values for that month
+2. The tooling publishes **one on-chain anchor** for the month:
+   - `period_id` (month identifier)
+   - `root` (Merkle root of access events)
+   - `count` (number of access events committed)
+   - `schema_v` (event schema version)
+3. The on-chain anchor is published with a **delayed posting window** (not immediate at the moment of access), reducing timing correlation risk.
+
+### 9.4.5 Proving an Access Event (When Needed)
+If a dispute or compliance review requires proof that an access occurred:
+
+1. The disclosing party reveals the specific `access_event_hash` (and optionally its underlying signed components).
+2. They provide a Merkle membership proof that the event is included in the on-chain monthly `root(period_id)`.
+3. Verifiers confirm inclusion against the on-chain root, without requiring public disclosure of payroll contents.
+
+This provides:
+- immutable accountability when required
+- minimal on-chain signal leakage
+- strong privacy preservation by default
+- 
 ---
 
 ## 10. USDCx Integration Notes
