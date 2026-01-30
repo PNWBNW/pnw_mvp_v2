@@ -1,0 +1,6 @@
+{
+  "program": "payroll_audit_log.aleo",
+  "version": "0.1.0",
+  "description": "Layer 1 immutable audit anchor log for PNW MVP v2. Provides an append-only, minimal public record of payroll-, tax-, and agreement-related compliance events via cryptographic event hashes mapped to first-seen block height.",
+  "license": "PROPRIETARY"
+}
