@@ -378,7 +378,45 @@ This provides:
 - immutable accountability when required
 - minimal on-chain signal leakage
 - strong privacy preservation by default
-- 
+
+### 9.4.6 Disclosure Release Session Model (Off-Chain Gate)
+
+The protocol intentionally separates **authorization** from **disclosure**.
+
+- **Authorization (on-chain)** establishes that disclosure *may* occur (Audit Request + approvals + Audit Authorization NFT).
+- **Disclosure (off-chain)** is the act of actually releasing private information, and must be explicitly re-confirmed at time-of-access.
+
+#### A) Release sessions are required for any disclosure
+
+Even if an Audit Authorization NFT exists and is valid, the tooling must require a **Release Session** before producing any disclosure bundle.
+
+A Release Session is an off-chain, time-limited permission envelope that proves:
+- the request is being exercised by the authorized auditor
+- the worker and employer explicitly approved the release **at time of access**
+- the release is strictly bounded to the approved scope
+
+Release Sessions enforce:
+- auditor identity verification (wallet signature challenge)
+- fresh worker and employer signatures over a `release_hash`
+- strict scope binding (`scope_hash`)
+- a short-lived session TTL (e.g., 12 hours)
+
+Release Sessions are not recorded on-chain in real time and do not emit public signals.
+They exist solely to gate access to private information.
+
+#### B) Security properties
+
+The Release Session model ensures:
+- possession of public NFT metadata alone is insufficient to obtain data
+- compromised auditor credentials cannot bypass worker/employer consent
+- access is revocable by simply refusing to sign a new release
+- expired or revoked authorizations cannot be exercised
+
+#### C) Optional accountability anchoring
+
+While individual Release Sessions remain private, disclosure activity may later be committed on-chain via **delayed, batched anchoring** (see Section 9.4.4).
+
+This provides non-repudiation and accountability without exposing real-time audit behavior or access patterns.
 ---
 
 ## 10. USDCx Integration Notes
