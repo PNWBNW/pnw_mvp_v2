@@ -96,3 +96,262 @@ program pnw_name_registry.aleo {
 
     const SUF_CIVIC: u8 = 38u8;  // civic
     const SUF_MUNIC: u8 = 39u8;  // munic
+    const SUF_STATE: u8 = 40u8;  // state
+
+    function is_valid_suffix(code: u8) -> bool {
+        let ok: bool =
+            code == SUF_AGRIC || code == SUF_FOODS || code == SUF_SERVC || code == SUF_BUSNS || code == SUF_WORKS
+            || code == SUF_COOPS || code == SUF_ORGNS || code == SUF_INCOR || code == SUF_BUILD || code == SUF_LANDS
+            || code == SUF_MANUF || code == SUF_TRANS || code == SUF_UTILT || code == SUF_MECHN || code == SUF_ELECT
+            || code == SUF_METAL || code == SUF_TIMBR
+            || code == SUF_TECHN || code == SUF_DATAS || code == SUF_CYBER || code == SUF_MEDIA || code == SUF_LABRD
+            || code == SUF_HEALT || code == SUF_CARED || code == SUF_PHARM || code == SUF_THERA
+            || code == SUF_EDUCA || code == SUF_TRAIN || code == SUF_SKILL
+            || code == SUF_RETAL || code == SUF_HOSTL || code == SUF_TOURS || code == SUF_EVENT
+            || code == SUF_FINAN || code == SUF_LEGAL || code == SUF_ACCTS || code == SUF_ADMIN
+            || code == SUF_CIVIC || code == SUF_MUNIC || code == SUF_STATE;
+
+        return ok;
+    }
+
+    // -------------------
+    // On-chain mappings
+    // -------------------
+    mapping name_owner:
+        key as field.public,
+        value as address.public;
+
+    mapping name_kind:
+        key as field.public,
+        value as u8.public;
+
+    mapping employer_suffix_code:
+        key as field.public,
+        value as u8.public;
+
+    // Workers: 1 active name per address
+    mapping worker_primary_name_of:
+        key as address.public,
+        value as field.public;
+
+    // Employers: count of owned names (0..3)
+    mapping employer_name_count:
+        key as address.public,
+        value as u8.public;
+
+    // Employer name_hash -> base price paid (USDCx base units)
+    mapping employer_base_paid:
+        key as field.public,
+        value as u128.public;
+
+    // Sellback claim: name_hash -> seller address (0address if none)
+    mapping sellback_seller:
+        key as field.public,
+        value as address.public;
+
+    // Sellback claim: name_hash -> refund amount (USDCx base units)
+    mapping sellback_refund_amount:
+        key as field.public,
+        value as u128.public;
+
+    // -------------------
+    // Internal helpers
+    // -------------------
+    function calc_employer_base_price(current_count: u8) -> u128 {
+        if current_count == 0u8 { return EMP_PRICE_1_BASE; }
+        if current_count == 1u8 { return EMP_PRICE_2_BASE; }
+        if current_count == 2u8 { return EMP_PRICE_3_BASE; }
+        return 0u128;
+    }
+
+    function calc_refund(base_paid: u128) -> u128 {
+        return (base_paid * REFUND_NUM) / REFUND_DEN;
+    }
+
+    // -------------------
+    // Worker flows
+    // -------------------
+    async transition register_worker_name(name_hash: field, fee_amount: u128) -> Future {
+        // Enforce: one active worker name per address
+        let existing_primary: field = worker_primary_name_of.get_or_use(caller, 0field);
+        assert(existing_primary == 0field);
+
+        // Enforce: name must be unowned
+        let existing_owner: address = name_owner.get_or_use(name_hash, 0address);
+        assert(existing_owner == 0address);
+
+        // Collect payment: 1 USDCx + fee_amount (fees are non-refundable)
+        let total: u128 = WORKER_PRICE_BASE + fee_amount;
+        let pay_f: Future = test_usdcx_stablecoin.aleo/transfer_public(REGISTRAR_TREASURY, total);
+
+        let f: Future = finalize_register_worker(pay_f, caller, name_hash);
+        return f;
+    }
+
+    async function finalize_register_worker(pay_f: Future, owner: address, name_hash: field) -> Future {
+        await pay_f;
+
+        name_owner.set(name_hash, owner);
+        name_kind.set(name_hash, KIND_WORKER);
+        employer_suffix_code.set(name_hash, 0u8);
+
+        worker_primary_name_of.set(owner, name_hash);
+
+        return 0future;
+    }
+
+    transition release_worker_name() {
+        let current: field = worker_primary_name_of.get_or_use(caller, 0field);
+        assert(current != 0field);
+
+        let owner: address = name_owner.get_or_use(current, 0address);
+        assert(owner == caller);
+
+        // Release back to pool (no refunds)
+        name_owner.set(current, 0address);
+        name_kind.set(current, 0u8);
+        employer_suffix_code.set(current, 0u8);
+
+        worker_primary_name_of.set(caller, 0field);
+    }
+
+    // -------------------
+    // Employer flows
+    // -------------------
+    async transition register_employer_name(name_hash: field, suffix_code: u8, fee_amount: u128) -> Future {
+        // Must be verified as a business
+        employer_license_registry.aleo/assert_verified(caller);
+
+        // Validate suffix
+        assert(is_valid_suffix(suffix_code));
+
+        // Enforce: name must be unowned
+        let existing_owner: address = name_owner.get_or_use(name_hash, 0address);
+        assert(existing_owner == 0address);
+
+        // Enforce: max 3 names per address
+        let count: u8 = employer_name_count.get_or_use(caller, 0u8);
+        assert(count < 3u8);
+
+        let base_paid: u128 = calc_employer_base_price(count);
+        assert(base_paid != 0u128);
+
+        // Collect payment: base + fee_amount (fees are non-refundable)
+        let total: u128 = base_paid + fee_amount;
+        let pay_f: Future = test_usdcx_stablecoin.aleo/transfer_public(REGISTRAR_TREASURY, total);
+
+        let f: Future = finalize_register_employer(pay_f, caller, name_hash, suffix_code, base_paid, count);
+        return f;
+    }
+
+    async function finalize_register_employer(
+        pay_f: Future,
+        owner: address,
+        name_hash: field,
+        suffix_code: u8,
+        base_paid: u128,
+        count: u8
+    ) -> Future {
+        await pay_f;
+
+        name_owner.set(name_hash, owner);
+        name_kind.set(name_hash, KIND_EMPLOYER);
+        employer_suffix_code.set(name_hash, suffix_code);
+
+        employer_base_paid.set(name_hash, base_paid);
+        employer_name_count.set(owner, count + 1u8);
+
+        return 0future;
+    }
+
+    // Employer requests sellback to registrar (refund paid later by treasury).
+    transition request_employer_sellback(name_hash: field) {
+        let owner: address = name_owner.get_or_use(name_hash, 0address);
+        assert(owner == caller);
+
+        let k: u8 = name_kind.get_or_use(name_hash, 0u8);
+        assert(k == KIND_EMPLOYER);
+
+        // Ensure no existing claim
+        let existing_claim_seller: address = sellback_seller.get_or_use(name_hash, 0address);
+        assert(existing_claim_seller == 0address);
+
+        let base_paid: u128 = employer_base_paid.get_or_use(name_hash, 0u128);
+        assert(base_paid != 0u128);
+
+        let refund: u128 = calc_refund(base_paid);
+        assert(refund > 0u128);
+
+        // Release name back to pool immediately
+        name_owner.set(name_hash, 0address);
+        name_kind.set(name_hash, 0u8);
+        employer_suffix_code.set(name_hash, 0u8);
+
+        // Decrement employer count
+        let count: u8 = employer_name_count.get_or_use(caller, 0u8);
+        assert(count > 0u8);
+        employer_name_count.set(caller, count - 1u8);
+
+        // Record sellback claim for registrar fulfillment
+        sellback_seller.set(name_hash, caller);
+        sellback_refund_amount.set(name_hash, refund);
+    }
+
+    async transition fulfill_employer_sellback(name_hash: field) -> Future {
+        // Only registrar treasury may fulfill refunds.
+        assert(caller == REGISTRAR_TREASURY);
+
+        let seller: address = sellback_seller.get_or_use(name_hash, 0address);
+        assert(seller != 0address);
+
+        let refund: u128 = sellback_refund_amount.get_or_use(name_hash, 0u128);
+        assert(refund > 0u128);
+
+        let pay_f: Future = test_usdcx_stablecoin.aleo/transfer_public(seller, refund);
+
+        let f: Future = finalize_fulfill_sellback(pay_f, name_hash);
+        return f;
+    }
+
+    async function finalize_fulfill_sellback(pay_f: Future, name_hash: field) -> Future {
+        await pay_f;
+
+        // Clear claim
+        sellback_seller.set(name_hash, 0address);
+        sellback_refund_amount.set(name_hash, 0u128);
+
+        return 0future;
+    }
+
+    // =========================================================
+    // Read-only assertion helpers (NO STATE MUTATION)
+    // =========================================================
+
+    transition assert_name_exists(name_hash: field) {
+        let owner: address = name_owner.get_or_use(name_hash, 0address);
+        assert(owner != 0address);
+    }
+
+    transition assert_worker_owner(name_hash: field, owner: address) {
+        let existing_owner: address = name_owner.get_or_use(name_hash, 0address);
+        let k: u8 = name_kind.get_or_use(name_hash, 0u8);
+
+        assert(existing_owner == owner);
+        assert(k == KIND_WORKER);
+    }
+
+    transition assert_employer_owner(name_hash: field, owner: address, expected_suffix: u8) {
+        let existing_owner: address = name_owner.get_or_use(name_hash, 0address);
+        let k: u8 = name_kind.get_or_use(name_hash, 0u8);
+        let suffix: u8 = employer_suffix_code.get_or_use(name_hash, 0u8);
+
+        assert(existing_owner == owner);
+        assert(k == KIND_EMPLOYER);
+        assert(suffix == expected_suffix);
+    }
+
+    transition assert_is_owner(name_hash: field, owner: address) {
+        let existing_owner: address = name_owner.get_or_use(name_hash, 0address);
+        assert(existing_owner == owner);
+    }
+}
