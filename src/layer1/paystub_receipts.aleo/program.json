@@ -1,0 +1,6 @@
+{
+  "program": "paystub_receipts.aleo",
+  "version": "0.1.0",
+  "description": "Layer 1 paystub receipt minting for PNW MVP v2. Mints private worker+employer receipt records linked by a pairing hash, enforces unique receipt anchors, publishes a minimal public anchor index (anchor -> first-seen block height), and supports append-only reversal/correction receipts.",
+  "license": "PROPRIETARY"
+}
