@@ -1,29 +1,36 @@
 # PNW MVP v2  
-**Proven National Workers – Aleo-Native Payroll, Receipts, and Audit Framework**
+**Proven National Workers — Aleo-Native Payroll, Receipts, and Audit Framework**
 
 ---
 
 ## Overview
 
-`pnw_mvp_v2` is an Aleo-native payroll and compliance framework designed for **private, stable-value settlement using USDCx**, with built-in support for receipts, credentials, and permissible auditability.
+**PNW MVP v2** is a privacy-first payroll and compliance framework built natively on **Aleo**, using **USDCx** for stable-value settlement.
 
-The system coordinates payroll execution, reporting, and compliance without exposing worker, employer, or customer data on-chain.
+The system enables employers, workers, and oversight entities to:
+- execute payroll privately,
+- issue verifiable paystub receipts,
+- generate compliant reports,
+- and support permissible audits,
 
-All value movement, authorization, and audit anchoring occur on Aleo.  
+**without exposing identities, wages, or business data on-chain**.
+
+All authoritative state changes occur on Aleo.  
 All aggregation, reporting, and presentation occur privately off-chain.
 
 ---
 
-## Core Design Principles
+## Core Principles
 
 ### 1. Aleo-Native Settlement (USDCx)
-- Payroll is settled exclusively using **USDCx on Aleo**
-- Employers and workers interact using standard Aleo wallets
-- No external chains, bridges, or remittance adapters are required
-- The protocol does not custody funds or maintain balances
+- Payroll is settled using **USDCx on Aleo**
+- Employers and workers use standard Aleo wallets
+- No bridges, custodial pools, or external remittance rails
+- The protocol does **not** track balances or custody funds
 
-> **Note:**  
-> The canonical USDCx token identifier / program reference is treated as a configurable placeholder until officially published by Aleo and Circle.
+> **Note**  
+> USDCx is treated as a standalone Aleo program (`test_usdcx_stablecoin.aleo` on testnet).  
+> Token references are configurable and resolved at deploy time.
 
 ---
 
@@ -31,62 +38,94 @@ All aggregation, reporting, and presentation occur privately off-chain.
 - No plaintext identities on-chain
 - No public wages, hours, invoices, or balances
 - Public state contains **hashes and commitments only**
-- Financial and identity data exists only in **private records** or off-chain summaries
+- Financial and identity data exist only in:
+  - private Aleo records, or
+  - encrypted off-chain summaries
 
 ---
 
-### 3. Dual-Layer Routing Architecture
-
-The system is organized around two distinct layers:
-
-#### Layer 1 – On-Chain Canonical Logic
-Layer 1 programs:
-- Validate agreements and eligibility
-- Execute payroll using USDCx records
-- Mint **private receipt records**
-- Write **public hash anchors** for auditability
-
-Layer 1 programs do **not**:
-- Perform aggregation or analytics
-- Store balances or plaintext identities
-- Generate reports or summaries
-
-#### Layer 2 – Aggregation, Reporting, and Commitments
-Layer 2 tooling:
-- Combines private Layer 1 receipts off-chain
-- Builds paystubs, invoices, and periodic reports
-- Optionally mints **commitment-based NFTs** on-chain
-- Enables selective disclosure and audit workflows
+### 3. Append-Only, Verifiable History
+- All payroll and compliance events are:
+  - append-only
+  - immutable once anchored
+- Corrections and reversals are represented as **new artifacts**, not mutations
+- On-chain data provides **existence and ordering proofs**, not content disclosure
 
 ---
 
-## Directory Structure
+## Dual-Layer Architecture
+
+### Layer 1 — Canonical On-Chain Logic (Leo / Aleo)
+
+Layer 1 programs are the **source of truth**.
+
+They are responsible for:
+- identity and role commitments
+- employer–worker agreements
+- USDCx payroll execution
+- minting **private receipt records**
+- anchoring **hash-only audit events**
+
+Layer 1 programs explicitly do **not**:
+- compute reports or analytics
+- store balances or aggregates
+- expose identities or wages
+- generate presentation artifacts
+
+---
+
+### Layer 2 — Aggregation, Reporting, and Commitments (Portal + NFTs)
+
+Layer 2 tooling operates off-chain and optionally anchors results on-chain.
+
+Responsibilities:
+- decrypt authorized Layer 1 receipts
+- normalize receipts into deterministic base events
+- build paystubs, invoices, and periodic reports
+- compute Merkle roots and document commitments
+- optionally mint **commitment-based NFTs** for disclosure or audit
+
+Layer 2 never:
+- moves funds
+- alters Layer 1 state
+- bypasses Layer 1 validation rules
+
+---
+
+## Repository Structure
 
 ```text
 pnw_mvp_v2/
 ├─ README.md
 ├─ ARCHITECTURE.md
-├─ .gitignore
 ├─ .env.example
 │
 ├─ src/
-│  ├─ layer1/                            # Canonical on-chain business logic (private receipts + public anchors)
-│  │  ├─ pnw_router.aleo/                # Orchestrates layer1 workflows (no analytics)
-│  │  │  ├─ main.leo
-│  │  │  └─ program.json
-│  │  │
-│  │  ├─ pnw_name_registry.aleo/         # .pnw naming registry (hashed identifiers only)
-│  │  │  ├─ main.leo
-│  │  │  └─ program.json
-│  │  │
-│  │  ├─ worker_profiles.aleo/           # Worker profile commitments + eligibility anchors
-│  │  │  ├─ main.leo
-│  │  │  └─ program.json
-│  │  │
-│  │  ├─ employer_profiles.aleo/         # Employer profile commitments + role anchors
-│  │  │  ├─ main.leo
-│  │  │  └─ program.json
-│  │  │
+│  ├─ layer1/                          # Canonical on-chain logic
+│  │  ├─ pnw_router.aleo/              # Orchestration (no analytics)
+│  │  ├─ pnw_name_registry.aleo/       # .pnw identity registry (hashed)
+│  │  ├─ worker_profiles.aleo/         # Worker profile commitments
+│  │  ├─ employer_profiles.aleo/       # Employer profile commitments
+│  │  ├─ employer_agreement.aleo/      # Employment agreements
+│  │  ├─ payroll_core.aleo/            # USDCx payroll execution
+│  │  ├─ paystub_receipts.aleo/        # Private paystub receipts + anchors
+│  │  └─ payroll_audit_log.aleo/       # Immutable audit anchors
+│  │
+│  └─ layer2/                          # Commitment-only NFTs
+│     ├─ receipt_nft.aleo              # Paystub / report receipt NFTs
+│     ├─ credential_nft.aleo           # Employer / employment credentials
+│     └─ audit_nft.aleo                # Audit authorization + attestations
+│
+├─ portal/                             # Off-chain aggregation + UX
+│  ├─ src/
+│  │  ├─ config/                       # Network + program IDs
+│  │  ├─ router/                       # Layer1 / Layer2 orchestration
+│  │  ├─ receipts/                     # Receipt decryption + indexing
+│  │  ├─ reports/                      # Paystub / quarterly builders
+│  │  ├─ commitments/                  # Hashing + Merkle utilities
+│  │  └─ cli/                          # Dev workflows
+│
+└─ scripts/                            # Build / deploy helpers│  │  │
 │  │  ├─ employer_agreement.aleo/        # Relationship / scope commitments (hashed)
 │  │  │  ├─ main.leo
 │  │  │  └─ program.json
@@ -177,112 +216,227 @@ They are responsible for:
 
 
 Layer 1 programs never expose:
+# PNW MVP v2  
+**Proven National Workers — Aleo-Native Payroll, Receipts, and Audit Framework**
 
--Identities
+---
 
--Amounts
+## Overview
 
--Employment details
+**PNW MVP v2** is a privacy-first payroll and compliance framework built natively on **Aleo**, using **USDCx** for stable-value settlement.
 
--Aggregated statistics
+The system enables employers, workers, and oversight entities to:
+- execute payroll privately,
+- issue verifiable paystub receipts,
+- generate compliant reports,
+- and support permissible audits,
+
+**without exposing identities, wages, or business data on-chain**.
+
+All authoritative state changes occur on Aleo.  
+All aggregation, reporting, and presentation occur privately off-chain.
+
+---
+
+## Core Principles
+
+### 1. Aleo-Native Settlement (USDCx)
+- Payroll is settled using **USDCx on Aleo**
+- Employers and workers use standard Aleo wallets
+- No bridges, custodial pools, or external remittance rails
+- The protocol does **not** track balances or custody funds
+
+> **Note**  
+> USDCx is treated as a standalone Aleo program (`test_usdcx_stablecoin.aleo` on testnet).  
+> Token references are configurable and resolved at deploy time.
+
+---
+
+### 2. Privacy by Default
+- No plaintext identities on-chain
+- No public wages, hours, invoices, or balances
+- Public state contains **hashes and commitments only**
+- Financial and identity data exist only in:
+  - private Aleo records, or
+  - encrypted off-chain summaries
+
+---
+
+### 3. Append-Only, Verifiable History
+- All payroll and compliance events are:
+  - append-only
+  - immutable once anchored
+- Corrections and reversals are represented as **new artifacts**, not mutations
+- On-chain data provides **existence and ordering proofs**, not content disclosure
+
+---
+
+## Dual-Layer Architecture
+
+### Layer 1 — Canonical On-Chain Logic (Leo / Aleo)
+
+Layer 1 programs are the **source of truth**.
+
+They are responsible for:
+- identity and role commitments
+- employer–worker agreements
+- USDCx payroll execution
+- minting **private receipt records**
+- anchoring **hash-only audit events**
+
+Layer 1 programs explicitly do **not**:
+- compute reports or analytics
+- store balances or aggregates
+- expose identities or wages
+- generate presentation artifacts
+
+---
+
+### Layer 2 — Aggregation, Reporting, and Commitments (Portal + NFTs)
+
+Layer 2 tooling operates off-chain and optionally anchors results on-chain.
+
+Responsibilities:
+- decrypt authorized Layer 1 receipts
+- normalize receipts into deterministic base events
+- build paystubs, invoices, and periodic reports
+- compute Merkle roots and document commitments
+- optionally mint **commitment-based NFTs** for disclosure or audit
+
+Layer 2 never:
+- moves funds
+- alters Layer 1 state
+- bypasses Layer 1 validation rules
+
+---
+
+## Repository Structure
+
+```text
+pnw_mvp_v2/
+├─ README.md
+├─ ARCHITECTURE.md
+├─ .env.example
+│
+├─ src/
+│  ├─ layer1/                          # Canonical on-chain logic
+│  │  ├─ pnw_router.aleo/              # Orchestration (no analytics)
+│  │  ├─ pnw_name_registry.aleo/       # .pnw identity registry (hashed)
+│  │  ├─ worker_profiles.aleo/         # Worker profile commitments
+│  │  ├─ employer_profiles.aleo/       # Employer profile commitments
+│  │  ├─ employer_agreement.aleo/      # Employment agreements
+│  │  ├─ payroll_core.aleo/            # USDCx payroll execution
+│  │  ├─ paystub_receipts.aleo/        # Private paystub receipts + anchors
+│  │  └─ payroll_audit_log.aleo/       # Immutable audit anchors
+│  │
+│  └─ layer2/                          # Commitment-only NFTs
+│     ├─ receipt_nft.aleo              # Paystub / report receipt NFTs
+│     ├─ credential_nft.aleo           # Employer / employment credentials
+│     └─ audit_nft.aleo                # Audit authorization + attestations
+│
+├─ portal/                             # Off-chain aggregation + UX
+│  ├─ src/
+│  │  ├─ config/                       # Network + program IDs
+│  │  ├─ router/                       # Layer1 / Layer2 orchestration
+│  │  ├─ receipts/                     # Receipt decryption + indexing
+│  │  ├─ reports/                      # Paystub / quarterly builders
+│  │  ├─ commitments/                  # Hashing + Merkle utilities
+│  │  └─ cli/                          # Dev workflows
+│
+└─ scripts/                            # Build / deploy helpersto deployment.
 
 
+## Layer 1 Programs (Canonical)
+
+Layer 1 defines authoritative behavior.
+
+They handle:
+- identity commitments
+- agreements and eligibility
+- payroll settlement
+- receipt issuance
+- audit anchoring
+
+They never expose:
+- identities
+- wages or deductions
+- employment terms
+- aggregated statistics
 
 
-Layer 2 NFTs (Minimal Taxonomy)
+## Layer 2 NFTs — Minimal Taxonomy
 
-Layer 2 includes three NFT categories, all commitment-based:
+Layer 2 includes commitment-only NFTs used for disclosure and audit.
 
-1. Receipt NFTs
+### 1. Receipt NFTs
+- Paystub receipts
+- Payroll cycle summaries
+- Invoice receipts
 
--  Paystub receipts
-
--  Payroll cycle receipts
-
--  Invoice receipts
-
--  Used for presentation and selective disclosure.
-
-
-
-2. Credential NFTs
-
--  Employer verification credentials
-
--  Employment relationship credentials
-
--  Auditor / tax agent credentials
-
--  Used as capability and authorization tokens.
+Used for:
+- presentation
+- selective disclosure
+- worker-controlled sharing
 
 
+### 2. Credential NFTs
+- Employer verification credentials
+- Employment relationship credentials
+- Auditor / tax agent credentials
 
-3. Audit NFTs
-
--  Audit authorization tokens
-
--  Audit report anchors
-
--  Audit result attestations
-
--  Used to enable audits without revealing underlying data.
+Used as:
+- capability tokens
+- authorization proofs
+- revocable permissions
 
 
+### 3. Audit NFTs
+- Audit authorization tokens
+- Audit report anchors
+- Audit result attestations
+
+Used to:
+- enable audits without exposing raw data
+- prove compliance against on-chain anchors
 
 All NFTs store:
-
--  Commitment hashes
-
--  Merkle roots
-
--  Epochs and versions
-
--  Never raw payroll or identity data.
+- commitment hashes
+- Merkle roots
+- epoch and version metadata
+- **never raw payroll or identity data**
 
 
+## USDCx Integration Model
 
-USDCx Integration Model
+- USDCx is treated as a native Aleo asset
+- Employers fund payroll via USDCx records
+- Payroll consumes employer records and outputs worker records
+- No wrapping, mirroring, or balance accounting
 
--  USDCx is treated as a native Aleo stable asset
-
--  Employers fund payroll using USDCx records
-
--  Payroll execution consumes employer records and produces worker records
-
--  The protocol does not mirror balances or wrap tokens
-
-USDCx integration is intentionally minimal and composable.
+The design is intentionally minimal and composable.
 
 
+## Intended Use Cases
 
-Intended Use Cases
-
--  Private payroll execution
-
--  Worker-controlled paystub disclosure
-
--  Employer compliance reporting
-
--  SubDAO or organizational oversight
-
--  Selective audit workflows
+- Private payroll execution
+- Worker-controlled paystub disclosure
+- Employer compliance reporting
+- SubDAO or organizational oversight
+- Selective, permissioned audits
 
 
-
-Status
+## Status
 
 This repository defines the forward-looking MVP architecture and is under active development.
 
-The focus is on:
+Current priorities:
+- correctness
+- privacy
+- minimal on-chain surface area
+- long-term extensibility
 
--  Correctness
 
--  Privacy
+## License
 
--  Minimal on-chain surface area
-
--  Long-term extensibility
-
-License
-
-To be defined prior to deployment.
+This repository and all contained programs are **PROPRIETARY**.  
+No rights are granted for reuse, redistribution, or deployment without explicit authorization.
