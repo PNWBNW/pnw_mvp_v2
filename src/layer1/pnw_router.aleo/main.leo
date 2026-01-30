@@ -19,7 +19,6 @@ program pnw_router.aleo {
     // - does NOT aggregate data
     //
     // All hashes, documents, and summaries are portal-supplied.
-    //
 
     // ---------------------------------------------------------
     // Agreement workflows
@@ -50,22 +49,27 @@ program pnw_router.aleo {
         employer_agreement.aleo/create_job_offer(
             agreement_id,
             parties_key,
+
             employer_name_hash,
             worker_name_hash,
+
             industry_code,
             pay_frequency_code,
+
             start_epoch,
             end_epoch,
             review_epoch,
+
             agreement_rev,
             schema_v,
             policy_v,
+
             terms_doc_hash,
             terms_root
         );
     }
 
-    // Worker accepts a job offer
+    // Worker accepts a job offer (consumes pending offer in employer_agreement)
     transition accept_job_offer(
         pending: employer_agreement.aleo/PendingAgreement
     ) {
@@ -207,7 +211,26 @@ program pnw_router.aleo {
     ) {
         employer_agreement.aleo/assert_agreement_anchored(agreement_id);
     }
-}        let f: Future = payroll_audit_log.aleo/record_event_hash(event_hash);
-        return f;
+
+    // Convenience: confirm worker profile anchor exists
+    transition assert_worker_profile_anchored(
+        profile_anchor: [u8; 32]
+    ) {
+        worker_profiles.aleo/assert_profile_anchored(profile_anchor);
+    }
+
+    // Convenience: confirm employer profile anchor exists
+    transition assert_employer_profile_anchored(
+        profile_anchor: [u8; 32]
+    ) {
+        employer_profiles.aleo/assert_profile_anchored(profile_anchor);
+    }
+
+    // Convenience: confirm a given address owns a .pnw name hash
+    transition assert_name_owner(
+        name_hash: field,
+        owner: address
+    ) {
+        pnw_name_registry.aleo/assert_is_owner(name_hash, owner);
     }
 }
