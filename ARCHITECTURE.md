@@ -426,6 +426,106 @@ This provides non-repudiation and accountability without exposing real-time audi
 - Network references:
   - **Testnet:** `test_usdcx_stablecoin.aleo`
   - **Mainnet:** `usdcx_stablecoin.aleo`
+ 
+## Layered Compliance Model: USDCx and PNW
+
+PNW is intentionally designed to be **complementary to USDCx**, not competitive with it.
+
+These two systems operate at **different layers of compliance**, solving different problems that must not be conflated.
+
+---
+
+### USDCx: Monetary Compliance (Issuer Layer)
+
+USDCx, as issued and governed by Circle, provides **monetary compliance**.
+
+USDCx is responsible for proving that:
+- funds are not illicit
+- AML requirements are met
+- sanctions rules are enforced
+- regulatory and law-enforcement obligations can be satisfied
+
+This is achieved via **issuer-accessible compliance records** that are:
+- private from the public ledger
+- accessible to Circle under lawful request
+
+In short:
+
+> **USDCx proves the money is clean.**
+
+This is necessary and appropriate at the asset-issuance layer.
+
+---
+
+### PNW: Relationship Compliance (Application Layer)
+
+PNW operates at a higher layer: **the employment and payroll relationship itself**.
+
+PNW is responsible for proving that:
+- an employment relationship exists
+- wages were calculated correctly
+- payments align with agreements
+- disclosures are consensual and scoped
+- workers and employers have equal cryptographic standing
+
+PNW achieves this through:
+- private records
+- commitment anchors
+- multi-party authorization
+- time-bounded, scope-limited disclosure
+
+No single party (including PNW) has standing access to private data.
+
+In short:
+
+> **PNW proves the relationship is lawful.**
+
+---
+
+### Why These Models Are Complementary
+
+These two compliance layers address **orthogonal concerns**:
+
+| Layer | Proves | Controlled By |
+|-----|-------|--------------|
+| USDCx | Monetary legitimacy | Issuer (Circle) |
+| PNW | Employment legitimacy | Participants (Worker + Employer + DAO) |
+
+USDCx ensures:
+- the *money* is compliant
+
+PNW ensures:
+- the *context* of the money is legitimate
+
+PNW does **not** replace:
+- KYC
+- AML
+- sanctions enforcement
+
+And USDCx does **not** attempt to govern:
+- labor agreements
+- wage correctness
+- consented auditability
+- worker–employer parity
+
+This separation is intentional.
+
+---
+
+### Layered Compliance Is the Goal
+
+PNW builds **on top of** USDCx, not around it.
+
+- USDCx handles **asset-level compliance**
+- PNW handles **relationship-level compliance**
+
+Together, they form a layered system where:
+- regulators can trust the currency
+- participants retain control over their data
+- audits are possible without blanket surveillance
+- compliance does not imply forfeiture of privacy
+
+This is the intended architecture.
 
 ---
 
