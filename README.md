@@ -150,7 +150,6 @@ All NFTs store:
 - epoch and version metadata
 - **never raw payroll or identity data**
 
-
 ## USDCx Integration Model
 
 - USDCx is treated as a native Aleo asset
@@ -160,6 +159,24 @@ All NFTs store:
 
 The design is intentionally minimal and composable.
 
+## Layered Compliance Model
+
+PNW MVP v2 is designed to **complement**, not replace, the compliance guarantees provided by USDCx.
+
+- **USDCx compliance** ensures the *money* is lawful  
+  (AML, sanctions screening, monetary controls)
+- **PNW compliance** ensures the *relationship* is lawful  
+  (employment legitimacy, wage correctness, consented auditability)
+
+These layers operate independently but reinforce each other:
+
+> USDCx proves the funds are clean.  
+> PNW proves the payroll relationship is legitimate.
+
+PNW never bypasses or obscures issuer-level compliance. Instead, it adds a privacy-preserving employment and audit framework **on top of** compliant stablecoin settlement.
+
+For a detailed technical explanation, see:  
+📄 **[ARCHITECTURE.md — Layered Compliance & Auditability](./ARCHITECTURE.md)**
 
 ## Intended Use Cases
 
