@@ -52,7 +52,7 @@ pnw_mvp_v2/
 │  │     └─ program.json✔️
 │  │
 │  └─ layer2/                            # On-chain NFTs/records: commitments + permissions only (no payroll math)
-│     ├─ receipt_nft.aleo/               # Paystub/PayrollCycle/Invoice receipt NFTs (commitment objects)
+│     ├─ payroll_nfts.aleo/               # Paystub/PayrollCycle/Invoice receipt NFTs (commitment objects)
 │     │  ├─ main.leo
 │     │  └─ program.json
 │     │
