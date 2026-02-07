@@ -144,10 +144,9 @@ This separation ensures:
 - reduced attack surface
 
 ---
-
 ## Commitment & Anchoring Diagrams
 
-### End-to-End Commitment Flow  
+### End-to-End Commitment Flow
 Layer 1 → Portal → Commitments Toolkit → Layer 2
 
 ```mermaid
@@ -155,24 +154,27 @@ sequenceDiagram
   autonumber
   participant L1 as Layer 1 (Aleo Programs)
   participant P as Portal (Off-chain)
-  participant C as Commitments Toolkit (canonical_encoder, hash, merkle, token_id)
+  participant C as Commitments Toolkit
   participant L2 as Layer 2 (payroll_nfts.aleo)
 
   Note over L1: Payroll executes on-chain using USDCx records
   L1-->>P: Receipts (private) and anchors (public)
   P->>P: Decrypt and normalize (authorized)
   P->>C: Build canonical PaystubDocument or SummaryDocument
-  C->>C: Encode deterministically (TLV and fixed order)
-  C->>C: Compute inputs_hash (sorted inputs set)
-  C->>C: Compute doc_hash (canonical bytes)
-  C->>C: Build Merkle leaves and root
-  C->>C: Derive deterministic token_id
-  P-->>L2: Optional mint (token_id, doc_hash, inputs_hash, root, scope, versions)
-  L2-->>P: Mint success (on-chain commitment exists)
-  Note over P,L2: Reports can be generated without minting (minting is optional anchoring)
+  C->>C: Encode deterministically
+  C->>C: Compute inputs_hash
+  C->>C: Compute doc_hash
+  C->>C: Build Merkle root
+  C->>C: Derive token_id
+  P-->>L2: Optional mint
+  L2-->>P: Mint success
+```
 
+Dataflow: What Gets Hashed vs What Stays Private
+
+```mermaid
 flowchart TB
-  subgraph L1[Layer 1 Canonical On-chain]
+  subgraph L1[Layer 1 On-chain]
     R[Private receipt records]
     A[Public anchors]
   end
@@ -182,15 +184,15 @@ flowchart TB
     DOC[Deterministic documents]
   end
 
-  subgraph T[Commitments toolkit]
-    E[canonical encoder]
-    H[hash]
-    M[merkle]
-    ID[token id]
+  subgraph T[Commitments Toolkit]
+    E[Canonical encoder]
+    H[Hash]
+    M[Merkle]
+    ID[Token ID]
   end
 
   subgraph L2[Layer 2 On-chain]
-    NFT[payroll NFTs]
+    NFT[Payroll NFTs]
   end
 
   R --> D
@@ -208,3 +210,4 @@ flowchart TB
 
   DOC -.-> NFT
   D -.-> NFT
+```
