@@ -208,24 +208,3 @@ flowchart TB
 
   DOC -.->|never on-chain| NFT
   D -.->|never on-chain| NFT
-
-markdown
-## Versioning
-
-This toolkit implements **Commitment Spec v1**.
-
-Breaking changes require:
-- a new encoder version
-- explicit version fields in commitments
-- parallel support where necessary
-
-Silent changes are not permitted.
-
----
-
-## License
-
-This repository and all contained tooling is **PROPRIETARY**.
-
-No rights are granted for reuse, redistribution, or deployment  
-without explicit authorization.
