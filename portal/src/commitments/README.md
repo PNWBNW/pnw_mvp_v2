@@ -148,49 +148,49 @@ This separation ensures:
 ## Commitment & Anchoring Diagrams
 
 ### End-to-End Commitment Flow  
-**Layer 1 → Portal → Commitments Toolkit → Layer 2**
+Layer 1 → Portal → Commitments Toolkit → Layer 2
 
 ```mermaid
 sequenceDiagram
   autonumber
   participant L1 as Layer 1 (Aleo Programs)
   participant P as Portal (Off-chain)
-  participant C as Commitments Toolkit<br/>(canonical_encoder / hash / merkle / token_id)
+  participant C as Commitments Toolkit (canonical_encoder, hash, merkle, token_id)
   participant L2 as Layer 2 (payroll_nfts.aleo)
 
   Note over L1: Payroll executes on-chain using USDCx records
-  L1-->>P: Private paystub receipt record(s)<br/>+ public anchors (receipt_anchor, heights)
-  P->>P: Decrypt + normalize receipts (authorized)
-  P->>C: Build canonical PaystubDocument / SummaryDocument
-  C->>C: Encode deterministically (TLV + fixed order)
+  L1-->>P: Receipts (private) and anchors (public)
+  P->>P: Decrypt and normalize (authorized)
+  P->>C: Build canonical PaystubDocument or SummaryDocument
+  C->>C: Encode deterministically (TLV and fixed order)
   C->>C: Compute inputs_hash (sorted inputs set)
   C->>C: Compute doc_hash (canonical bytes)
-  C->>C: Build Merkle leaves + root
+  C->>C: Build Merkle leaves and root
   C->>C: Derive deterministic token_id
-  P-->>L2: Optional mint request<br/>(token_id, doc_hash, inputs_hash, root, scope, versions)
-  L2-->>P: Mint success + on-chain NFT commitment exists
-  Note over P,L2: Reports can be generated without minting; minting is optional anchoring.
+  P-->>L2: Optional mint (token_id, doc_hash, inputs_hash, root, scope, versions)
+  L2-->>P: Mint success (on-chain commitment exists)
+  Note over P,L2: Reports can be generated without minting (minting is optional anchoring)
 
 flowchart TB
-  subgraph L1[Layer 1: Canonical On-Chain]
-    R[Private Receipt Records<br/>paystub_receipts.aleo]
-    A[Public Anchors<br/>receipt_anchor + height<br/>audit anchors monthly]
+  subgraph L1[Layer 1 Canonical On-chain]
+    R[Private receipt records]
+    A[Public anchors]
   end
 
-  subgraph P[Portal: Off-Chain]
-    D[Decrypt + Normalize<br/>authorized only]
-    DOC[Deterministic Documents<br/>Paystub / Quarterly / YTD / EOY]
+  subgraph P[Portal Off-chain]
+    D[Decrypt and normalize]
+    DOC[Deterministic documents]
   end
 
-  subgraph T[Commitments Toolkit]
-    E[canonical_encoder.ts<br/>TLV + fixed order]
-    H[hash.ts<br/>BLAKE3-256 + domain separation]
-    M[merkle.ts<br/>leaf hashes + root]
-    ID[token_id.ts<br/>deterministic token IDs]
+  subgraph T[Commitments toolkit]
+    E[canonical encoder]
+    H[hash]
+    M[merkle]
+    ID[token id]
   end
 
-  subgraph L2[Layer 2: On-Chain Commitments]
-    NFT[payroll_nfts.aleo<br/>Stores commitments only]
+  subgraph L2[Layer 2 On-chain]
+    NFT[payroll NFTs]
   end
 
   R --> D
@@ -202,9 +202,9 @@ flowchart TB
   H --> M
   H --> ID
 
-  H -->|doc_hash + inputs_hash| NFT
-  M -->|root| NFT
-  ID -->|token_id| NFT
+  H --> NFT
+  M --> NFT
+  ID --> NFT
 
-  DOC -.->|never on-chain| NFT
-  D -.->|never on-chain| NFT
+  DOC -.-> NFT
+  D -.-> NFT
