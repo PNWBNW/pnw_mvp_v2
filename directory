@@ -1,55 +1,55 @@
 pnw_mvp_v2/
-├─ README.md
-├─ ARCHITECTURE.md
+├─ README.md✔️
+├─ ARCHITECTURE.md✔️
 ├─ .gitignore
 ├─ .env.example
 │
 ├─ src/
 │  ├─ layer1/                            # Canonical on-chain business logic (private receipts + public anchors)
-│  │  ├─ pnw_router.aleo/                # Orchestrates layer1 workflows (no analytics)
-│  │  │  ├─ README.md
-│  │  │  ├─ main.leo
-│  │  │  └─ program.json
+│  │  ├─ pnw_router.aleo/✔️                # Orchestrates layer1 workflows (no analytics)
+│  │  │  ├─ README.md✔️
+│  │  │  ├─ main.leo✔️
+│  │  │  └─ program.json✔️
 │  │  │
 │  │  ├─ employer_license_registry.aleo/              
-│  │  │  ├─ README.md
-│  │  │  ├─ main.leo
-│  │  │  └─ program.json
+│  │  │  ├─ README.md✔️
+│  │  │  ├─ main.leo✔️
+│  │  │  └─ program.json✔️
 │  │  │
 │  │  ├─ pnw_name_registry.aleo/         # .pnw naming registry (hashed identifiers only)
-│  │  │  ├─ README.md
-│  │  │  ├─ main.leo
-│  │  │  └─ program.json
+│  │  │  ├─ README.md✔️
+│  │  │  ├─ main.leo✔️
+│  │  │  └─ program.json✔️
 │  │  │
 │  │  ├─ worker_profiles.aleo/           # Worker profile commitments + eligibility anchors
-│  │  │  ├─ README.md
-│  │  │  ├─ main.leo
-│  │  │  └─ program.json
+│  │  │  ├─ README.md✔️
+│  │  │  ├─ main.leo✔️
+│  │  │  └─ program.json✔️
 │  │  │
 │  │  ├─ employer_profiles.aleo/         # Employer profile commitments + role anchors
-│  │  │  ├─ README.md
-│  │  │  ├─ main.leo
-│  │  │  └─ program.json
+│  │  │  ├─ README.md✔️
+│  │  │  ├─ main.leo✔️
+│  │  │  └─ program.json✔️
 │  │  │
 │  │  ├─ employer_agreement.aleo/        # Relationship / scope commitments (hashed)
-│  │  │  ├─ README.md
-│  │  │  ├─ main.leo
-│  │  │  └─ program.json
+│  │  │  ├─ README.md✔️
+│  │  │  ├─ main.leo✔️
+│  │  │  └─ program.json✔️
 │  │  │
 │  │  ├─ payroll_core.aleo/              # Executes payroll + mints private receipts (USDCx-native transfers)
-│  │  │  ├─ README.md
-│  │  │  ├─ main.leo
-│  │  │  └─ program.json
+│  │  │  ├─ README.md✔️
+│  │  │  ├─ main.leo✔️
+│  │  │  └─ program.json✔️
 │  │  │
 │  │  ├─ paystub_receipts.aleo/          # Private receipts (records) + minimal public anchors (hash index)
-│  │  │  ├─ README.md
-│  │  │  ├─ main.leo
-│  │  │  └─ program.json
+│  │  │  ├─ README.md✔️
+│  │  │  ├─ main.leo✔️
+│  │  │  └─ program.json✔️
 │  │  │
 │  │  └─ payroll_audit_log.aleo/         # Hash-only log (event_hash -> bool/u32), immutable anchors
-│  │     ├─ README.md
-│  │     ├─ main.leo
-│  │     └─ program.json
+│  │     ├─ README.md✔️
+│  │     ├─ main.leo✔️
+│  │     └─ program.json✔️
 │  │
 │  └─ layer2/                            # On-chain NFTs/records: commitments + permissions only (no payroll math)
 │     ├─ receipt_nft.aleo/               # Paystub/PayrollCycle/Invoice receipt NFTs (commitment objects)
@@ -88,12 +88,12 @@ pnw_mvp_v2/
 │  │  │  └─ subdao_quarterly.ts          # subDAO report builder
 │  │  │
 │  │  ├─ commitments/
-│  │  │  ├─ README.md
-│  │  │  ├─ index.ts
-│  │  │  ├─ canonical_encoder.ts
-│  │  │  ├─ merkle.ts                    # Merkle tree builder (deterministic)
-│  │  │  ├─ hash.ts                      # domain-separated hashing helpers
-│  │  │  └─ token_id.ts                  # deterministic token_id builder
+│  │  │  ├─ README.md✔️
+│  │  │  ├─ index.ts✔️
+│  │  │  ├─ canonical_encoder.ts✔️
+│  │  │  ├─ merkle.ts✔️                    # Merkle tree builder (deterministic)
+│  │  │  ├─ hash.ts✔️                      # domain-separated hashing helpers
+│  │  │  └─ token_id.ts✔️                  # deterministic token_id builder
 │  │  │
 │  │  └─ cli/
 │  │     ├─ run_payroll.ts               # example workflow runner (dev)
