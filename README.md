@@ -203,38 +203,3 @@ Current priorities:
 This repository and all contained programs are **PROPRIETARY**.  
 No rights are granted for reuse, redistribution, or deployment without explicit authorization.
 
-
-## Repository Structure
-
-```text
-pnw_mvp_v2/
-├─ README.md
-├─ ARCHITECTURE.md
-├─ .env.example
-│
-├─ src/
-│  ├─ layer1/                          # Canonical on-chain logic
-│  │  ├─ pnw_router.aleo/              # Orchestration (no analytics)
-│  │  ├─ pnw_name_registry.aleo/       # .pnw identity registry (hashed)
-│  │  ├─ worker_profiles.aleo/         # Worker profile commitments
-│  │  ├─ employer_profiles.aleo/       # Employer profile commitments
-│  │  ├─ employer_agreement.aleo/      # Employment agreements
-│  │  ├─ payroll_core.aleo/            # USDCx payroll execution
-│  │  ├─ paystub_receipts.aleo/        # Private paystub receipts + anchors
-│  │  └─ payroll_audit_log.aleo/       # Immutable audit anchors
-│  │
-│  └─ layer2/                          # Commitment-only NFTs
-│     ├─ receipt_nft.aleo              # Paystub / report receipt NFTs
-│     ├─ credential_nft.aleo           # Employer / employment credentials
-│     └─ audit_nft.aleo                # Audit authorization + attestations
-│
-├─ portal/                             # Off-chain aggregation + UX
-│  ├─ src/
-│  │  ├─ config/                       # Network + program IDs
-│  │  ├─ router/                       # Layer1 / Layer2 orchestration
-│  │  ├─ receipts/                     # Receipt decryption + indexing
-│  │  ├─ reports/                      # Paystub / quarterly builders
-│  │  ├─ commitments/                  # Hashing + Merkle utilities
-│  │  └─ cli/                          # Dev workflows
-│
-└─ scripts/                            # Build / deploy helpers
