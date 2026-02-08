@@ -235,5 +235,30 @@ function anchor_unique(event_hash: [u8; 32])
 ```
 
 ---
+# payroll_core.aleo
 
-
+## Transitions
+```text
+transition execute_payroll(
+    employer_usdcx: test_usdcx_stablecoin.Record,
+    employer_addr: address,
+    worker_addr: address,
+    employer_name_hash: field,
+    worker_name_hash: field,
+    agreement_id: [u8; 32],
+    epoch_id: u32,
+    gross_amount: u128,
+    net_amount: u128,
+    tax_withheld: u128,
+    fee_amount: u128,
+    receipt_anchor: [u8; 32],
+    receipt_pair_hash: [u8; 32],
+    payroll_inputs_hash: [u8; 32],
+    utc_time_hash: [u8; 32],
+    audit_event_hash: [u8; 32]
+) -> (
+    test_usdcx_stablecoin.Record,
+    paystub_receipts.WorkerPaystubReceipt,
+    paystub_receipts.EmployerPaystubReceipt
+)
+```
