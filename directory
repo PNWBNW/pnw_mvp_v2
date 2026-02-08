@@ -87,10 +87,6 @@ pnw_mvp_v2/
 │  │  │  ├─ normalize.ts✔️                 # canonical “base events” format
 │  │  │  └─ indexer.ts✔️                   # pulls anchors + receipts from chain
 │  │  │
-│  │  ├─ reports/
-│  │  │  ├─ employer_quarterly.ts        # quarterly report builder
-│  │  │  └─ subdao_quarterly.ts          # subDAO report builder
-│  │  │
 │  │  ├─ commitments/
 │  │  │  ├─ README.md✔️
 │  │  │  ├─ index.ts✔️
