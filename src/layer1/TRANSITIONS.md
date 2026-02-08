@@ -350,3 +350,60 @@ async function finalize_register_employer(
 
 ---
 
+# pnw_router.aleo
+
+## Transitions
+```
+transition create_job_offer(
+    agreement_id: [u8; 32],
+    parties_key: [u8; 32],
+    employer_name_hash: field,
+    worker_name_hash: field,
+    industry_code: u8,
+    pay_frequency_code: u8,
+    start_epoch: u32,
+    end_epoch: u32,
+    review_epoch: u32,
+    agreement_rev: u16,
+    schema_v: u16,
+    policy_v: u16,
+    terms_doc_hash: [u8; 32],
+    terms_root: [u8; 32]
+)
+
+transition accept_job_offer(pending: employer_agreement.aleo/PendingAgreement)
+
+transition pause_agreement_employer(agreement_id: [u8; 32], parties_key: [u8; 32], employer_name_hash: field)
+
+transition pause_agreement_worker(agreement_id: [u8; 32], parties_key: [u8; 32], worker_name_hash: field)
+
+transition pause_agreement_dao(agreement_id: [u8; 32], parties_key: [u8; 32])
+
+transition terminate_agreement_employer(agreement_id: [u8; 32], parties_key: [u8; 32], employer_name_hash: field)
+
+transition terminate_agreement_worker(agreement_id: [u8; 32], parties_key: [u8; 32], worker_name_hash: field)
+
+transition terminate_agreement_dao(agreement_id: [u8; 32], parties_key: [u8; 32])
+
+transition approve_resume_employer(agreement_id: [u8; 32], parties_key: [u8; 32], employer_name_hash: field)
+
+transition approve_resume_worker(agreement_id: [u8; 32], parties_key: [u8; 32], worker_name_hash: field)
+
+transition approve_resume_dao(agreement_id: [u8; 32], parties_key: [u8; 32])
+
+transition resume_agreement(agreement_id: [u8; 32], parties_key: [u8; 32])
+
+transition assert_agreement_active(agreement_id: [u8; 32])
+
+transition assert_agreement_exists(agreement_id: [u8; 32])
+
+transition assert_worker_profile_anchored(profile_anchor: [u8; 32])
+
+transition assert_employer_profile_anchored(profile_anchor: [u8; 32])
+
+transition assert_name_owner(name_hash: field, owner: address)
+```
+
+---
+
+
