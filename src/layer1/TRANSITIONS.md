@@ -6,7 +6,7 @@
 ## Transitions
 
 ### create_job_offer
-```text
+```
 transition create_job_offer(
     agreement_id: [u8; 32],
     parties_key: [u8; 32],
@@ -137,7 +137,7 @@ function assert_is_dao()
 # employer_license_registry.aleo
 
 ## Transitions
-```text
+```
 transition set_verified(wallet: address, license_hash: [u8; 32], verified: bool)
 async transition assert_verified(wallet: address) -> Future
 transition get_license_hash(wallet: address) -> [u8; 32]
@@ -151,7 +151,7 @@ async function do_assert_verified(wallet: address) -> Future
 # employer_profiles.aleo
 
 ## Records
-```text
+```
 record EmployerProfile {
     employer_name_hash: field.private,
     suffix_code: u8.private,
@@ -222,7 +222,7 @@ function anchor_once(profile_anchor: [u8; 32])
 # payroll_audit_log.aleo
 
 ## Transitions
-```text
+```
 transition anchor_event(event_hash: [u8; 32])
 
 transition assert_event_anchored(event_hash: [u8; 32])
@@ -238,7 +238,7 @@ function anchor_unique(event_hash: [u8; 32])
 # payroll_core.aleo
 
 ## Transitions
-```text
+```
 transition execute_payroll(
     employer_usdcx: test_usdcx_stablecoin.Record,
     employer_addr: address,
@@ -262,3 +262,53 @@ transition execute_payroll(
     paystub_receipts.EmployerPaystubReceipt
 )
 ```
+
+# paystub_receipts.aleo
+
+## Transitions
+```
+transition mint_paystub_receipts(
+    worker_owner: address,
+    employer_owner: address,
+    worker_name_hash: field,
+    employer_name_hash: field,
+    agreement_id: [u8; 32],
+    epoch_id: u32,
+    gross_amount: u128,
+    net_amount: u128,
+    tax_withheld: u128,
+    fee_amount: u128,
+    payroll_inputs_hash: [u8; 32],
+    receipt_anchor: [u8; 32],
+    pair_hash: [u8; 32],
+    utc_time_hash: [u8; 32]
+) -> (WorkerPaystubReceipt, EmployerPaystubReceipt)
+
+transition mint_reversal_receipts(
+    worker_owner: address,
+    employer_owner: address,
+    worker_name_hash: field,
+    employer_name_hash: field,
+    agreement_id: [u8; 32],
+    epoch_id: u32,
+    gross_amount: u128,
+    net_amount: u128,
+    tax_withheld: u128,
+    fee_amount: u128,
+    payroll_inputs_hash: [u8; 32],
+    reversal_anchor: [u8; 32],
+    pair_hash: [u8; 32],
+    utc_time_hash: [u8; 32]
+) -> (WorkerPaystubReceipt, EmployerPaystubReceipt)
+
+transition assert_receipt_anchored(receipt_anchor: [u8; 32])
+
+transition get_anchor_height(receipt_anchor: [u8; 32]) -> u32
+```
+## Functions
+```
+function anchor_unique(receipt_anchor: [u8; 32])
+```
+
+---
+
