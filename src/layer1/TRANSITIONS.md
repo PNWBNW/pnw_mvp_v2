@@ -312,3 +312,41 @@ function anchor_unique(receipt_anchor: [u8; 32])
 
 ---
 
+# pnw_name_registry.aleo
+
+## Transitions
+```
+async transition register_worker_name(name_hash: field, fee_amount: u128) -> Future
+
+transition release_worker_name()
+
+async transition register_employer_name(name_hash: field, suffix_code: u8, fee_amount: u128) -> Future
+
+transition request_employer_sellback(name_hash: field)
+
+async transition fulfill_employer_sellback(name_hash: field) -> Future
+
+transition assert_is_owner(name_hash: field, owner: address)
+```
+## Functions
+```
+function is_valid_suffix(code: u8) -> bool
+
+function calc_employer_base_price(count: u8) -> u128
+
+function calc_refund(base_paid: u128) -> u128
+
+async function finalize_register_worker(pay_f: Future, owner: address, name_hash: field) -> Future
+
+async function finalize_register_employer(
+    pay_f: Future,
+    owner: address,
+    name_hash: field,
+    suffix_code: u8,
+    base_paid: u128,
+    count: u8
+) -> Future
+```
+
+---
+
