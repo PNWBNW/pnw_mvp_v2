@@ -78,13 +78,14 @@ pnw_mvp_v2/
 │  │  │  ├─ layer1_router.ts             # orchestrates on-chain actions (register, agreement, payroll)
 │  │  │  └─ layer2_router.ts             # builds summaries + mints NFTs (receipt/credential/audit)
 │  │  │
-│  │  ├─ payroll/
-│  │  │  ├─ types.ts
-│  │  │  ├─ mint_payroll_nft.ts
-│  │  │  ├─ summary_builder.ts
-│  │  │  ├─ paystub_builder.ts           # builds paystub doc + root + doc_hash + inputs_hash 
-│  │  │  ├─ normalize.ts                 # canonical “base events” format
-│  │  │  └─ indexer.ts                   # pulls anchors + receipts from chain
+│  │  ├─ payroll/✔️
+│  │  │  ├─ README.md✔️
+│  │  │  ├─ types.ts✔️
+│  │  │  ├─ mint_payroll_nft.ts✔️
+│  │  │  ├─ summary_builder.ts✔️
+│  │  │  ├─ paystub_builder.ts✔️           # builds paystub doc + root + doc_hash + inputs_hash 
+│  │  │  ├─ normalize.ts✔️                 # canonical “base events” format
+│  │  │  └─ indexer.ts✔️                   # pulls anchors + receipts from chain
 │  │  │
 │  │  ├─ reports/
 │  │  │  ├─ employer_quarterly.ts        # quarterly report builder
