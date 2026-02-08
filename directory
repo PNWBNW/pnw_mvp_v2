@@ -73,12 +73,15 @@ pnw_mvp_v2/
 │  ├─ tsconfig.json
 │  ├─ src/
 │  │  ├─ config/
-│  │  │  ├─ env.ts                       # reads .env, network selection, program IDs
-│  │  │  └─ programs.ts                  # layer1 + layer2 program addresses/ids
+│  │  │  ├─ env.ts✔️                       # reads .env, network selection, program IDs
+│  │  │  └─ programs.ts✔️                  # layer1 + layer2 program addresses/ids
 │  │  │
 │  │  ├─ router/
-│  │  │  ├─ layer1_router.ts             # orchestrates on-chain actions (register, agreement, payroll)
+│  │  │  ├─ layer1_router.ts✔️             # orchestrates on-chain actions (register, agreement, payroll)
 │  │  │  └─ layer2_router.ts             # builds summaries + mints NFTs (receipt/credential/audit)
+│  │  |
+│  │  ├─ adapter/
+│  │  │  ├─ layer1_adapter.ts✔️  
 │  │  │
 │  │  ├─ payroll/✔️
 │  │  │  ├─ README.md✔️
