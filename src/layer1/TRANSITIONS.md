@@ -219,3 +219,21 @@ transition get_anchor_height(profile_anchor: [u8; 32]) -> u32
 function anchor_once(profile_anchor: [u8; 32])
 ```
 ---
+# payroll_audit_log.aleo
+
+## Transitions
+```text
+transition anchor_event(event_hash: [u8; 32])
+
+transition assert_event_anchored(event_hash: [u8; 32])
+
+transition get_event_height(event_hash: [u8; 32]) -> u32
+```
+##Functions
+```
+function anchor_unique(event_hash: [u8; 32])
+```
+
+---
+
+
