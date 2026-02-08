@@ -1,3 +1,28 @@
+# LAYER1_INTERFACE.md 
+
+Layer 1 Interface Reference
+
+This document defines the **canonical callable interface** for all Layer 1 Aleo programs in the PNW MVP.
+
+It is a **strict extraction** of public transitions, records, and callable functions intended for:
+- the Portal router
+- SDK / adapter layers
+- external integrators
+- future maintainers
+
+## What this document includes
+- Public `transition` signatures
+- Public record types returned or consumed by transitions
+- Public helper functions callable by other programs
+
+## What this document intentionally omits
+- Internal helpers
+- Mappings
+- Constants
+- Validation logic
+- Implementation details
+
+This file exists to provide a **single, stable source of truth** for how off-chain systems and other programs interact with Layer 1, without requiring readers to inspect individual `.aleo` implementations.
 
 ---
 
