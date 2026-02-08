@@ -26,75 +26,75 @@ transition create_job_offer(
     offer_time_hash: [u8; 32]
 ) -> PendingAgreement
 ```
-accept_job_offer
+### accept_job_offer
 ```
 transition accept_job_offer(
     offer: PendingAgreement,
     accept_time_hash: [u8; 32]
 ) -> FinalAgreement
 ```
-pause_agreement
+### pause_agreement
 ```
 transition pause_agreement(
     agreement_id: [u8; 32],
     parties_key: [u8; 32]
 )
 ```
-terminate_agreement
+### terminate_agreement
 ```
 transition terminate_agreement(
     agreement_id: [u8; 32],
     parties_key: [u8; 32]
 )
 ```
-resume_agreement_employer
+### resume_agreement_employer
 ```
 transition resume_agreement_employer(
     agreement_id: [u8; 32],
     parties_key: [u8; 32]
 )
 ```
-resume_agreement_worker
+### resume_agreement_worker
 ```
 transition resume_agreement_worker(
     agreement_id: [u8; 32],
     parties_key: [u8; 32]
 )
 ```
-resume_agreement_dao
+### resume_agreement_dao
 ```
 transition resume_agreement_dao(
     agreement_id: [u8; 32],
     parties_key: [u8; 32]
 )
 ```
-finalize_resume
+### finalize_resume
 ```
 transition finalize_resume(
     agreement_id: [u8; 32],
     parties_key: [u8; 32]
 )
 ```
-supersede_agreement
+### supersede_agreement
 ```
 transition supersede_agreement(
     agreement_id: [u8; 32],
     parties_key: [u8; 32]
 )
 ```
-assert_agreement_active
+### assert_agreement_active
 ```
 transition assert_agreement_active(
     agreement_id: [u8; 32]
 )
 ```
-get_anchor_height
+### get_anchor_height
 ```
 transition get_anchor_height(
     agreement_id: [u8; 32]
 ) -> u32
 ```
-Functions
+## Functions
 ```
 assert_status_valid
 
@@ -134,15 +134,15 @@ function assert_is_dao()
 
 ---
 
-## employer_license_registry.aleo
+# employer_license_registry.aleo
 
-### Transitions
+## Transitions
 ```text
 transition set_verified(wallet: address, license_hash: [u8; 32], verified: bool)
 async transition assert_verified(wallet: address) -> Future
 transition get_license_hash(wallet: address) -> [u8; 32]
 ```
-Functions
+## Functions
 ```
 async function do_assert_verified(wallet: address) -> Future
 ```
