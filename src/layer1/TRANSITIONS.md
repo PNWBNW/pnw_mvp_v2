@@ -385,4 +385,51 @@ transition assert_name_owner(name_hash: field, owner: address)
 
 ---
 
+## worker_profiles.aleo
 
+### Records
+```
+- WorkerProfile
+```
+### Transitions
+```
+- create_worker_profile(
+    worker_name_hash: field,
+    first_name_u128: u128,
+    middle_name_u128: u128,
+    last_name_u128: u128,
+    age: u8,
+    gender: u8,
+    residency_state_code: u16,
+    country_code: u16,
+    state_issue_id_u128: u128,
+    industry_code: u8,
+    citizenship_flag: u8,
+    schema_v: u16,
+    policy_v: u16,
+    profile_rev: u16,
+    profile_anchor: [u8; 32]
+  ) -> WorkerProfile
+
+- update_worker_profile(
+    old_profile: WorkerProfile,
+    first_name_u128: u128,
+    middle_name_u128: u128,
+    last_name_u128: u128,
+    age: u8,
+    gender: u8,
+    residency_state_code: u16,
+    country_code: u16,
+    state_issue_id_u128: u128,
+    industry_code: u8,
+    citizenship_flag: u8,
+    schema_v: u16,
+    policy_v: u16,
+    new_profile_rev: u16,
+    new_profile_anchor: [u8; 32]
+  ) -> WorkerProfile
+
+- assert_profile_anchored(profile_anchor: [u8; 32])
+
+- get_anchor_height(profile_anchor: [u8; 32]) -> u32
+```
