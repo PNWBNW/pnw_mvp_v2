@@ -26,4 +26,3 @@ It exists to provide the portal a **single stable entry surface** and to **orche
 ## Notes
 - All document hashes, anchors, and summaries are portal-supplied.
 - This router is intentionally minimal: it’s a stable orchestration layer, not a logic layer.
-```
