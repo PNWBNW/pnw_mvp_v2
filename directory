@@ -73,6 +73,7 @@ pnw_mvp_v2/
 │  ├─ tsconfig.json
 │  ├─ src/
 │  │  ├─ config/
+│  │  │  ├─ README.md✔️
 │  │  │  ├─ env.ts✔️                       # reads .env, network selection, program IDs
 │  │  │  └─ programs.ts✔️                  # layer1 + layer2 program addresses/ids
 │  │  │
