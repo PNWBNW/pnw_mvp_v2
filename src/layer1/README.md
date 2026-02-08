@@ -18,4 +18,3 @@ Layer 1 contains the **canonical on-chain programs** for PNW MVP v2. These progr
 ## Notes
 - Layer 1 programs are the **source of truth** for settlement and eligibility.
 - Aggregation, reporting, and NFT minting are handled outside Layer 1 (Portal + Layer 2), using deterministic encodings and commitment anchors.
-```
