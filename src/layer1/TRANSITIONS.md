@@ -146,6 +146,76 @@ transition get_license_hash(wallet: address) -> [u8; 32]
 ```
 async function do_assert_verified(wallet: address) -> Future
 ```
-
 ---
 
+# employer_profiles.aleo
+
+## Records
+```text
+record EmployerProfile {
+    employer_name_hash: field.private,
+    suffix_code: u8.private,
+    legal_name_u128: u128.private,
+    registration_id_u128: u128.private,
+    registration_state_code: u16.private,
+    country_code: u16.private,
+    formation_year: u16.private,
+    entity_type_code: u8.private,
+    industry_code: u8.private,
+    employer_size_code: u8.private,
+    operating_region_code: u16.private,
+    schema_v: u16.private,
+    policy_v: u16.private,
+    profile_rev: u16.private,
+    profile_anchor: [u8; 32].private,
+    issued_height: u32.private,
+    owner: address.private,
+    _nonce: group.public
+}
+```
+## Transitions
+```
+transition create_employer_profile(
+    employer_name_hash: field,
+    suffix_code: u8,
+    legal_name_u128: u128,
+    registration_id_u128: u128,
+    registration_state_code: u16,
+    country_code: u16,
+    formation_year: u16,
+    entity_type_code: u8,
+    industry_code: u8,
+    employer_size_code: u8,
+    operating_region_code: u16,
+    schema_v: u16,
+    policy_v: u16,
+    profile_rev: u16,
+    profile_anchor: [u8; 32]
+) -> EmployerProfile
+
+transition update_employer_profile(
+    old_profile: EmployerProfile,
+    legal_name_u128: u128,
+    registration_id_u128: u128,
+    registration_state_code: u16,
+    country_code: u16,
+    formation_year: u16,
+    entity_type_code: u8,
+    industry_code: u8,
+    employer_size_code: u8,
+    operating_region_code: u16,
+    schema_v: u16,
+    policy_v: u16,
+    new_profile_rev: u16,
+    new_profile_anchor: [u8; 32]
+) -> EmployerProfile
+
+transition assert_profile_anchored(profile_anchor: [u8; 32])
+
+transition get_anchor_height(profile_anchor: [u8; 32]) -> u32
+```
+## Functions
+```
+function anchor_once(profile_anchor: [u8; 32])
+```
+---
