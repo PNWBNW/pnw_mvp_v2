@@ -103,12 +103,3 @@ Execution-specific configuration (CLI, wallets, etc.) is deferred until later ph
 Those responsibilities belong on-chain or in separate repositories.
 
 ---
-
-## Status
-
-This folder represents a **framed and dried-in structure**.
-
-Execution, CLI tooling, and testnet interaction will be added only after:
-- workflows are finalized
-- Layer 2 programs are complete
-- interfaces are stable
