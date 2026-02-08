@@ -1,11 +1,10 @@
 
 ---
 
-# employer_agreement.aleo
+## employer_agreement.aleo
 
-## Transitions
+### Transitions
 
-### create_job_offer
 ```
 transition create_job_offer(
     agreement_id: [u8; 32],
@@ -25,76 +24,56 @@ transition create_job_offer(
     terms_root: [u8; 32],
     offer_time_hash: [u8; 32]
 ) -> PendingAgreement
-```
-### accept_job_offer
-```
+
 transition accept_job_offer(
     offer: PendingAgreement,
     accept_time_hash: [u8; 32]
 ) -> FinalAgreement
-```
-### pause_agreement
-```
+
 transition pause_agreement(
     agreement_id: [u8; 32],
     parties_key: [u8; 32]
 )
-```
-### terminate_agreement
-```
+
 transition terminate_agreement(
     agreement_id: [u8; 32],
     parties_key: [u8; 32]
 )
-```
-### resume_agreement_employer
-```
+
 transition resume_agreement_employer(
     agreement_id: [u8; 32],
     parties_key: [u8; 32]
 )
-```
-### resume_agreement_worker
-```
+
 transition resume_agreement_worker(
     agreement_id: [u8; 32],
     parties_key: [u8; 32]
 )
-```
-### resume_agreement_dao
-```
+
 transition resume_agreement_dao(
     agreement_id: [u8; 32],
     parties_key: [u8; 32]
 )
-```
-### finalize_resume
-```
+
 transition finalize_resume(
     agreement_id: [u8; 32],
     parties_key: [u8; 32]
 )
-```
-### supersede_agreement
-```
+
 transition supersede_agreement(
     agreement_id: [u8; 32],
     parties_key: [u8; 32]
 )
-```
-### assert_agreement_active
-```
+
 transition assert_agreement_active(
     agreement_id: [u8; 32]
 )
-```
-### get_anchor_height
-```
+
 transition get_anchor_height(
     agreement_id: [u8; 32]
 ) -> u32
 ```
-## Functions
+### Functions
 ```
 assert_status_valid
 
@@ -134,23 +113,23 @@ function assert_is_dao()
 
 ---
 
-# employer_license_registry.aleo
+## employer_license_registry.aleo
 
-## Transitions
+### Transitions
 ```
 transition set_verified(wallet: address, license_hash: [u8; 32], verified: bool)
 async transition assert_verified(wallet: address) -> Future
 transition get_license_hash(wallet: address) -> [u8; 32]
 ```
-## Functions
+### Functions
 ```
 async function do_assert_verified(wallet: address) -> Future
 ```
 ---
 
-# employer_profiles.aleo
+## employer_profiles.aleo
 
-## Records
+### Records
 ```
 record EmployerProfile {
     employer_name_hash: field.private,
@@ -173,7 +152,7 @@ record EmployerProfile {
     _nonce: group.public
 }
 ```
-## Transitions
+### Transitions
 ```
 transition create_employer_profile(
     employer_name_hash: field,
@@ -214,14 +193,14 @@ transition assert_profile_anchored(profile_anchor: [u8; 32])
 
 transition get_anchor_height(profile_anchor: [u8; 32]) -> u32
 ```
-## Functions
+### Functions
 ```
 function anchor_once(profile_anchor: [u8; 32])
 ```
 ---
-# payroll_audit_log.aleo
+## payroll_audit_log.aleo
 
-## Transitions
+### Transitions
 ```
 transition anchor_event(event_hash: [u8; 32])
 
@@ -229,15 +208,15 @@ transition assert_event_anchored(event_hash: [u8; 32])
 
 transition get_event_height(event_hash: [u8; 32]) -> u32
 ```
-##Functions
+### Functions
 ```
 function anchor_unique(event_hash: [u8; 32])
 ```
 
 ---
-# payroll_core.aleo
+## payroll_core.aleo
 
-## Transitions
+### Transitions
 ```
 transition execute_payroll(
     employer_usdcx: test_usdcx_stablecoin.Record,
@@ -263,9 +242,9 @@ transition execute_payroll(
 )
 ```
 
-# paystub_receipts.aleo
+## paystub_receipts.aleo
 
-## Transitions
+### Transitions
 ```
 transition mint_paystub_receipts(
     worker_owner: address,
@@ -305,16 +284,16 @@ transition assert_receipt_anchored(receipt_anchor: [u8; 32])
 
 transition get_anchor_height(receipt_anchor: [u8; 32]) -> u32
 ```
-## Functions
+### Functions
 ```
 function anchor_unique(receipt_anchor: [u8; 32])
 ```
 
 ---
 
-# pnw_name_registry.aleo
+## pnw_name_registry.aleo
 
-## Transitions
+### Transitions
 ```
 async transition register_worker_name(name_hash: field, fee_amount: u128) -> Future
 
@@ -328,7 +307,7 @@ async transition fulfill_employer_sellback(name_hash: field) -> Future
 
 transition assert_is_owner(name_hash: field, owner: address)
 ```
-## Functions
+### Functions
 ```
 function is_valid_suffix(code: u8) -> bool
 
@@ -350,9 +329,9 @@ async function finalize_register_employer(
 
 ---
 
-# pnw_router.aleo
+## pnw_router.aleo
 
-## Transitions
+### Transitions
 ```
 transition create_job_offer(
     agreement_id: [u8; 32],
