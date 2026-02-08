@@ -6,6 +6,8 @@ pnw_mvp_v2/
 │
 ├─ src/
 │  ├─ layer1/✔️                            # Canonical on-chain business logic (private receipts + public anchors)
+│  │  ├─ README.md✔️
+│  │  ├─ LAYER1_INTERFACE.md✔️
 │  │  ├─ pnw_router.aleo/✔️                # Orchestrates layer1 workflows (no analytics)
 │  │  │  ├─ README.md✔️
 │  │  │  ├─ main.leo✔️
