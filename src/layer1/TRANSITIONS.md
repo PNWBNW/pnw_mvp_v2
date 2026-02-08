@@ -133,3 +133,19 @@ function assert_is_dao()
 ```
 
 ---
+
+## employer_license_registry.aleo
+
+### Transitions
+```text
+transition set_verified(wallet: address, license_hash: [u8; 32], verified: bool)
+async transition assert_verified(wallet: address) -> Future
+transition get_license_hash(wallet: address) -> [u8; 32]
+```
+Functions
+```
+async function do_assert_verified(wallet: address) -> Future
+```
+
+---
+
