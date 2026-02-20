@@ -32,6 +32,21 @@ without changing workflows or routers.
 
 ---
 
+### `workflows/`
+Planning-only workflow definitions that describe end-to-end intent.
+
+- `payroll_workflow.ts`
+  - declares required payroll inputs
+  - defines canonical step ordering
+  - returns stable outputs (anchors/hashes) for downstream stages
+- `audit_workflow.ts`
+  - models authorization scope and audit anchoring plans
+  - returns stable authorization outputs for downstream checks
+
+Workflows do not execute transactions; they produce deterministic plans consumed by routers/adapters.
+
+---
+
 ### `router/`
 Declarative routers that map **intent → ordered actions**.
 
