@@ -15,3 +15,8 @@ Workflows describe **intent and ordering** only, then hand plans to routers/adap
   - validates workflow-level ordering
   - returns deterministic Layer 1 call plan
   - exposes reusable output anchors/hashes for downstream reporting/NFT flows
+
+- `audit_workflow.ts` — canonical audit authorization flow planning
+  - models authorization request + scope commitment
+  - supports batched anchoring by composing multiple planned steps
+  - includes optional expiry metadata for downstream enforcement
