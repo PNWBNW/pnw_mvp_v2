@@ -197,4 +197,4 @@ Portal (this folder):
 
 Layer 2:
 - Mints commitment-only payroll NFTs
-- Enables selective, permissioned disclosure
+- Enables selective, permissioned disclosure (employee/employer controlled: share only selected fields/proofs)

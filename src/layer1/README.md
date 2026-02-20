@@ -9,7 +9,7 @@ Layer 1 contains the **canonical on-chain programs** for PNW MVP v2. These progr
 - **`worker_profiles.aleo`** — private worker profile records + anchor utilities (existence/height).
 - **`employer_profiles.aleo`** — private employer profile records + anchor utilities (existence/height).
 - **`employer_agreement.aleo`** — employment agreement lifecycle (offer → acceptance → active/pause/terminate/resume) with anchored agreement IDs.
-- **`payroll_core.aleo`** — payroll settlement using **USDCx records**; consumes employer USDCx and outputs worker USDCx; issues paystub receipts; anchors audit events.
+- **`payroll_core.aleo`** — payroll settlement using **private USDCx records** via `transfer_private`; consumes employer USDCx and outputs worker USDCx as private records; issues paystub receipts; anchors audit events.
 - **`paystub_receipts.aleo`** — private paystub receipt minting (worker + employer receipts) and reversal/correction receipts; anchor utilities.
 - **`payroll_audit_log.aleo`** — minimal hash-only audit anchoring and height lookup for payroll events.
 - **`pnw_router.aleo`** — Layer 1 orchestration surface for the Portal (routes common workflows across Layer 1 programs).
@@ -17,4 +17,5 @@ Layer 1 contains the **canonical on-chain programs** for PNW MVP v2. These progr
 
 ## Notes
 - Layer 1 programs are the **source of truth** for settlement and eligibility.
+- Payroll monetary movement is private-by-default (record-to-record), while public state is limited to commitment anchors and status mappings.
 - Aggregation, reporting, and NFT minting are handled outside Layer 1 (Portal + Layer 2), using deterministic encodings and commitment anchors.
