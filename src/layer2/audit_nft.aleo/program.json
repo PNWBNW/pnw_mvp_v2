@@ -1,0 +1,9 @@
+{
+  "program": "audit_nft.aleo",
+  "version": "0.1.0",
+  "description": "Layer 2 (on-chain) audit authorization NFTs for PNW MVP v2. Supports mint/revoke/expiry status and attestation hash anchoring bound to active authorizations.",
+  "license": "PROPRIETARY",
+  "dependencies": {
+    "payroll_audit_log.aleo": "../layer1/payroll_audit_log.aleo"
+  }
+}
