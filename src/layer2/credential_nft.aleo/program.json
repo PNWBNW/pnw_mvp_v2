@@ -1,0 +1,7 @@
+{
+  "program": "credential_nft.aleo",
+  "version": "0.1.0",
+  "description": "Layer 2 (on-chain) credential NFTs for PNW MVP v2. Mints revocable, commitment-only credential artifacts with scope anchoring and public status/height verification utilities.",
+  "license": "PROPRIETARY",
+  "dependencies": {}
+}
