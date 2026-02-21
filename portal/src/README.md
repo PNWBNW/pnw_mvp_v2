@@ -19,6 +19,26 @@ The Portal is responsible for:
 
 The Portal **plans and proves** — it does not act as a source of truth.
 
+### How the Portal operates (human narrative)
+Think of the Portal as a deterministic coordinator with four responsibilities:
+
+1. **Understand intent**
+   - Workflows describe business intent in human-readable, ordered steps.
+
+2. **Translate intent into callable plans**
+   - Routers transform workflow intent into typed `CallPlanStep[]` actions.
+
+3. **Attach cryptographic commitments**
+   - Commitments modules produce hashes/roots so off-chain artifacts stay verifiable.
+
+4. **Hand execution to adapters (later phase)**
+   - Adapters are the only place where signing/broadcasting happens.
+
+Why this separation exists:
+- It keeps privacy assumptions explicit.
+- It makes reviews easier (intent vs execution are separate concerns).
+- It lowers onboarding cost for new contributors.
+
 ---
 
 ## Directory Overview
@@ -29,6 +49,23 @@ Execution adapters that translate planned actions into concrete calls
 
 Adapters are intentionally isolated so execution logic can be swapped
 without changing workflows or routers.
+
+---
+
+### `workflows/`
+Planning-only workflow definitions that describe end-to-end intent.
+
+- `payroll_workflow.ts`
+  - declares required payroll inputs
+  - defines canonical step ordering
+  - returns stable outputs (anchors/hashes) for downstream stages
+- `audit_workflow.ts`
+  - models authorization scope and audit anchoring plans
+  - returns stable authorization outputs for downstream checks
+
+Workflows do not execute transactions; they produce deterministic plans consumed by routers/adapters.
+
+If you are new to the repo, start with `workflows/` first, then `router/`, then `adapters/`. That order mirrors how the system is designed to be understood.
 
 ---
 
