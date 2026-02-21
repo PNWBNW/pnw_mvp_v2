@@ -241,6 +241,10 @@ function anchor_unique(event_hash: [u8; 32])
 ---
 ## payroll_core.aleo
 
+### Settlement semantics
+- `execute_payroll` performs employer→worker USDCx movement using the private record path (`transfer_private`).
+- Returned USDCx output record and paystub receipts are private records; no plaintext wages are emitted publicly.
+
 ### Transitions
 ```
 transition execute_payroll(

@@ -5,7 +5,7 @@
 `payroll_core.aleo` is the **canonical Layer 1 payroll execution engine** for PNW MVP v2.
 
 It is responsible for:
-- settling payroll using USDCx records
+- settling payroll using private USDCx records
 - enforcing agreement and eligibility constraints
 - issuing private paystub receipts
 - anchoring audit events on-chain
@@ -26,7 +26,7 @@ The program:
 - does **not** track histories in mappings
 - does **not** expose wages, identities, or terms publicly
 
-It consumes records and produces records only.
+It consumes private records and produces private records only.
 
 ### 3. Privacy by Construction
 All sensitive data:
@@ -62,7 +62,7 @@ All hashes are computed **off-chain** by the portal using canonical encoding.
 On successful execution, the program produces:
 
 1. **Worker USDCx Record**
-   - containing the net pay amount
+   - containing the net pay amount via `transfer_private`
    - owned by the worker
 
 2. **Worker Paystub Receipt (private record)**

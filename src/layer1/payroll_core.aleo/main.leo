@@ -85,7 +85,7 @@ program payroll_core.aleo {
         // Execute USDCx transfer (employer -> worker)
         // -----------------------------------------------------
         let (worker_usdcx, remaining_usdcx) =
-            test_usdcx_stablecoin.transfer(
+            test_usdcx_stablecoin.transfer_private(
                 employer_usdcx,
                 worker_addr,
                 net_amount
