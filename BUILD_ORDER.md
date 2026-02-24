@@ -78,42 +78,47 @@ Finalize on-chain NFT primitives used by workflows.
 
 ---
 
-## Current Gap Snapshot (post-Phase 2 review)
+## Current Gap Snapshot (rolled into Phase 3)
 
-The architecture and core primitives are now in place, but the following items were identified while reviewing the repo end-to-end:
+The architecture and core primitives are now in place. Remaining gap items are now treated as **Phase 3 completion criteria** so we do not jump ahead into Phase 4 prematurely:
 
-1. **Layer 2 router skeleton is now in place**
-   - `portal/src/router/layer2_router.ts` exists and mirrors the Layer 1 planning approach.
-   - Next: wire a concrete Layer 2 execution adapter in Phase 4.
-2. **Portal shared type contracts now exist**
-   - `portal/src/types/aleo_types.ts`
-   - `portal/src/types/aleo_records.ts`
-   - Next: harden these contracts against real adapter outputs during integration.
-3. **No adapter execution path yet (as expected pre-Phase 4)**
-   - Planning interfaces exist, but no CLI/wallet execution backend is wired.
-4. **No testnet validation pass yet (as expected pre-Phase 5)**
-   - Deployment + happy-path validation remains pending.
+1. **Stabilize Layer 2 routing surface**
+   - Confirm `portal/src/router/layer2_router.ts` step coverage against all Layer 2 transitions.
+   - Freeze planner shape for downstream adapter implementation.
+2. **Harden shared portal type contracts**
+   - Validate/refine `portal/src/types/aleo_types.ts` and `portal/src/types/aleo_records.ts` against real adapter payload expectations.
+   - Ensure no ambiguous scalar/record typing remains in planning modules.
+3. **Add a minimal compile/typecheck gate for planning modules**
+   - Ensure router/workflow/type contracts are checked together before any Phase 4 execution work.
+4. **Keep execution/testing work deferred**
+   - Adapter execution remains Phase 4.
+   - Testnet validation remains Phase 5.
 
 ---
 
-## Phase 3 — Portal Layer 2 Routing
+## Phase 3 — Portal Layer 2 Routing (In Progress)
 
 ### Goal
 Provide the same planning abstraction for Layer 2 that already exists for Layer 1.
 
-### Recommended Steps
-1. Implement `portal/src/router/layer2_router.ts`
-2. Mirror the Layer 1 router philosophy:
+### Remaining Steps (to complete Phase 3)
+1. Finalize `portal/src/router/layer2_router.ts`
+   - Verify step/transition coverage and naming consistency.
+2. Mirror the Layer 1 router philosophy completely:
    - Plan, don’t execute
    - No program strings outside adapters
 3. Ensure Layer 2 router consumes:
    - Workflow outputs
    - Canonical hashes
    - Commitment roots
-4. Add/freeze shared type contracts used by routers/workflows:
+4. Harden/freeze shared type contracts used by routers/workflows:
    - `portal/src/types/aleo_types.ts`
    - `portal/src/types/aleo_records.ts`
 5. Add a minimal compile/typecheck gate for portal planning modules.
+6. Define explicit Phase 3 exit criteria:
+   - Router API stable
+   - Type contracts stable
+   - Planning modules pass typecheck
 
 ---
 
