@@ -3,8 +3,6 @@
 // Shared Aleo-flavored scalar types used by portal routers/workflows/adapters.
 // These are compile-time contracts only (planning layer), not runtime codecs.
 
-import type { Bytes32 as CommitmentBytes32 } from "../commitments/hash";
-
 // Core Aleo scalar aliases used across the planning layer.
 export type Field = string;
 export type Address = string;
@@ -16,7 +14,7 @@ export type U64 = bigint;
 export type U128 = bigint;
 
 // Keep a single bytes32 alias aligned with commitment modules.
-export type Bytes32 = CommitmentBytes32;
+export type Bytes32 = Uint8Array;
 
 // Optional light-weight guards for adapter boundaries.
 export function assertU32(value: number, label = "u32"): asserts value is U32 {

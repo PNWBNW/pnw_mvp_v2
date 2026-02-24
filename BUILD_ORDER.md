@@ -83,13 +83,13 @@ Finalize on-chain NFT primitives used by workflows.
 The architecture and core primitives are now in place. Remaining gap items are now treated as **Phase 3 completion criteria** so we do not jump ahead into Phase 4 prematurely:
 
 1. **Stabilize Layer 2 routing surface**
-   - Confirm `portal/src/router/layer2_router.ts` step coverage against all Layer 2 transitions.
-   - Freeze planner shape for downstream adapter implementation.
+   - ✅ `portal/src/router/layer2_router.ts` step coverage mapped for Layer 2 transitions.
+   - ✅ Program/transition strings moved to `portal/src/adapters/layer2_adapter.ts` to preserve planner-only router design.
 2. **Harden shared portal type contracts**
    - Validate/refine `portal/src/types/aleo_types.ts` and `portal/src/types/aleo_records.ts` against real adapter payload expectations.
    - Ensure no ambiguous scalar/record typing remains in planning modules.
 3. **Add a minimal compile/typecheck gate for planning modules**
-   - Ensure router/workflow/type contracts are checked together before any Phase 4 execution work.
+   - ✅ Added `portal/tsconfig.phase3.json` as a focused no-emit gate for Phase 3 planning contracts.
 4. **Keep execution/testing work deferred**
    - Adapter execution remains Phase 4.
    - Testnet validation remains Phase 5.
@@ -102,9 +102,9 @@ The architecture and core primitives are now in place. Remaining gap items are n
 Provide the same planning abstraction for Layer 2 that already exists for Layer 1.
 
 ### Remaining Steps (to complete Phase 3)
-1. Finalize `portal/src/router/layer2_router.ts`
-   - Verify step/transition coverage and naming consistency.
-2. Mirror the Layer 1 router philosophy completely:
+1. ✅ Finalize `portal/src/router/layer2_router.ts`
+   - Step/transition coverage and naming consistency reviewed.
+2. ✅ Mirror the Layer 1 router philosophy completely:
    - Plan, don’t execute
    - No program strings outside adapters
 3. Ensure Layer 2 router consumes:
@@ -114,7 +114,7 @@ Provide the same planning abstraction for Layer 2 that already exists for Layer 
 4. Harden/freeze shared type contracts used by routers/workflows:
    - `portal/src/types/aleo_types.ts`
    - `portal/src/types/aleo_records.ts`
-5. Add a minimal compile/typecheck gate for portal planning modules.
+5. ✅ Add a minimal compile/typecheck gate for portal planning modules (`portal/tsconfig.phase3.json`).
 6. Define explicit Phase 3 exit criteria:
    - Router API stable
    - Type contracts stable
