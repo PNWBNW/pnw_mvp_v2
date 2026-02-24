@@ -20,16 +20,16 @@ At this point, **architecture and intent are stable**.
 
 ---
 
-## Phase 1 — Portal Workflow Definition (Highest Priority)
+## Phase 1 — Portal Workflow Definition (Completed)
 
 > **Do not begin CLI, testnet, or execution work before this phase is complete.**
 
-### Goal
+### Goal (met)
 Define **canonical, end-to-end workflows** that describe *what happens*, without executing anything.
 
-### Recommended Steps
-1. Create `portal/src/workflows/`
-2. Implement:
+### Completed Scope
+1. Created `portal/src/workflows/`
+2. Implemented:
    - `payroll_workflow.ts`
      - Inputs required
      - Step ordering
@@ -41,7 +41,7 @@ Define **canonical, end-to-end workflows** that describe *what happens*, without
      - Scope definition
      - Batched anchoring model
      - Expiry handling
-4. (Optional) Add:
+4. Added optional workflows:
    - `onboarding_workflow.ts` (names + profiles)
    - `profile_update_workflow.ts`
 
@@ -51,47 +51,74 @@ Define **canonical, end-to-end workflows** that describe *what happens*, without
 - No wallet integration
 - No testnet
 
-This phase locks *intent*.
+✅ This phase now locks *intent*.
 
 ---
 
-## Phase 2 — Layer 2 On-Chain Programs
+## Phase 2 — Layer 2 On-Chain Programs (Completed)
 
-### Goal
+### Goal (met)
 Finalize on-chain NFT primitives used by workflows.
 
-### Recommended Steps
-1. Complete `credential_nft.aleo`
+### Completed Scope
+1. Completed `credential_nft.aleo`
    - Mint
    - Revoke
    - Scope anchoring
-2. Complete `audit_nft.aleo`
+2. Completed `audit_nft.aleo`
    - Authorization NFT
    - Expiry enforcement
    - Audit attestation anchoring
-3. Review `payroll_nfts.aleo`
+3. Reviewed and finalized `payroll_nfts.aleo`
    - Ensure compatibility with portal workflows
    - Confirm mint options (cycle, quarterly, YTD, EOY)
 
 **Outcome**
-All on-chain primitives required by workflows exist.
+✅ All on-chain primitives required by workflows exist.
 
 ---
 
-## Phase 3 — Portal Layer 2 Routing
+## Current Gap Snapshot (rolled into Phase 3)
+
+The architecture and core primitives are now in place. Remaining gap items are now treated as **Phase 3 completion criteria** so we do not jump ahead into Phase 4 prematurely:
+
+1. **Stabilize Layer 2 routing surface**
+   - Confirm `portal/src/router/layer2_router.ts` step coverage against all Layer 2 transitions.
+   - Freeze planner shape for downstream adapter implementation.
+2. **Harden shared portal type contracts**
+   - Validate/refine `portal/src/types/aleo_types.ts` and `portal/src/types/aleo_records.ts` against real adapter payload expectations.
+   - Ensure no ambiguous scalar/record typing remains in planning modules.
+3. **Add a minimal compile/typecheck gate for planning modules**
+   - Ensure router/workflow/type contracts are checked together before any Phase 4 execution work.
+4. **Keep execution/testing work deferred**
+   - Adapter execution remains Phase 4.
+   - Testnet validation remains Phase 5.
+
+---
+
+## Phase 3 — Portal Layer 2 Routing (In Progress)
 
 ### Goal
 Provide the same planning abstraction for Layer 2 that already exists for Layer 1.
 
-### Recommended Steps
-1. Implement `portal/src/router/layer2_router.ts`
-2. Mirror the Layer 1 router philosophy:
+### Remaining Steps (to complete Phase 3)
+1. Finalize `portal/src/router/layer2_router.ts`
+   - Verify step/transition coverage and naming consistency.
+2. Mirror the Layer 1 router philosophy completely:
    - Plan, don’t execute
    - No program strings outside adapters
 3. Ensure Layer 2 router consumes:
    - Workflow outputs
    - Canonical hashes
    - Commitment roots
+4. Harden/freeze shared type contracts used by routers/workflows:
+   - `portal/src/types/aleo_types.ts`
+   - `portal/src/types/aleo_records.ts`
+5. Add a minimal compile/typecheck gate for portal planning modules.
+6. Define explicit Phase 3 exit criteria:
+   - Router API stable
+   - Type contracts stable
+   - Planning modules pass typecheck
 
 ---
 
@@ -108,6 +135,7 @@ Turn planned workflows into actual transactions.
    - router steps → program + transition
 3. Add structured execution tracing
 4. Keep adapter logic isolated and swappable
+5. Add explicit error taxonomy + retry policy for recoverable failures.
 
 ---
 
@@ -118,13 +146,15 @@ Confirm correctness, not performance.
 
 ### Recommended Steps
 1. Deploy Layer 1 programs to testnet
-2. Run a single happy-path payroll flow
-3. Verify:
+2. Deploy Layer 2 NFT programs to testnet
+3. Run a single happy-path payroll flow
+4. Verify:
    - USDCx movement
    - Receipt issuance
    - Audit anchor creation
-4. Mint a payroll NFT from real receipts
-5. Perform a minimal audit authorization flow
+5. Mint a payroll NFT from real receipts
+6. Perform a minimal audit authorization flow
+7. Execute one negative-path check per critical invariant (revoke, expired auth, duplicate anchor).
 
 No stress tests yet.
 
@@ -141,6 +171,8 @@ Prepare for additional contributors and real users.
 - Tighten adapter error handling
 - Finalize root README and diagrams
 - Add contribution guidelines
+- Add release checklist (version pinning, deployment manifests, rollback notes)
+- Add security review checklist for commitment encoding and disclosure boundaries
 
 ---
 
