@@ -82,14 +82,15 @@ Finalize on-chain NFT primitives used by workflows.
 
 The architecture and core primitives are now in place, but the following items were identified while reviewing the repo end-to-end:
 
-1. **Layer 2 router implementation is still missing**
-   - `portal/src/router/layer2_router.ts` does not yet exist.
-2. **Portal type contract files referenced by imports are missing**
+1. **Layer 2 router skeleton is now in place**
+   - `portal/src/router/layer2_router.ts` exists and mirrors the Layer 1 planning approach.
+   - Next: wire a concrete Layer 2 execution adapter in Phase 4.
+2. **Portal shared type contracts now exist**
    - `portal/src/types/aleo_types.ts`
    - `portal/src/types/aleo_records.ts`
-   - These are imported by `layer1_router.ts` and `audit_workflow.ts`, so Phase 3 should include creating/stabilizing these shared type definitions.
+   - Next: harden these contracts against real adapter outputs during integration.
 3. **No adapter execution path yet (as expected pre-Phase 4)**
-   - Only planning interfaces currently exist.
+   - Planning interfaces exist, but no CLI/wallet execution backend is wired.
 4. **No testnet validation pass yet (as expected pre-Phase 5)**
    - Deployment + happy-path validation remains pending.
 
