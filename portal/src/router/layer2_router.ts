@@ -231,6 +231,62 @@ export class Layer2Router {
     return [...steps];
   }
 
+  /**
+   * Stable helper APIs (Phase 3 freeze):
+   * - Keep raw plan/planMany for advanced composition.
+   * - Provide intent helpers for common UI opportunities.
+   */
+  planMintCycleNft(args: Extract<Layer2CallPlanStep, { kind: "mint_cycle_nft" }>['args']): Layer2CallPlanStep[] {
+    return [{ kind: "mint_cycle_nft", args }];
+  }
+
+  planMintQuarterNft(args: Extract<Layer2CallPlanStep, { kind: "mint_quarter_nft" }>['args']): Layer2CallPlanStep[] {
+    return [{ kind: "mint_quarter_nft", args }];
+  }
+
+  planMintYtdNft(args: Extract<Layer2CallPlanStep, { kind: "mint_ytd_nft" }>['args']): Layer2CallPlanStep[] {
+    return [{ kind: "mint_ytd_nft", args }];
+  }
+
+  planMintEoyNft(args: Extract<Layer2CallPlanStep, { kind: "mint_eoy_nft" }>['args']): Layer2CallPlanStep[] {
+    return [{ kind: "mint_eoy_nft", args }];
+  }
+
+  planVerifyPayrollNft(nft_id: Bytes32): Layer2CallPlanStep[] {
+    return [
+      { kind: "assert_payroll_nft_exists", nft_id },
+      { kind: "get_payroll_nft_status", nft_id },
+      { kind: "get_payroll_nft_anchor_height", nft_id },
+    ];
+  }
+
+  planVerifyCredential(credential_id: Bytes32, scope_hash?: Bytes32): Layer2CallPlanStep[] {
+    const plan: Layer2CallPlanStep[] = [
+      { kind: "assert_credential_exists", credential_id },
+      { kind: "get_credential_status", credential_id },
+      { kind: "get_credential_anchor_height", credential_id },
+    ];
+
+    if (scope_hash !== undefined) {
+      plan.push(
+        { kind: "assert_scope_anchored", scope_hash },
+        { kind: "get_scope_anchor_height", scope_hash },
+      );
+    }
+
+    return plan;
+  }
+
+  planVerifyAuthorization(auth_id: Bytes32, current_epoch: U32): Layer2CallPlanStep[] {
+    return [
+      { kind: "assert_authorization_exists", auth_id },
+      { kind: "assert_authorization_active", auth_id, current_epoch },
+      { kind: "get_authorization_status", auth_id },
+      { kind: "get_authorization_anchor_height", auth_id },
+      { kind: "get_authorization_expiry", auth_id },
+    ];
+  }
+
   async execute(plan: Layer2CallPlanStep[]): Promise<Layer2CallPlanResult> {
     return this.adapter.executePlan(this.network, plan);
   }
