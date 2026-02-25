@@ -226,26 +226,18 @@ This README section is a **pause-point snapshot** after a full repo pass (Layer 
 
 ---
 
-## Phase 3 Closeout — Nuanced Status
+## Phase 3 Status — Completed
 
-Phase 3 is **very close**, but based on the code/docs pass, treat it as “closeout mode” rather than fully closed.
+Phase 3 is complete. The canonical completion record is captured in:
+- `PHASE3_SIGNOFF.md`
+- `BUILD_ORDER.md` (Phase 3 marked completed)
 
-### Done
+### Completed closeout outcomes
 - Layer 2 call-plan step coverage and adapter endpoint mapping are implemented.
-- Planner contracts for Layer 2 are typed and compile-gated (`tsconfig.phase3.json`).
-- Router/adapters preserve planner-vs-execution string separation.
-
-### Remaining closeout items (recommended before Phase 4 PRs)
-1. **Freeze explicit Router API contracts**
-   - Finalize which router methods are considered stable public planning APIs (especially Layer 2 helpers vs raw `plan/planMany`).
-2. **Freeze shared scalar/record contract conventions**
-   - Confirm boundaries for `Bytes32`/numeric aliases and opaque record tagging semantics used across workflows/adapters.
-3. **Resolve small docs drift from project evolution**
-   - Example: comments that still read as “planned/pending build” for Layer 2 artifacts now implemented.
-4. **Define Phase 3 signoff checklist in-repo**
-   - Single checklist of “must-pass” gates before adapter execution PRs start.
-
-Once those four are checked, Phase 3 can be treated as formally complete.
+- Router API contract is frozen with stable helper methods plus raw `plan/planMany` for advanced composition.
+- Shared scalar/record type contract boundaries are fixed for planning modules.
+- Planner contracts are compile-gated (`portal/tsconfig.phase3.json`) and pass typecheck.
+- Phase 3 signoff checklist is committed in-repo.
 
 ---
 
@@ -284,7 +276,7 @@ Phase 4 is where many pieces come together. To reduce risk, start with a narrow,
 ## Immediate Pre-Phase-4 Checklist
 
 - [x] Phase 3 signoff checklist committed (API + types + compile gate).
-- [ ] Root and module docs aligned with actual implementation state.
+- [x] Root and module docs aligned with actual implementation state.
 - [ ] First adapter execution target picked (recommended: payroll happy-path only).
 - [ ] Logging and error envelope format agreed before implementation.
 
