@@ -283,7 +283,7 @@ Phase 4 is where many pieces come together. To reduce risk, start with a narrow,
 
 ## Immediate Pre-Phase-4 Checklist
 
-- [ ] Phase 3 signoff checklist committed (API + types + compile gate).
+- [x] Phase 3 signoff checklist committed (API + types + compile gate).
 - [ ] Root and module docs aligned with actual implementation state.
 - [ ] First adapter execution target picked (recommended: payroll happy-path only).
 - [ ] Logging and error envelope format agreed before implementation.
