@@ -197,9 +197,99 @@ Current priorities:
 - minimal on-chain surface area
 - long-term extensibility
 
+---
+
+## Repository Audit Snapshot (Pre-Phase 4)
+
+This README section is a **pause-point snapshot** after a full repo pass (Layer 1, Layer 2, Portal planners/adapters, and module READMEs) so we can align before adapter execution work.
+
+### What is implemented and stable
+
+**Layer 1 (on-chain canonical programs) is broadly complete and cohesive:**
+- Identity + eligibility surfaces exist (`pnw_name_registry`, `employer_license_registry`).
+- Private profile record flows exist (worker + employer create/update + anchors).
+- Agreement lifecycle is implemented (offer, accept, pause, terminate, staged resume, supersede).
+- Payroll settlement path is implemented in `payroll_core.aleo` with private USDCx movement and anchor outputs.
+- Receipt minting/anchoring and audit-event anchoring primitives are present.
+- A protocol router (`pnw_router.aleo`) exists for orchestrated Layer 1 entrypoints.
+
+**Layer 2 on-chain NFT primitives are implemented:**
+- `payroll_nfts.aleo` (cycle/quarterly/YTD/EOY + revoke + supersede).
+- `credential_nft.aleo` (mint/revoke + scope anchoring).
+- `audit_nft.aleo` (authorization lifecycle + expiry + attestation anchoring).
+
+**Portal planning stack is in place:**
+- Workflow definitions are present for payroll, audit, onboarding, and profile updates.
+- Layer 1 + Layer 2 router plan surfaces are implemented.
+- Program/transition mapping is centralized in adapter mapping modules.
+- Commitment toolkit and payroll normalization/building pipeline are present.
+
+---
+
+## Phase 3 Closeout — Nuanced Status
+
+Phase 3 is **very close**, but based on the code/docs pass, treat it as “closeout mode” rather than fully closed.
+
+### Done
+- Layer 2 call-plan step coverage and adapter endpoint mapping are implemented.
+- Planner contracts for Layer 2 are typed and compile-gated (`tsconfig.phase3.json`).
+- Router/adapters preserve planner-vs-execution string separation.
+
+### Remaining closeout items (recommended before Phase 4 PRs)
+1. **Freeze explicit Router API contracts**
+   - Finalize which router methods are considered stable public planning APIs (especially Layer 2 helpers vs raw `plan/planMany`).
+2. **Freeze shared scalar/record contract conventions**
+   - Confirm boundaries for `Bytes32`/numeric aliases and opaque record tagging semantics used across workflows/adapters.
+3. **Resolve small docs drift from project evolution**
+   - Example: comments that still read as “planned/pending build” for Layer 2 artifacts now implemented.
+4. **Define Phase 3 signoff checklist in-repo**
+   - Single checklist of “must-pass” gates before adapter execution PRs start.
+
+Once those four are checked, Phase 3 can be treated as formally complete.
+
+---
+
+## Phase 4 Start Plan (Step-by-Step)
+
+Phase 4 is where many pieces come together. To reduce risk, start with a narrow, testable execution spine.
+
+1. **Adapter execution scaffold PR**
+   - Implement one concrete execution backend shape (CLI-first), preserving adapter isolation.
+   - No workflow changes in this step.
+
+2. **Router-step → transaction binding PR**
+   - Wire deterministic translation from planned steps to executable calls using existing endpoint resolvers.
+   - Add structured per-step execution result envelopes.
+
+3. **Error taxonomy + retry policy PR**
+   - Introduce explicit categories (validation, network, signer, chain rejection, transient).
+   - Add retry policy only for recoverable/transient categories.
+
+4. **Observability/tracing PR**
+   - Add deterministic trace IDs tied to workflow outputs (agreement/epoch/anchors/hashes).
+   - Ensure logs avoid plaintext sensitive payroll payloads.
+
+5. **Thin end-to-end happy-path PR (local/testnet-ready harness)**
+   - Execute one payroll flow through planner → adapter interface (without broad feature expansion).
+   - Keep scope intentionally minimal to validate architecture seam quality.
+
+### Phase 4 guardrails
+- Keep workflows planning-only.
+- Keep program/transition strings centralized in adapters.
+- Avoid re-opening commitment encoding or Layer 1 protocol design unless a blocking defect is found.
+- Prefer small, sequence-safe PRs over one large integration PR.
+
+---
+
+## Immediate Pre-Phase-4 Checklist
+
+- [ ] Phase 3 signoff checklist committed (API + types + compile gate).
+- [ ] Root and module docs aligned with actual implementation state.
+- [ ] First adapter execution target picked (recommended: payroll happy-path only).
+- [ ] Logging and error envelope format agreed before implementation.
+
 
 ## License
 
 This repository and all contained programs are **PROPRIETARY**.  
 No rights are granted for reuse, redistribution, or deployment without explicit authorization.
-
