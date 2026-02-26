@@ -96,29 +96,30 @@ The architecture and core primitives are now in place. Remaining gap items are n
 
 ---
 
-## Phase 3 — Portal Layer 2 Routing (In Progress)
+## Phase 3 — Portal Layer 2 Routing (Completed)
 
 ### Goal
 Provide the same planning abstraction for Layer 2 that already exists for Layer 1.
 
-### Remaining Steps (to complete Phase 3)
+### Completed Steps
 1. ✅ Finalize `portal/src/router/layer2_router.ts`
    - Step/transition coverage and naming consistency reviewed.
 2. ✅ Mirror the Layer 1 router philosophy completely:
    - Plan, don’t execute
    - No program strings outside adapters
-3. Ensure Layer 2 router consumes:
+3. ✅ Ensure Layer 2 router consumes:
    - Workflow outputs
    - Canonical hashes
    - Commitment roots
-4. Harden/freeze shared type contracts used by routers/workflows:
+4. ✅ Harden/freeze shared type contracts used by routers/workflows:
    - `portal/src/types/aleo_types.ts`
    - `portal/src/types/aleo_records.ts`
 5. ✅ Add a minimal compile/typecheck gate for portal planning modules (`portal/tsconfig.phase3.json`).
-6. Define explicit Phase 3 exit criteria:
+6. ✅ Define and capture explicit Phase 3 exit criteria:
    - Router API stable
    - Type contracts stable
    - Planning modules pass typecheck
+   - Signoff checklist committed (`PHASE3_SIGNOFF.md`)
 
 ---
 
