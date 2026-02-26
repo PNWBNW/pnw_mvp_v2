@@ -3,6 +3,7 @@ pnw_mvp_v2/
 ├─ ARCHITECTURE.md                         # Deep technical architecture, trust/privacy model, and layering rationale
 ├─ BUILD_ORDER.md                          # Recommended phase sequencing and implementation order
 ├─ PHASE3_SIGNOFF.md                       # Formal Phase 3 completion checklist and guardrails
+├─ PHASE4_CLI_SETUP.md                     # Phase 4 CLI pin/verification guide for Provable tools
 ├─ LICENSE.md                              # Proprietary license terms
 ├─ directory                               # This repo map with per-file notes
 │
@@ -71,7 +72,7 @@ pnw_mvp_v2/
 │        ├─ main.leo                       # Authorization mint/revoke/expiry + audit attestation anchor transitions
 │        └─ program.json                   # Program manifest/config for audit NFTs
 │
-└─ portal/
+├─ portal/
    ├─ tsconfig.phase3.json                 # Focused no-emit typecheck gate for Phase 3 planning surfaces
    └─ src/
       ├─ README.md                         # Portal architecture and folder responsibilities
@@ -117,3 +118,7 @@ pnw_mvp_v2/
       └─ adapters/
          ├─ layer1_adapter.ts              # Layer 1 step→program/transition endpoint resolver contract
          └─ layer2_adapter.ts              # Layer 2 step→program/transition endpoint resolver contract
+
+├─ scripts/
+│  ├─ resolve_provable_cli_latest.sh       # Helper to query latest ProvableHQ release tags (leo/snarkOS)
+│  └─ verify_provable_cli.sh               # Local readiness check for leo/snarkos command availability
