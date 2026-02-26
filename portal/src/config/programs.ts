@@ -34,8 +34,8 @@ export type ProgramRegistry = {
 
   // Layer 2 (commitment NFTs)
   PAYROLL_NFTS: ProgramRef;
-  CREDENTIAL_NFT: ProgramRef; // planned / pending build
-  AUDIT_NFT: ProgramRef;      // planned / pending build
+  CREDENTIAL_NFT: ProgramRef;
+  AUDIT_NFT: ProgramRef;
 };
 
 function usdcxProgramName(net: Network): string {
