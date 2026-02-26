@@ -6,6 +6,9 @@ pnw_mvp_v2/
 ├─ PHASE4_CLI_SETUP.md                     # Phase 4 CLI pin/verification guide for Provable tools
 ├─ LICENSE.md                              # Proprietary license terms
 ├─ directory                               # This repo map with per-file notes
+├─ .github/
+│  └─ workflows/
+│     └─ deploy.yml                        # Phase 4 bootstrap workflow (pinned CLI + typecheck gates)
 │
 ├─ src/
 │  ├─ layer1/
@@ -74,6 +77,7 @@ pnw_mvp_v2/
 │
 ├─ portal/
    ├─ tsconfig.phase3.json                 # Focused no-emit typecheck gate for Phase 3 planning surfaces
+   ├─ tsconfig.phase4.json                 # Focused no-emit typecheck gate for Phase 4 adapter scaffold
    └─ src/
       ├─ README.md                         # Portal architecture and folder responsibilities
       │
@@ -117,7 +121,8 @@ pnw_mvp_v2/
       │
       └─ adapters/
          ├─ layer1_adapter.ts              # Layer 1 step→program/transition endpoint resolver contract
-         └─ layer2_adapter.ts              # Layer 2 step→program/transition endpoint resolver contract
+         ├─ layer2_adapter.ts              # Layer 2 step→program/transition endpoint resolver contract
+         └─ aleo_cli_adapter.ts            # Phase 4 scaffold adapter (plan-only/execution-mode traces)
 
 ├─ scripts/
 │  ├─ resolve_provable_cli_latest.sh       # Helper to query latest ProvableHQ release tags (leo/snarkOS)
