@@ -1,115 +1,129 @@
 pnw_mvp_v2/
-├─ README.md✔️
-├─ ARCHITECTURE.md✔️
-├─ .gitignore
-├─ .env.example
+├─ README.md                               # Project overview, architecture summary, phase status, and Phase 4 plan
+├─ ARCHITECTURE.md                         # Deep technical architecture, trust/privacy model, and layering rationale
+├─ BUILD_ORDER.md                          # Recommended phase sequencing and implementation order
+├─ PHASE3_SIGNOFF.md                       # Formal Phase 3 completion checklist and guardrails
+├─ PHASE4_CLI_SETUP.md                     # Phase 4 CLI pin/verification guide for Provable tools
+├─ LICENSE.md                              # Proprietary license terms
+├─ directory                               # This repo map with per-file notes
+├─ .github/
+│  └─ workflows/
+│     └─ deploy.yml                        # Phase 4 bootstrap workflow (pinned CLI + typecheck gates)
 │
 ├─ src/
-│  ├─ layer1/✔️                            # Canonical on-chain business logic (private receipts + public anchors)
-│  │  ├─ README.md✔️
-│  │  ├─ LAYER1_INTERFACE.md✔️
-│  │  ├─ pnw_router.aleo/✔️                # Orchestrates layer1 workflows (no analytics)
-│  │  │  ├─ README.md✔️
-│  │  │  ├─ main.leo✔️
-│  │  │  └─ program.json✔️
+│  ├─ layer1/
+│  │  ├─ README.md                         # Layer 1 program index and canonical responsibilities
+│  │  ├─ LAYER1_INTERFACE.md               # Frozen Layer 1 callable surface (records/transitions/functions)
 │  │  │
-│  │  ├─ employer_license_registry.aleo/✔️              
-│  │  │  ├─ README.md✔️
-│  │  │  ├─ main.leo✔️
-│  │  │  └─ program.json✔️
+│  │  ├─ pnw_router.aleo/
+│  │  │  ├─ README.md                      # Router-level narrative and scope
+│  │  │  ├─ main.leo                       # On-chain orchestration entrypoints for key Layer 1 flows
+│  │  │  └─ program.json                   # Program manifest/config for pnw_router
 │  │  │
-│  │  ├─ pnw_name_registry.aleo/✔️         # .pnw naming registry (hashed identifiers only)
-│  │  │  ├─ README.md✔️
-│  │  │  ├─ main.leo✔️
-│  │  │  └─ program.json✔️
+│  │  ├─ pnw_name_registry.aleo/
+│  │  │  ├─ README.md                      # `.pnw` naming model and rules
+│  │  │  ├─ main.leo                       # Worker/employer name registration, ownership, sellback logic
+│  │  │  └─ program.json                   # Program manifest/config for name registry
 │  │  │
-│  │  ├─ worker_profiles.aleo/✔️           # Worker profile commitments + eligibility anchors
-│  │  │  ├─ README.md✔️
-│  │  │  ├─ main.leo✔️
-│  │  │  └─ program.json✔️
+│  │  ├─ employer_license_registry.aleo/
+│  │  │  ├─ README.md                      # Employer license verification gating model
+│  │  │  ├─ main.leo                       # Verified status + license hash assertions/lookups
+│  │  │  └─ program.json                   # Program manifest/config for employer license registry
 │  │  │
-│  │  ├─ employer_profiles.aleo/✔️         # Employer profile commitments + role anchors
-│  │  │  ├─ README.md✔️
-│  │  │  ├─ main.leo✔️
-│  │  │  └─ program.json✔️
+│  │  ├─ worker_profiles.aleo/
+│  │  │  ├─ README.md                      # Worker profile commitment model
+│  │  │  ├─ main.leo                       # Create/update worker profile records + profile anchor checks
+│  │  │  └─ program.json                   # Program manifest/config for worker profiles
 │  │  │
-│  │  ├─ employer_agreement.aleo/✔️        # Relationship / scope commitments (hashed)
-│  │  │  ├─ README.md✔️
-│  │  │  ├─ main.leo✔️
-│  │  │  └─ program.json✔️
+│  │  ├─ employer_profiles.aleo/
+│  │  │  ├─ README.md                      # Employer profile commitment model
+│  │  │  ├─ main.leo                       # Create/update employer profile records + profile anchor checks
+│  │  │  └─ program.json                   # Program manifest/config for employer profiles
 │  │  │
-│  │  ├─ payroll_core.aleo/✔️              # Executes payroll + mints private receipts (USDCx-native transfers)
-│  │  │  ├─ README.md✔️
-│  │  │  ├─ main.leo✔️
-│  │  │  └─ program.json✔️
+│  │  ├─ employer_agreement.aleo/
+│  │  │  ├─ README.md                      # Employment agreement lifecycle narrative
+│  │  │  ├─ main.leo                       # Offer/accept/pause/terminate/resume/supersede agreement transitions
+│  │  │  └─ program.json                   # Program manifest/config for employer agreement
 │  │  │
-│  │  ├─ paystub_receipts.aleo/✔️          # Private receipts (records) + minimal public anchors (hash index)
-│  │  │  ├─ README.md✔️
-│  │  │  ├─ main.leo✔️
-│  │  │  └─ program.json✔️
+│  │  ├─ payroll_core.aleo/
+│  │  │  ├─ README.md                      # Canonical payroll execution model (USDCx + anchors)
+│  │  │  ├─ main.leo                       # Execute payroll settlement + anti-double-pay guards + audit hash anchor
+│  │  │  └─ program.json                   # Program manifest/config for payroll core
 │  │  │
-│  │  └─ payroll_audit_log.aleo/✔️         # Hash-only log (event_hash -> bool/u32), immutable anchors
-│  │     ├─ README.md✔️
-│  │     ├─ main.leo✔️
-│  │     └─ program.json✔️
+│  │  ├─ paystub_receipts.aleo/
+│  │  │  ├─ README.md                      # Private paystub receipt minting and correction/reversal model
+│  │  │  ├─ main.leo                       # Worker/employer receipt records + receipt anchor mapping utilities
+│  │  │  └─ program.json                   # Program manifest/config for paystub receipts
+│  │  │
+│  │  └─ payroll_audit_log.aleo/
+│  │     ├─ main.leo                       # Minimal hash-only audit event anchoring + height lookups
+│  │     └─ program.json                   # Program manifest/config for payroll audit log
 │  │
-│  └─ layer2/                            # On-chain NFTs/records: commitments + permissions only (no payroll math)
-│     ├─ payroll_nfts.aleo/✔️              # Paystub/PayrollCycle/Invoice receipt NFTs (commitment objects)
-│     │  ├─ README.md✔️
-│     │  ├─ main.leo✔️
-│     │  └─ program.json✔️
+│  └─ layer2/
+│     ├─ payroll_nfts.aleo/
+│     │  ├─ README.md                      # Payroll NFT commitment model (cycle/quarterly/YTD/EOY)
+│     │  ├─ main.leo                       # Mint/revoke/supersede payroll NFTs + status/anchor utility transitions
+│     │  └─ program.json                   # Program manifest/config for payroll NFTs
 │     │
-│     ├─ credential_nft.aleo/            # Employer/Employment/Auditor credentials (capabilities + revocation)
-│     │  ├─ main.leo
-│     │  └─ program.json
+│     ├─ credential_nft.aleo/
+│     │  ├─ README.md                      # Credential NFT model for capability/authorization proofs
+│     │  ├─ main.leo                       # Mint/revoke credential NFTs + scope anchoring and status checks
+│     │  └─ program.json                   # Program manifest/config for credential NFTs
 │     │
-│     └─ audit_nft.aleo/                 # Audit authorization, audit report anchor, audit result attestation
-│        ├─ main.leo
-│        └─ program.json
+│     └─ audit_nft.aleo/
+│        ├─ README.md                      # Audit authorization NFT model and attestation anchoring
+│        ├─ main.leo                       # Authorization mint/revoke/expiry + audit attestation anchor transitions
+│        └─ program.json                   # Program manifest/config for audit NFTs
 │
-├─ portal/                               # Off-chain Layer 2 router + report builder (private aggregation)
-│  ├─ README.md
-│  ├─ package.json
-│  ├─ tsconfig.json
-│  ├─ src/
-│  │  ├─ config/
-│  │  │  ├─ README.md✔️
-│  │  │  ├─ env.ts✔️                       # reads .env, network selection, program IDs
-│  │  │  └─ programs.ts✔️                  # layer1 + layer2 program addresses/ids
-│  │  │
-│  │  ├─ router/
-│  │  │  ├─ layer1_router.ts✔️             # orchestrates on-chain actions (register, agreement, payroll)
-│  │  │  └─ layer2_router.ts             # builds summaries + mints NFTs (receipt/credential/audit)
-│  │  |
-│  │  ├─ adapter/
-│  │  │  ├─ layer1_adapter.ts✔️  
-│  │  │
-│  │  ├─ payroll/✔️
-│  │  │  ├─ README.md✔️
-│  │  │  ├─ types.ts✔️
-│  │  │  ├─ mint_payroll_nft.ts✔️
-│  │  │  ├─ summary_builder.ts✔️
-│  │  │  ├─ paystub_builder.ts✔️           # builds paystub doc + root + doc_hash + inputs_hash 
-│  │  │  ├─ normalize.ts✔️                 # canonical “base events” format
-│  │  │  └─ indexer.ts✔️                   # pulls anchors + receipts from chain
-│  │  │
-│  │  ├─ commitments/
-│  │  │  ├─ README.md✔️
-│  │  │  ├─ index.ts✔️
-│  │  │  ├─ canonical_encoder.ts✔️
-│  │  │  ├─ merkle.ts✔️                    # Merkle tree builder (deterministic)
-│  │  │  ├─ hash.ts✔️                      # domain-separated hashing helpers
-│  │  │  └─ token_id.ts✔️                  # deterministic token_id builder
-│  │  │
-│  │  └─ cli/
-│  │     ├─ run_payroll.ts               # example workflow runner (dev)
-│  │     ├─ mint_payroll_nft.ts
-│  │     └─ mint_audit_report.ts         # calls audit_nft.aleo
-│  │
-│  └─ testdata/
-│     └─ fixtures/                       # non-sensitive fixtures (no raw identities)
-│
-└─ scripts/
-   ├─ init_repo.sh                       # scaffolding helper
-   ├─ build_all.sh                       # build layer1 + layer2 programs
-   └─ deploy_order.md                    # deterministic deploy order notes
+├─ portal/
+   ├─ tsconfig.phase3.json                 # Focused no-emit typecheck gate for Phase 3 planning surfaces
+   ├─ tsconfig.phase4.json                 # Focused no-emit typecheck gate for Phase 4 adapter scaffold
+   └─ src/
+      ├─ README.md                         # Portal architecture and folder responsibilities
+      │
+      ├─ config/
+      │  ├─ README.md                      # Config philosophy and usage notes
+      │  ├─ env.ts                         # Env parsing/validation + network selection
+      │  └─ programs.ts                    # Program identifier registry by network
+      │
+      ├─ types/
+      │  ├─ aleo_types.ts                  # Shared scalar aliases/guards (Field, Address, U8/U16/U32/U64/U128)
+      │  ├─ aleo_records.ts                # Opaque record contracts used by planners/adapters
+      │  └─ node.d.ts                      # Minimal NodeJS process/env type shims for TS compile
+      │
+      ├─ commitments/
+      │  ├─ README.md                      # Commitments subsystem narrative and constraints
+      │  ├─ canonical_types.ts             # Canonical doc field/type contracts for encoding/commitments
+      │  ├─ canonical_encoder.ts           # Deterministic canonical encoding + commitment builder
+      │  ├─ hash.ts                        # Domain-separated BLAKE3 hashing utilities
+      │  ├─ merkle.ts                      # Deterministic Merkle tree construction helpers
+      │  └─ token_id.ts                    # Deterministic token ID derivation utilities
+      │
+      ├─ payroll/
+      │  ├─ README.md                      # Payroll aggregation pipeline overview (normalize → summarize → mint prep)
+      │  ├─ types.ts                       # Payroll domain types/contracts for normalized and indexed data
+      │  ├─ normalize.ts                   # Receipt normalization into deterministic base events
+      │  ├─ indexer.ts                     # Deterministic grouping/sorting/indexing of normalized events
+      │  ├─ paystub_builder.ts             # Canonical single-payroll paystub document construction
+      │  ├─ summary_builder.ts             # Canonical quarterly/YTD/EOY summary document construction
+      │  └─ mint_payroll_nfts.ts           # Build deterministic Layer 2 payroll NFT mint payloads (planning only)
+      │
+      ├─ workflows/
+      │  ├─ README.md                      # Planning-only workflow narratives and constraints
+      │  ├─ payroll_workflow.ts            # Canonical payroll workflow planner (prechecks + execute_payroll)
+      │  ├─ audit_workflow.ts              # Audit authorization workflow planner and outputs
+      │  ├─ onboarding_workflow.ts         # Worker/employer onboarding workflow planners
+      │  └─ profile_update_workflow.ts     # Worker/employer profile update workflow planners
+      │
+      ├─ router/
+      │  ├─ layer1_router.ts               # Typed Layer 1 call-plan surface + adapter execution handoff
+      │  └─ layer2_router.ts               # Typed Layer 2 call-plan surface + stable helper planners
+      │
+      └─ adapters/
+         ├─ layer1_adapter.ts              # Layer 1 step→program/transition endpoint resolver contract
+         ├─ layer2_adapter.ts              # Layer 2 step→program/transition endpoint resolver contract
+         └─ aleo_cli_adapter.ts            # Phase 4 scaffold adapter (plan-only/execution-mode traces)
+
+├─ scripts/
+│  ├─ resolve_provable_cli_latest.sh       # Helper to query latest ProvableHQ release tags (leo/snarkOS)
+│  └─ verify_provable_cli.sh               # Local readiness check for leo/aleo command availability + pin checks

@@ -1,0 +1,66 @@
+name: phase4-deploy-bootstrap
+
+on:
+  workflow_dispatch:
+    inputs:
+      run_mode:
+        description: "Execution mode (plan_only or execute)"
+        required: true
+        default: "plan_only"
+        type: choice
+        options:
+          - plan_only
+          - execute
+
+jobs:
+  phase4_bootstrap:
+    runs-on: ubuntu-latest
+    env:
+      LEO_VERSION: canary-v3.5.0
+      SNARKOS_VERSION: v4.4.0
+      LEO_URL: https://github.com/ProvableHQ/leo/releases/download/canary-v3.5.0/leo-canary-v3.5.0-x86_64-unknown-linux-gnu.zip
+      SNARKOS_URL: https://github.com/ProvableHQ/snarkOS/releases/download/v4.4.0/aleo-v4.4.0-x86_64-unknown-linux-gnu.zip
+      PHASE4_RUN_MODE: ${{ github.event.inputs.run_mode }}
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+
+      - name: Install Leo (pinned)
+        run: |
+          curl -fsSL "$LEO_URL" -o leo.zip
+          unzip -o leo.zip -d leo-bin
+          chmod +x leo-bin/leo
+          sudo mv leo-bin/leo /usr/local/bin/leo
+
+      - name: Install Aleo CLI from snarkOS release (pinned)
+        run: |
+          curl -fsSL "$SNARKOS_URL" -o snarkos.zip
+          unzip -o snarkos.zip -d snarkos-bin
+          chmod +x snarkos-bin/aleo
+          sudo mv snarkos-bin/aleo /usr/local/bin/aleo
+
+      - name: Verify pinned CLI versions
+        env:
+          SNARKOS_CLI_CMD: aleo
+        run: scripts/verify_provable_cli.sh
+
+      - name: Phase 3 planner gate
+        run: npx --yes tsc -p portal/tsconfig.phase3.json
+
+      - name: Phase 4 adapter scaffold gate
+        run: npx --yes tsc -p portal/tsconfig.phase4.json
+
+      - name: Record run mode
+        run: |
+          echo "PHASE4_RUN_MODE=$PHASE4_RUN_MODE"
+          if [ "$PHASE4_RUN_MODE" = "execute" ]; then
+            echo "NOTE: execute mode requested. Full transaction execution wiring is handled in subsequent Phase 4 PRs."
+          else
+            echo "Running in plan_only bootstrap mode."
+          fi
