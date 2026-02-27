@@ -197,6 +197,14 @@ Current priorities:
 - minimal on-chain surface area
 - long-term extensibility
 
+## Phase Planning References
+
+- Build sequence: [BUILD_ORDER.md](./BUILD_ORDER.md)
+- Phase 3 completion checklist: [PHASE3_SIGNOFF.md](./PHASE3_SIGNOFF.md)
+- Phase 4 CLI pin/setup guide: [PHASE4_CLI_SETUP.md](./PHASE4_CLI_SETUP.md)
+- Phase 4+ execution/testnet gameplan: [PHASE4_TESTNET_GAMEPLAN.md](./PHASE4_TESTNET_GAMEPLAN.md)
+- Thread-handoff context hub: [docs/context/README.md](./docs/context/README.md)
+
 ---
 
 ## Repository Audit Snapshot (Pre-Phase 4)
