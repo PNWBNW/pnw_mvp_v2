@@ -16,10 +16,10 @@ _Last updated: 2026-02-27_
 
 - [ ] Adapter executes real Aleo CLI commands via typed step->endpoint->codec mapping
 - [ ] Structured execution trace artifacts are emitted for every run
-- [ ] GitHub Actions split into:
-  - [ ] plan gate (PR-safe, no secrets)
-  - [ ] execute gate (manual + environment protected + secrets)
-- [ ] Environment/program manifest validation added before execute mode
+- [x] GitHub Actions split into:
+  - [x] plan gate (PR-safe, no secrets)
+  - [x] execute gate (manual + environment protected + secrets)
+- [x] Environment/program manifest validation added before execute mode
 
 ## Phase 5 Entry Requirements
 

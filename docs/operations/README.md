@@ -16,3 +16,8 @@ For thread continuity and action tracking, also review:
 - `../context/PHASE_TRACKER.md`
 - `../context/NEXT_ACTIONS.md`
 - `../context/DECISIONS_LOG.md`
+## Supporting config/scripts
+
+- `../../config/testnet.manifest.json` — canonical testnet program-ID manifest for execute workflows.
+- `../../scripts/validate_testnet_manifest.py` — manifest schema validator used by CI gates.
+- `../../scripts/require_phase4_execute_env.sh` — execute-mode env/secrets presence gate.
