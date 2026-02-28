@@ -1,6 +1,11 @@
-name: phase4-deploy-bootstrap
+name: phase4-gates
 
 on:
+  pull_request:
+  push:
+    branches:
+      - main
+      - work
   workflow_dispatch:
     inputs:
       run_mode:
@@ -13,14 +18,14 @@ on:
           - execute
 
 jobs:
-  phase4_bootstrap:
+  plan_gate:
+    name: plan_gate
     runs-on: ubuntu-latest
     env:
       LEO_VERSION: canary-v3.5.0
       SNARKOS_VERSION: v4.4.0
       LEO_URL: https://github.com/ProvableHQ/leo/releases/download/canary-v3.5.0/leo-canary-v3.5.0-x86_64-unknown-linux-gnu.zip
       SNARKOS_URL: https://github.com/ProvableHQ/snarkOS/releases/download/v4.4.0/aleo-v4.4.0-x86_64-unknown-linux-gnu.zip
-      PHASE4_RUN_MODE: ${{ github.event.inputs.run_mode }}
 
     steps:
       - name: Checkout
@@ -54,11 +59,82 @@ jobs:
       - name: Phase 4 adapter scaffold gate
         run: npx --yes tsc -p portal/tsconfig.phase4.json
 
-      - name: Record run mode
+      - name: Validate testnet manifest schema
+        run: python3 scripts/validate_testnet_manifest.py config/testnet.manifest.json
+
+  execute_gate:
+    name: execute_gate
+    if: ${{ github.event_name == 'workflow_dispatch' && github.event.inputs.run_mode == 'execute' }}
+    runs-on: ubuntu-latest
+    needs: plan_gate
+    environment: testnet-staging
+    concurrency:
+      group: phase4-execute-${{ github.ref }}
+      cancel-in-progress: false
+    permissions:
+      contents: read
+      actions: read
+
+    env:
+      LEO_VERSION: canary-v3.5.0
+      SNARKOS_VERSION: v4.4.0
+      LEO_URL: https://github.com/ProvableHQ/leo/releases/download/canary-v3.5.0/leo-canary-v3.5.0-x86_64-unknown-linux-gnu.zip
+      SNARKOS_URL: https://github.com/ProvableHQ/snarkOS/releases/download/v4.4.0/aleo-v4.4.0-x86_64-unknown-linux-gnu.zip
+      PNW_NETWORK: testnet
+      MANIFEST_PATH: config/testnet.manifest.json
+      ALEO_PRIVATE_KEY: ${{ secrets.ALEO_PRIVATE_KEY }}
+      ALEO_VIEW_KEY: ${{ secrets.ALEO_VIEW_KEY }}
+      ALEO_ADDRESS: ${{ secrets.ALEO_ADDRESS }}
+      RPC_URL: ${{ secrets.RPC_URL }}
+      USDCX_PROGRAM_ID: ${{ secrets.USDCX_PROGRAM_ID }}
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+
+      - name: Install Leo (pinned)
         run: |
-          echo "PHASE4_RUN_MODE=$PHASE4_RUN_MODE"
-          if [ "$PHASE4_RUN_MODE" = "execute" ]; then
-            echo "NOTE: execute mode requested. Full transaction execution wiring is handled in subsequent Phase 4 PRs."
-          else
-            echo "Running in plan_only bootstrap mode."
-          fi
+          curl -fsSL "$LEO_URL" -o leo.zip
+          unzip -o leo.zip -d leo-bin
+          chmod +x leo-bin/leo
+          sudo mv leo-bin/leo /usr/local/bin/leo
+
+      - name: Install snarkOS CLI (pinned)
+        run: |
+          curl -fsSL "$SNARKOS_URL" -o snarkos.zip
+          unzip -o snarkos.zip -d snarkos-bin
+          chmod +x snarkos-bin/aleo
+          sudo mv snarkos-bin/aleo /usr/local/bin/snarkos
+
+      - name: Verify pinned CLI versions
+        run: scripts/verify_provable_cli.sh
+
+      - name: Validate testnet manifest schema
+        run: python3 scripts/validate_testnet_manifest.py "$MANIFEST_PATH"
+
+      - name: Require execute secrets and env
+        run: scripts/require_phase4_execute_env.sh
+
+      - name: Emit execute gate metadata
+        run: |
+          mkdir -p artifacts
+          cat > artifacts/execute_gate_metadata.json <<META
+          {
+            "network": "${PNW_NETWORK}",
+            "manifest_path": "${MANIFEST_PATH}",
+            "aleo_address": "${ALEO_ADDRESS}",
+            "rpc_url_present": true,
+            "run_mode": "execute"
+          }
+          META
+
+      - name: Upload execute gate metadata
+        uses: actions/upload-artifact@v4
+        with:
+          name: execute-gate-metadata
+          path: artifacts/execute_gate_metadata.json

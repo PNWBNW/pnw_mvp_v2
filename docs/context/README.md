@@ -17,6 +17,10 @@ Use this first when starting a new Codex thread.
 - `NEXT_ACTIONS.md`
   - Ordered implementation queue for upcoming PRs
   - Per-item acceptance checks
+- `PHASE4_EXECUTION_CHECKLIST.md`
+  - Operator-first Phase 4 sequence (CI split, secrets posture, manifest gate, first testnet run)
+- `../operations/README.md`
+  - Single index for root-level operational docs (build order, signoff, CLI setup, testnet gameplan)
 - `THREAD_HANDOFF_TEMPLATE.md`
   - Copy/paste template for opening a new thread with minimal context loss
 

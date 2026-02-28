@@ -11,28 +11,25 @@ _Last updated: 2026-02-27_
 **Acceptance checks**
 - `npx --yes tsc -p portal/tsconfig.phase4.json`
 - Adapter unit/integration checks for codec serialization and trace schema.
+- Ensure command generation maps each `step.kind` to concrete CLI args (replace generic JSON args mode).
 
-## 2) Split GitHub Actions into plan vs execute gates
+## 2) Execute gate smoke run in protected environment
 
-- Keep PR checks secrets-free.
-- Execute path only on manual dispatch and protected environments.
-- Add artifact upload for traces and verification outputs.
-
-**Acceptance checks**
-- PR run proves plan gate passes without secrets.
-- Manual execute run requires environment reviewers and emits artifacts.
-
-## 3) Add testnet manifest + validation
-
-- Canonical program-ID manifest per environment.
-- Validation step before execution begins.
+- Run `execute_gate` via manual dispatch (`run_mode=execute`) using `testnet-staging` environment.
+- Confirm required secrets contract is satisfied and metadata artifact uploads.
 
 **Acceptance checks**
-- Validation fails fast when manifest is incomplete or malformed.
+- Manual execute run requires environment reviewers.
+- Execute gate passes env checks and uploads `execute-gate-metadata` artifact.
 
-## 4) Script one reproducible happy-path testnet flow
+## 3) Script one reproducible happy-path testnet flow
 
 - Prereq checks -> plan -> execute -> verify anchors/receipts.
 
 **Acceptance checks**
 - Run emits machine-readable summary and human-readable report.
+
+## Recently completed
+
+- ✅ Split GitHub Actions into plan vs execute gates.
+- ✅ Added canonical testnet manifest + validation script.

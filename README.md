@@ -199,10 +199,11 @@ Current priorities:
 
 ## Phase Planning References
 
-- Build sequence: [BUILD_ORDER.md](./BUILD_ORDER.md)
-- Phase 3 completion checklist: [PHASE3_SIGNOFF.md](./PHASE3_SIGNOFF.md)
-- Phase 4 CLI pin/setup guide: [PHASE4_CLI_SETUP.md](./PHASE4_CLI_SETUP.md)
-- Phase 4+ execution/testnet gameplan: [PHASE4_TESTNET_GAMEPLAN.md](./PHASE4_TESTNET_GAMEPLAN.md)
+- Operations docs index: [docs/operations/README.md](./docs/operations/README.md)
+- Build sequence: [BUILD_ORDER.md](./docs/operations/BUILD_ORDER.md)
+- Phase 3 completion checklist: [PHASE3_SIGNOFF.md](./docs/operations/PHASE3_SIGNOFF.md)
+- Phase 4 CLI pin/setup guide: [PHASE4_CLI_SETUP.md](./docs/operations/PHASE4_CLI_SETUP.md)
+- Phase 4+ execution/testnet gameplan: [PHASE4_TESTNET_GAMEPLAN.md](./docs/operations/PHASE4_TESTNET_GAMEPLAN.md)
 - Thread-handoff context hub: [docs/context/README.md](./docs/context/README.md)
 
 ---
@@ -237,8 +238,8 @@ This README section is a **pause-point snapshot** after a full repo pass (Layer 
 ## Phase 3 Status — Completed
 
 Phase 3 is complete. The canonical completion record is captured in:
-- `PHASE3_SIGNOFF.md`
-- `BUILD_ORDER.md` (Phase 3 marked completed)
+- `docs/operations/PHASE3_SIGNOFF.md`
+- `docs/operations/BUILD_ORDER.md` (Phase 3 marked completed)
 
 ### Completed closeout outcomes
 - Layer 2 call-plan step coverage and adapter endpoint mapping are implemented.
