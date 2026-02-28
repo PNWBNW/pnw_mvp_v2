@@ -11,7 +11,9 @@ Please start by reading:
 2. `docs/context/PHASE_TRACKER.md`
 3. `docs/context/DECISIONS_LOG.md`
 4. `docs/context/NEXT_ACTIONS.md`
-5. Any file(s) referenced in the top Next Action item.
+5. `docs/context/PHASE4_EXECUTION_CHECKLIST.md`
+6. `docs/operations/README.md`
+7. Any file(s) referenced in the top Next Action item.
 
 Task for this thread:
 - <insert exact implementation or review goal>
