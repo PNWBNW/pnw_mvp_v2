@@ -47,8 +47,8 @@ jobs:
         run: |
           curl -fsSL "$SNARKOS_URL" -o snarkos.zip
           unzip -o snarkos.zip -d snarkos-bin
-          chmod +x snarkos-bin/aleo
-          sudo mv snarkos-bin/aleo /usr/local/bin/snarkos
+          chmod +x snarkos-bin/snarkos
+          sudo mv snarkos-bin/snarkos /usr/local/bin/snarkos
 
       - name: Verify pinned CLI versions
         run: scripts/verify_provable_cli.sh
@@ -108,8 +108,8 @@ jobs:
         run: |
           curl -fsSL "$SNARKOS_URL" -o snarkos.zip
           unzip -o snarkos.zip -d snarkos-bin
-          chmod +x snarkos-bin/aleo
-          sudo mv snarkos-bin/aleo /usr/local/bin/snarkos
+          chmod +x snarkos-bin/snarkos
+          sudo mv snarkos-bin/snarkos /usr/local/bin/snarkos
 
       - name: Verify pinned CLI versions
         run: scripts/verify_provable_cli.sh
