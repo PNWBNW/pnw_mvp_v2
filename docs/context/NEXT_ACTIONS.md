@@ -1,8 +1,16 @@
 # Next Actions (Ordered)
 
-_Last updated: 2026-02-27_
+_Last updated: 2026-02-28_
+
+## Next best steps (1-3)
+
+1. Finalize Phase 4 adapter command codec.
+2. Run execute gate smoke in protected environment.
+3. Script one reproducible happy-path testnet flow.
 
 ## 1) Finalize Phase 4 adapter command codec
+
+_Status: In progress — deterministic `step.kind` command/codec mapping + typed adapter errors + trace schema are now scaffolded in `portal/src/adapters/aleo_cli_adapter.ts`; codec/integration tests remain._
 
 - Map each `step.kind` to exact `{program, transition, argCodec}`.
 - Replace scaffold command generation with concrete Aleo CLI syntax.
