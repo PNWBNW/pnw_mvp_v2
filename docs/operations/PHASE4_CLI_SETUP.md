@@ -84,3 +84,21 @@ Before adapter PRs, ensure:
 - both commands are installed,
 - pinned versions match detected versions,
 - and verification output is captured in PR testing notes.
+
+## 7) Testnet manifest validation (new gate)
+
+Phase 4 now includes a canonical testnet manifest and validator:
+- `config/testnet.manifest.json`
+- `scripts/validate_testnet_manifest.py`
+
+Run locally:
+
+```bash
+python3 scripts/validate_testnet_manifest.py config/testnet.manifest.json
+```
+
+Execute-mode workflows also require env/secrets presence checks via:
+
+```bash
+scripts/require_phase4_execute_env.sh
+```

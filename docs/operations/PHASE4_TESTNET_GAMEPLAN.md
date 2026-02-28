@@ -110,7 +110,7 @@ Deliverables:
 
 ## 3) Phase 5 Validation Plan (correctness-first)
 
-Run order should match `BUILD_ORDER.md` intent:
+Run order should match `docs/operations/BUILD_ORDER.md` intent:
 
 1. Deploy/confirm Layer 1 + Layer 2 program IDs for target testnet environment.
 2. Execute one happy-path payroll flow.

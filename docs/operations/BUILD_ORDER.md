@@ -119,7 +119,7 @@ Provide the same planning abstraction for Layer 2 that already exists for Layer 
    - Router API stable
    - Type contracts stable
    - Planning modules pass typecheck
-   - Signoff checklist committed (`PHASE3_SIGNOFF.md`)
+   - Signoff checklist committed (`docs/operations/PHASE3_SIGNOFF.md`)
 
 ---
 
