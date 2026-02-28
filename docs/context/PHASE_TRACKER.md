@@ -1,6 +1,6 @@
 # Phase Tracker
 
-_Last updated: 2026-02-27_
+_Last updated: 2026-02-28_
 
 ## Snapshot
 
@@ -26,6 +26,12 @@ _Last updated: 2026-02-27_
 - [ ] Leo/snarkOS pins verified in operator and CI environments
 - [ ] Testnet program IDs are versioned and resolved deterministically
 - [ ] One end-to-end happy path is scriptable/reproducible
+
+
+## Current Phase 4 progress notes
+
+- PR A started: deterministic Layer 2 CLI command generation and typed execution traces/errors are now implemented in adapter scaffold.
+- Remaining to exit Phase 4: adapter codec integration tests + real execute smoke run with protected environment.
 
 ## Known Blockers / Risks
 
