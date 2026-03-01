@@ -64,6 +64,15 @@ export SNARKOS_VERSION="v4.4.0"
 
 Keep these pins consistent across contributors for deterministic behavior.
 
+Optional hardening (recommended in CI):
+
+```bash
+export LEO_SHA256="<sha256-of-leo-zip>"
+export SNARKOS_SHA256="<sha256-of-snarkos-zip>"
+```
+
+If set, CI validates downloaded artifacts with `sha256sum -c` before install.
+
 ## 4) Install CLI tools (owner/operator machine)
 
 Install from official Provable repos using your preferred method (cargo, prebuilt binaries, or internal setup scripts), pinned to the versions above.
@@ -77,6 +86,8 @@ scripts/verify_provable_cli.sh
 ```
 
 This validates command availability, prints detected versions, and checks against pinned versions when `LEO_VERSION` / `SNARKOS_VERSION` are set.
+
+By default, version-token checks are non-strict (`STRICT_VERSION_CHECK=false`) because some Provable binaries print branch/commit metadata instead of release tags. Set `STRICT_VERSION_CHECK=true` to hard-fail on pin token mismatch in `--version` output.
 
 ## 6) Phase 4 readiness gate
 
