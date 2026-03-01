@@ -1,15 +1,23 @@
 # Next Actions (Ordered)
 
-_Last updated: 2026-02-27_
+_Last updated: 2026-02-28_
+
+## Next best steps (1-3)
+
+1. Finalize Phase 4 adapter command codec.
+2. Run execute gate smoke in protected environment.
+3. Script one reproducible happy-path testnet flow.
 
 ## 1) Finalize Phase 4 adapter command codec
+
+_Status: In progress — deterministic `step.kind` command/codec mapping + typed adapter errors + trace schema are now scaffolded in `portal/src/adapters/aleo_cli_adapter.ts`; retry boundary scaffold added for retryable execution errors; codec/integration tests remain._
 
 - Map each `step.kind` to exact `{program, transition, argCodec}`.
 - Replace scaffold command generation with concrete Aleo CLI syntax.
 - Add typed error taxonomy and retry policy boundaries.
 
 **Acceptance checks**
-- `npx --yes tsc -p portal/tsconfig.phase4.json`
+- `npx --yes --package typescript tsc -p portal/tsconfig.phase4.json`
 - Adapter unit/integration checks for codec serialization and trace schema.
 - Ensure command generation maps each `step.kind` to concrete CLI args (replace generic JSON args mode).
 
