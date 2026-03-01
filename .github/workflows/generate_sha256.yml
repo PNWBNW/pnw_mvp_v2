@@ -1,0 +1,39 @@
+name: Generate SHA256 for Leo + snarkOS artifacts
+
+on:
+  workflow_dispatch:
+    inputs:
+      leo_url:
+        description: "Leo release asset URL (zip)"
+        required: true
+        default: "https://github.com/ProvableHQ/leo/releases/download/canary-v3.5.0/leo-canary-v3.5.0-x86_64-unknown-linux-gnu.zip"
+      snarkos_url:
+        description: "snarkOS release asset URL (zip)"
+        required: true
+        default: "https://github.com/ProvableHQ/snarkOS/releases/download/v4.4.0/aleo-v4.4.0-x86_64-unknown-linux-gnu.zip"
+
+jobs:
+  hash:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+
+    steps:
+      - name: Download artifacts + compute SHA256
+        shell: bash
+        run: |
+          set -euo pipefail
+
+          echo "Downloading Leo..."
+          curl -fsSL "${{ inputs.leo_url }}" -o leo.zip
+          LEO_SHA256="$(sha256sum leo.zip | awk '{print $1}')"
+
+          echo "Downloading snarkOS..."
+          curl -fsSL "${{ inputs.snarkos_url }}" -o snarkos.zip
+          SNARKOS_SHA256="$(sha256sum snarkos.zip | awk '{print $1}')"
+
+          echo ""
+          echo "========== COPY THESE INTO REPO VARIABLES =========="
+          echo "LEO_SHA256=${LEO_SHA256}"
+          echo "SNARKOS_SHA256=${SNARKOS_SHA256}"
+          echo "===================================================="
