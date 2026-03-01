@@ -9,7 +9,7 @@ This checklist is the **operator-focused sequence** to move from planning-only t
 ## 1) Freeze toolchain and runtime assumptions
 
 - Confirm pinned versions in one place and keep workflow/docs in sync:
-  - `LEO_VERSION=canary-v3.5.0`
+  - `LEO_VERSION=3.4.0`
   - `SNARKOS_VERSION=v4.4.0`
 - Verify local and CI with `scripts/verify_provable_cli.sh`.
 - Treat any version mismatch as a stop-ship for execute mode.
@@ -48,6 +48,7 @@ Start with least-privilege secrets:
 - `ALEO_ADDRESS`
 - `RPC_URL`
 - `USDCX_PROGRAM_ID`
+- `USDCX_PROGRAM_ID` must match `program_ids.external.usdcx` in `MANIFEST_PATH`
 
 Recommended GitHub environment variables (non-secret):
 - `PNW_NETWORK=testnet`
@@ -60,6 +61,10 @@ Rules:
 - mask any derived sensitive values in workflow output
 
 **Exit condition:** execute workflow fails fast when required secrets are absent.
+
+Validation notes:
+- `scripts/require_phase4_execute_env.sh` enforces `RPC_URL` scheme (`http://` or `https://`).
+- `scripts/require_phase4_execute_env.sh` verifies `PNW_NETWORK` and `USDCX_PROGRAM_ID` are consistent with `MANIFEST_PATH`.
 
 ---
 
