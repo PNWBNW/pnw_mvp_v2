@@ -17,7 +17,7 @@ _Status: In progress — deterministic `step.kind` command/codec mapping + typed
 - Add typed error taxonomy and retry policy boundaries.
 
 **Acceptance checks**
-- `npx --yes tsc -p portal/tsconfig.phase4.json`
+- `npx --yes --package typescript tsc -p portal/tsconfig.phase4.json`
 - Adapter unit/integration checks for codec serialization and trace schema.
 - Ensure command generation maps each `step.kind` to concrete CLI args (replace generic JSON args mode).
 
