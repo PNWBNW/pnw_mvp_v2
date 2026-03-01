@@ -26,6 +26,9 @@ jobs:
       SNARKOS_VERSION: v4.4.0
       LEO_URL: https://github.com/ProvableHQ/leo/releases/download/canary-v3.5.0/leo-canary-v3.5.0-x86_64-unknown-linux-gnu.zip
       SNARKOS_URL: https://github.com/ProvableHQ/snarkOS/releases/download/v4.4.0/aleo-v4.4.0-x86_64-unknown-linux-gnu.zip
+      LEO_SHA256: ${{ vars.LEO_SHA256 }}
+      SNARKOS_SHA256: ${{ vars.SNARKOS_SHA256 }}
+      STRICT_VERSION_CHECK: "false"
 
     steps:
       - name: Checkout
@@ -39,6 +42,11 @@ jobs:
       - name: Install Leo (pinned)
         run: |
           curl -fsSL "$LEO_URL" -o leo.zip
+          if [[ -n "${LEO_SHA256}" ]]; then
+            echo "${LEO_SHA256}  leo.zip" | sha256sum -c -
+          else
+            echo "WARN: LEO_SHA256 not set; skipping artifact checksum verification" >&2
+          fi
           unzip -o leo.zip -d leo-bin
           chmod +x leo-bin/leo
           sudo mv leo-bin/leo /usr/local/bin/leo
@@ -46,6 +54,11 @@ jobs:
       - name: Install snarkOS CLI (pinned)
         run: |
           curl -fsSL "$SNARKOS_URL" -o snarkos.zip
+          if [[ -n "${SNARKOS_SHA256}" ]]; then
+            echo "${SNARKOS_SHA256}  snarkos.zip" | sha256sum -c -
+          else
+            echo "WARN: SNARKOS_SHA256 not set; skipping artifact checksum verification" >&2
+          fi
           unzip -o snarkos.zip -d snarkos-bin
           chmod +x snarkos-bin/snarkos
           sudo mv snarkos-bin/snarkos /usr/local/bin/snarkos
@@ -80,6 +93,9 @@ jobs:
       SNARKOS_VERSION: v4.4.0
       LEO_URL: https://github.com/ProvableHQ/leo/releases/download/canary-v3.5.0/leo-canary-v3.5.0-x86_64-unknown-linux-gnu.zip
       SNARKOS_URL: https://github.com/ProvableHQ/snarkOS/releases/download/v4.4.0/aleo-v4.4.0-x86_64-unknown-linux-gnu.zip
+      LEO_SHA256: ${{ vars.LEO_SHA256 }}
+      SNARKOS_SHA256: ${{ vars.SNARKOS_SHA256 }}
+      STRICT_VERSION_CHECK: "false"
       PNW_NETWORK: testnet
       MANIFEST_PATH: config/testnet.manifest.json
       ALEO_PRIVATE_KEY: ${{ secrets.ALEO_PRIVATE_KEY }}
@@ -100,6 +116,11 @@ jobs:
       - name: Install Leo (pinned)
         run: |
           curl -fsSL "$LEO_URL" -o leo.zip
+          if [[ -n "${LEO_SHA256}" ]]; then
+            echo "${LEO_SHA256}  leo.zip" | sha256sum -c -
+          else
+            echo "WARN: LEO_SHA256 not set; skipping artifact checksum verification" >&2
+          fi
           unzip -o leo.zip -d leo-bin
           chmod +x leo-bin/leo
           sudo mv leo-bin/leo /usr/local/bin/leo
@@ -107,6 +128,11 @@ jobs:
       - name: Install snarkOS CLI (pinned)
         run: |
           curl -fsSL "$SNARKOS_URL" -o snarkos.zip
+          if [[ -n "${SNARKOS_SHA256}" ]]; then
+            echo "${SNARKOS_SHA256}  snarkos.zip" | sha256sum -c -
+          else
+            echo "WARN: SNARKOS_SHA256 not set; skipping artifact checksum verification" >&2
+          fi
           unzip -o snarkos.zip -d snarkos-bin
           chmod +x snarkos-bin/snarkos
           sudo mv snarkos-bin/snarkos /usr/local/bin/snarkos
