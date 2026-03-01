@@ -62,9 +62,15 @@ Rules:
 
 **Exit condition:** execute workflow fails fast when required secrets are absent.
 
+
 Validation notes:
 - `scripts/require_phase4_execute_env.sh` enforces `RPC_URL` scheme (`http://` or `https://`).
 - `scripts/require_phase4_execute_env.sh` verifies `PNW_NETWORK` and `USDCX_PROGRAM_ID` are consistent with `MANIFEST_PATH`.
+- `scripts/run_phase4_execute_scenario.sh` now emits an evidence bundle under `artifacts/phase4_execute_bundle/` with:
+  - `step_traces.json` (`phase4.step_traces.v1`)
+  - `tx_ids.json` (`phase4.tx_ids.v1`)
+  - `verification_summary.json` (`phase4.verification_summary.v1`)
+  - `bundle_manifest.json` (`phase4.execute_bundle_manifest.v1` + file checksums)
 
 ---
 
