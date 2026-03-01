@@ -384,6 +384,39 @@ function sleep(ms: number): Promise<void> {
   return new Promise((resolve) => setTimeout(resolve, ms));
 }
 
+function normalizeExecutionThrow(
+  error: unknown,
+  index: number,
+  step_kind: Layer2CallPlanStep["kind"],
+  command: string,
+  attempt: number,
+  max_attempts: number,
+): Layer2CliExecutionError {
+  if (error instanceof Layer2CliExecutionError) {
+    return error;
+  }
+
+  if (error instanceof Error) {
+    return new Layer2CliExecutionError(
+      `CLI command execution threw before completion (attempt ${attempt}/${max_attempts}): ${error.message}`,
+      index,
+      step_kind,
+      command,
+      error.message,
+      { cause: error },
+    );
+  }
+
+  return new Layer2CliExecutionError(
+    `CLI command execution threw before completion (attempt ${attempt}/${max_attempts})`,
+    index,
+    step_kind,
+    command,
+    undefined,
+    { cause: error },
+  );
+}
+
 export class Layer2CliAdapter implements Layer2Adapter {
   private readonly mode: CliExecutionMode;
   private readonly executor: CliCommandExecutor;
@@ -410,36 +443,57 @@ export class Layer2CliAdapter implements Layer2Adapter {
       const endpoint = resolveLayer2Endpoint(network, step);
 
       let command = "";
+      let attempts_for_trace = 0;
 
       try {
         command = buildCliCommand(endpoint, step);
 
         if (this.mode === "execute") {
           let attempt = 0;
+          attempts_for_trace = 0;
           let result: CliCommandResult | null = null;
 
           while (attempt < this.retry_policy.max_attempts) {
             attempt += 1;
-            const current = await this.executor.run(command);
+            attempts_for_trace = attempt;
 
-            if (current.exit_code === 0) {
-              result = current;
-              break;
+            try {
+              const current = await this.executor.run(command);
+
+              if (current.exit_code === 0) {
+                result = current;
+                break;
+              }
+
+              const execution_error = new Layer2CliExecutionError(
+                `CLI command failed with exit code ${current.exit_code} (attempt ${attempt}/${this.retry_policy.max_attempts})`,
+                index,
+                step.kind,
+                command,
+                current.stderr,
+              );
+
+              const can_retry = isRetryableExecutionFailure(execution_error) && attempt < this.retry_policy.max_attempts;
+              if (!can_retry) {
+                throw execution_error;
+              }
+            } catch (run_error) {
+              const execution_error = normalizeExecutionThrow(
+                run_error,
+                index,
+                step.kind,
+                command,
+                attempt,
+                this.retry_policy.max_attempts,
+              );
+
+              const can_retry = isRetryableExecutionFailure(execution_error) && attempt < this.retry_policy.max_attempts;
+              if (!can_retry) {
+                throw execution_error;
+              }
             }
 
-            const execution_error = new Layer2CliExecutionError(
-              `CLI command failed with exit code ${current.exit_code} (attempt ${attempt}/${this.retry_policy.max_attempts})`,
-              index,
-              step.kind,
-              command,
-              current.stderr,
-            );
-
-            const can_retry = isRetryableExecutionFailure(execution_error) && attempt < this.retry_policy.max_attempts;
-            if (!can_retry) {
-              throw execution_error;
-            }
-
+            attempts_for_trace = attempt;
             await sleep(this.retry_policy.retry_delay_ms);
           }
 
@@ -451,6 +505,7 @@ export class Layer2CliAdapter implements Layer2Adapter {
             );
           }
 
+          attempts_for_trace = attempt;
           const finished_at_ms = Date.now();
           traces.push({
             index,
@@ -484,9 +539,11 @@ export class Layer2CliAdapter implements Layer2Adapter {
         const normalized_error =
           error instanceof Layer2CliAdapterError
             ? error
-            : error instanceof Error
-              ? new Layer2CliInputError(error.message, index, step.kind, { cause: error })
-              : new Layer2CliInvariantError("Unknown adapter failure", index, step.kind, { cause: error });
+            : this.mode === "execute"
+              ? normalizeExecutionThrow(error, index, step.kind, command, attempts_for_trace, this.retry_policy.max_attempts)
+              : error instanceof Error
+                ? new Layer2CliInputError(error.message, index, step.kind, { cause: error })
+                : new Layer2CliInvariantError("Unknown adapter failure", index, step.kind, { cause: error });
 
         traces.push({
           index,
@@ -497,7 +554,7 @@ export class Layer2CliAdapter implements Layer2Adapter {
           started_at_ms,
           finished_at_ms,
           duration_ms: finished_at_ms - started_at_ms,
-          attempts: 0,
+          attempts: attempts_for_trace,
           error: {
             category: normalized_error.category,
             message: normalized_error.message,

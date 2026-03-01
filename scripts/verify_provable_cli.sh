@@ -26,13 +26,11 @@ check_pin() {
     return 0
   fi
 
-  if [[ -n "$pin_url" && "$pin_url" == *"$pin"* ]]; then
-    echo "${tool} pin check: PASS (${pin}, URL fallback)"
-    echo "${tool} pin check note: version output did not include pin token; validated against pinned download URL instead." >&2
-    return 0
+  if [[ -n "$pin_url" ]]; then
+    echo "${tool} pin check note: configured URL=${pin_url}" >&2
   fi
 
-  echo "${tool} pin check: FAIL (expected contains: ${pin})" >&2
+  echo "${tool} pin check: FAIL (expected installed version output to contain: ${pin})" >&2
   return 1
 }
 
