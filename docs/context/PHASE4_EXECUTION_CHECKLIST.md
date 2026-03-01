@@ -9,7 +9,7 @@ This checklist is the **operator-focused sequence** to move from planning-only t
 ## 1) Freeze toolchain and runtime assumptions
 
 - Confirm pinned versions in one place and keep workflow/docs in sync:
-  - `LEO_VERSION=canary-v3.5.0`
+  - `LEO_VERSION=3.4.0`
   - `SNARKOS_VERSION=v4.4.0`
 - Verify local and CI with `scripts/verify_provable_cli.sh`.
 - Treat any version mismatch as a stop-ship for execute mode.
