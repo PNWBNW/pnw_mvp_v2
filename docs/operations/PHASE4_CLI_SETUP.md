@@ -12,11 +12,11 @@ Pin and verify CLI tooling before wiring execution adapters:
 
 Use these pins for Phase 4:
 
-- `LEO_VERSION=canary-v3.5.0`
+- `LEO_VERSION=3.4.0`
 - `SNARKOS_VERSION=v4.4.0`
 
 Reference artifacts:
-- Leo: `https://github.com/ProvableHQ/leo/releases/download/canary-v3.5.0/leo-canary-v3.5.0-x86_64-unknown-linux-gnu.zip`
+- Leo: `https://github.com/ProvableHQ/leo/releases/download/v3.4.0/leo-v3.4.0-x86_64-unknown-linux-gnu.zip`
 - snarkOS: `https://github.com/ProvableHQ/snarkOS/releases/download/v4.4.0/aleo-v4.4.0-x86_64-unknown-linux-gnu.zip`
 
 ## CI workflow bootstrap (GitHub Actions)
@@ -27,7 +27,24 @@ This repo also includes a pinned workflow bootstrap:
 It installs pinned Leo/snarkOS binaries, verifies versions, and runs both planner typecheck gates.
 Use `workflow_dispatch` with:
 - `run_mode=plan_only` (default), or
-- `run_mode=execute` (records intent; full execution wiring lands in follow-up PRs).
+- `run_mode=execute` (runs a selected Phase 4 scenario via `scripts/run_phase4_execute_scenario.sh`).
+
+
+### Dispatch execute runs from an app/backend
+
+If you are building a React/dApp UI, trigger workflow dispatch from a backend service (not directly from browser code).
+
+Helper script:
+
+```bash
+GH_TOKEN="<github-token>" \
+  scripts/dispatch_phase4_execute.sh \
+  --repo "<owner>/<repo>" \
+  --ref "main" \
+  --scenario "payroll_smoke"
+```
+
+This sends `run_mode=execute` and the selected `scenario` into `.github/workflows/deploy.yml`.
 
 ## 1) Scaffold status in this repo
 
@@ -38,7 +55,7 @@ Phase 4 now includes a baseline Layer 2 adapter scaffold:
 Validate scaffold typing with:
 
 ```bash
-npx --yes tsc -p portal/tsconfig.phase4.json
+npx --yes --package typescript tsc -p portal/tsconfig.phase4.json
 ```
 
 ## 2) Resolve latest upstream tags (optional helper)
@@ -58,11 +75,27 @@ This attempts to read latest release tags from:
 ## 3) Export version pins in your shell
 
 ```bash
-export LEO_VERSION="canary-v3.5.0"
+export LEO_VERSION="3.4.0"
 export SNARKOS_VERSION="v4.4.0"
 ```
 
 Keep these pins consistent across contributors for deterministic behavior.
+
+Optional hardening (recommended in CI):
+
+```bash
+export LEO_SHA256="<sha256-of-leo-zip>"
+export SNARKOS_SHA256="<sha256-of-snarkos-zip>"
+```
+
+If set, CI validates downloaded artifacts with `sha256sum -c` before install.
+
+Recommended GitHub setup:
+- Add repository variables (Settings -> Secrets and variables -> Actions -> Variables):
+  - `LEO_SHA256`
+  - `SNARKOS_SHA256`
+- Run `.github/workflows/generate_sha256.yml` via `workflow_dispatch` to compute current hash values for pinned URLs and copy values from logs.
+
 
 ## 4) Install CLI tools (owner/operator machine)
 
@@ -77,6 +110,8 @@ scripts/verify_provable_cli.sh
 ```
 
 This validates command availability, prints detected versions, and checks against pinned versions when `LEO_VERSION` / `SNARKOS_VERSION` are set.
+
+By default, version-token checks are non-strict (`STRICT_VERSION_CHECK=false`) because some Provable binaries print branch/commit metadata instead of release tags. Set `STRICT_VERSION_CHECK=true` to hard-fail on pin token mismatch in `--version` output.
 
 ## 6) Phase 4 readiness gate
 
