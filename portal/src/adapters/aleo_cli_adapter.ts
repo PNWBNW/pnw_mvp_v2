@@ -93,6 +93,7 @@ export type CliStepTrace<TKind extends string, TMeta> = {
   started_at_ms: number;
   finished_at_ms: number;
   duration_ms: number;
+  attempts: number;
   result?: CliCommandResult;
   error?: {
     category: "input" | "execution" | "invariant";
@@ -109,6 +110,20 @@ export type Layer2CliExecutionReport = {
     planned_steps: number;
     failed_steps: number;
   };
+};
+
+export type Layer2CliRetryPolicy = {
+  max_attempts: number;
+  retry_delay_ms: number;
+};
+
+export type Layer2CliAdapterOptions = {
+  retry_policy?: Partial<Layer2CliRetryPolicy>;
+};
+
+const DEFAULT_RETRY_POLICY: Layer2CliRetryPolicy = {
+  max_attempts: 1,
+  retry_delay_ms: 250,
 };
 
 type StepCodec = (step: Layer2CallPlanStep) => string[];
@@ -359,13 +374,32 @@ function buildCliCommand(meta: Layer2TxMeta, step: Layer2CallPlanStep): string {
   ].join(" ");
 }
 
+
+function isRetryableExecutionFailure(error: Layer2CliExecutionError): boolean {
+  const text = (error.stderr ?? error.message).toLowerCase();
+  return text.includes("timed out") || text.includes("timeout") || text.includes("temporar") || text.includes("unavailable");
+}
+
+function sleep(ms: number): Promise<void> {
+  return new Promise((resolve) => setTimeout(resolve, ms));
+}
+
 export class Layer2CliAdapter implements Layer2Adapter {
   private readonly mode: CliExecutionMode;
   private readonly executor: CliCommandExecutor;
+  private readonly retry_policy: Layer2CliRetryPolicy;
 
-  constructor(mode: CliExecutionMode = "plan_only", executor: CliCommandExecutor = new UnconfiguredCliCommandExecutor()) {
+  constructor(
+    mode: CliExecutionMode = "plan_only",
+    executor: CliCommandExecutor = new UnconfiguredCliCommandExecutor(),
+    options: Layer2CliAdapterOptions = {},
+  ) {
     this.mode = mode;
     this.executor = executor;
+    this.retry_policy = {
+      max_attempts: options.retry_policy?.max_attempts ?? DEFAULT_RETRY_POLICY.max_attempts,
+      retry_delay_ms: options.retry_policy?.retry_delay_ms ?? DEFAULT_RETRY_POLICY.retry_delay_ms,
+    };
   }
 
   async executePlan(network: Network, plan: Layer2CallPlanStep[]): Promise<Layer2CallPlanResult> {
@@ -381,15 +415,39 @@ export class Layer2CliAdapter implements Layer2Adapter {
         command = buildCliCommand(endpoint, step);
 
         if (this.mode === "execute") {
-          const result = await this.executor.run(command);
+          let attempt = 0;
+          let result: CliCommandResult | null = null;
 
-          if (result.exit_code !== 0) {
-            throw new Layer2CliExecutionError(
-              `CLI command failed with exit code ${result.exit_code}`,
+          while (attempt < this.retry_policy.max_attempts) {
+            attempt += 1;
+            const current = await this.executor.run(command);
+
+            if (current.exit_code === 0) {
+              result = current;
+              break;
+            }
+
+            const execution_error = new Layer2CliExecutionError(
+              `CLI command failed with exit code ${current.exit_code} (attempt ${attempt}/${this.retry_policy.max_attempts})`,
               index,
               step.kind,
               command,
-              result.stderr,
+              current.stderr,
+            );
+
+            const can_retry = isRetryableExecutionFailure(execution_error) && attempt < this.retry_policy.max_attempts;
+            if (!can_retry) {
+              throw execution_error;
+            }
+
+            await sleep(this.retry_policy.retry_delay_ms);
+          }
+
+          if (result === null) {
+            throw new Layer2CliInvariantError(
+              "Execution attempts exhausted without terminal result",
+              index,
+              step.kind,
             );
           }
 
@@ -403,6 +461,7 @@ export class Layer2CliAdapter implements Layer2Adapter {
             started_at_ms,
             finished_at_ms,
             duration_ms: finished_at_ms - started_at_ms,
+            attempts: attempt,
             result,
           });
         } else {
@@ -416,6 +475,7 @@ export class Layer2CliAdapter implements Layer2Adapter {
             started_at_ms,
             finished_at_ms,
             duration_ms: finished_at_ms - started_at_ms,
+            attempts: 0,
           });
         }
       } catch (error) {
@@ -437,6 +497,7 @@ export class Layer2CliAdapter implements Layer2Adapter {
           started_at_ms,
           finished_at_ms,
           duration_ms: finished_at_ms - started_at_ms,
+          attempts: 0,
           error: {
             category: normalized_error.category,
             message: normalized_error.message,
