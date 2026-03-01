@@ -112,7 +112,7 @@ jobs:
       ALEO_ADDRESS: ${{ secrets.ALEO_ADDRESS }}
       RPC_URL: ${{ secrets.RPC_URL }}
       USDCX_PROGRAM_ID: ${{ secrets.USDCX_PROGRAM_ID }}
-      PHASE4_SCENARIO: ${{ github.event.inputs.scenario || "payroll_smoke" }}
+      PHASE4_SCENARIO: ${{ github.event.inputs.scenario || 'payroll_smoke' }}
 
     steps:
       - name: Checkout
