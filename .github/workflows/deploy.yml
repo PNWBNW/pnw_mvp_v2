@@ -16,6 +16,15 @@ on:
         options:
           - plan_only
           - execute
+      scenario:
+        description: "Execute scenario (used when run_mode=execute)"
+        required: true
+        default: "payroll_smoke"
+        type: choice
+        options:
+          - payroll_smoke
+          - onboarding_smoke
+          - nft_smoke
 
 jobs:
   plan_gate:
@@ -103,6 +112,7 @@ jobs:
       ALEO_ADDRESS: ${{ secrets.ALEO_ADDRESS }}
       RPC_URL: ${{ secrets.RPC_URL }}
       USDCX_PROGRAM_ID: ${{ secrets.USDCX_PROGRAM_ID }}
+      PHASE4_SCENARIO: ${{ github.event.inputs.scenario || "payroll_smoke" }}
 
     steps:
       - name: Checkout
@@ -146,6 +156,10 @@ jobs:
       - name: Require execute secrets and env
         run: scripts/require_phase4_execute_env.sh
 
+
+      - name: Execute selected Phase 4 scenario
+        run: scripts/run_phase4_execute_scenario.sh "$PHASE4_SCENARIO"
+
       - name: Emit execute gate metadata
         run: |
           mkdir -p artifacts
@@ -155,7 +169,8 @@ jobs:
             "manifest_path": "${MANIFEST_PATH}",
             "aleo_address": "${ALEO_ADDRESS}",
             "rpc_url_present": true,
-            "run_mode": "execute"
+            "run_mode": "execute",
+            "scenario": "${PHASE4_SCENARIO}"
           }
           META
 
