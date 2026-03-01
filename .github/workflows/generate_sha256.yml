@@ -6,7 +6,7 @@ on:
       leo_url:
         description: "Leo release asset URL (zip)"
         required: true
-        default: "https://github.com/ProvableHQ/leo/releases/download/canary-v3.5.0/leo-canary-v3.5.0-x86_64-unknown-linux-gnu.zip"
+        default: "https://github.com/ProvableHQ/leo/releases/download/v3.4.0/leo-v3.4.0-x86_64-unknown-linux-gnu.zip"
       snarkos_url:
         description: "snarkOS release asset URL (zip)"
         required: true
