@@ -54,10 +54,10 @@ jobs:
         run: scripts/verify_provable_cli.sh
 
       - name: Phase 3 planner gate
-        run: npx --yes tsc -p portal/tsconfig.phase3.json
+        run: npx --yes --package typescript tsc -p portal/tsconfig.phase3.json
 
       - name: Phase 4 adapter scaffold gate
-        run: npx --yes tsc -p portal/tsconfig.phase4.json
+        run: npx --yes --package typescript tsc -p portal/tsconfig.phase4.json
 
       - name: Validate testnet manifest schema
         run: python3 scripts/validate_testnet_manifest.py config/testnet.manifest.json
