@@ -48,6 +48,7 @@ Start with least-privilege secrets:
 - `ALEO_ADDRESS`
 - `RPC_URL`
 - `USDCX_PROGRAM_ID`
+- `USDCX_PROGRAM_ID` must match `program_ids.external.usdcx` in `MANIFEST_PATH`
 
 Recommended GitHub environment variables (non-secret):
 - `PNW_NETWORK=testnet`
@@ -60,6 +61,10 @@ Rules:
 - mask any derived sensitive values in workflow output
 
 **Exit condition:** execute workflow fails fast when required secrets are absent.
+
+Validation notes:
+- `scripts/require_phase4_execute_env.sh` enforces `RPC_URL` scheme (`http://` or `https://`).
+- `scripts/require_phase4_execute_env.sh` verifies `PNW_NETWORK` and `USDCX_PROGRAM_ID` are consistent with `MANIFEST_PATH`.
 
 ---
 
