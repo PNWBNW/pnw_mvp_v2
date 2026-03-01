@@ -1,0 +1,21 @@
+{
+  "compilerOptions": {
+    "target": "ES2020",
+    "module": "CommonJS",
+    "moduleResolution": "Node",
+    "strict": true,
+    "skipLibCheck": true,
+    "esModuleInterop": true,
+    "outDir": "../.tmp_phase4_tests"
+  },
+  "include": [
+    "src/config/env.ts",
+    "src/types/node.d.ts",
+    "src/types/aleo_types.ts",
+    "src/types/aleo_records.ts",
+    "src/router/layer2_router.ts",
+    "src/adapters/layer2_adapter.ts",
+    "src/adapters/aleo_cli_adapter.ts",
+    "tests/phase4_adapter.test.ts"
+  ]
+}
