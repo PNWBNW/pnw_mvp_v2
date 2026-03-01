@@ -27,7 +27,24 @@ This repo also includes a pinned workflow bootstrap:
 It installs pinned Leo/snarkOS binaries, verifies versions, and runs both planner typecheck gates.
 Use `workflow_dispatch` with:
 - `run_mode=plan_only` (default), or
-- `run_mode=execute` (records intent; full execution wiring lands in follow-up PRs).
+- `run_mode=execute` (runs a selected Phase 4 scenario via `scripts/run_phase4_execute_scenario.sh`).
+
+
+### Dispatch execute runs from an app/backend
+
+If you are building a React/dApp UI, trigger workflow dispatch from a backend service (not directly from browser code).
+
+Helper script:
+
+```bash
+GH_TOKEN="<github-token>" \
+  scripts/dispatch_phase4_execute.sh \
+  --repo "<owner>/<repo>" \
+  --ref "main" \
+  --scenario "payroll_smoke"
+```
+
+This sends `run_mode=execute` and the selected `scenario` into `.github/workflows/deploy.yml`.
 
 ## 1) Scaffold status in this repo
 
