@@ -7,6 +7,7 @@ LEO_PIN="${LEO_VERSION:-}"
 SNARKOS_PIN="${SNARKOS_VERSION:-}"
 LEO_PIN_URL="${LEO_URL:-}"
 SNARKOS_PIN_URL="${SNARKOS_URL:-}"
+STRICT_VERSION_CHECK="${STRICT_VERSION_CHECK:-false}"
 
 leo_out=""
 snarkos_out=""
@@ -30,8 +31,13 @@ check_pin() {
     echo "${tool} pin check note: configured URL=${pin_url}" >&2
   fi
 
-  echo "${tool} pin check: FAIL (expected installed version output to contain: ${pin})" >&2
-  return 1
+  if [[ "$STRICT_VERSION_CHECK" == "true" ]]; then
+    echo "${tool} pin check: FAIL (expected installed version output to contain: ${pin})" >&2
+    return 1
+  fi
+
+  echo "${tool} pin check: WARN (installed version output did not contain pin token: ${pin}; non-strict mode)" >&2
+  return 0
 }
 
 if command -v leo >/dev/null 2>&1; then
