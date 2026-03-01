@@ -38,7 +38,7 @@ Phase 4 now includes a baseline Layer 2 adapter scaffold:
 Validate scaffold typing with:
 
 ```bash
-npx --yes tsc -p portal/tsconfig.phase4.json
+npx --yes --package typescript tsc -p portal/tsconfig.phase4.json
 ```
 
 ## 2) Resolve latest upstream tags (optional helper)
