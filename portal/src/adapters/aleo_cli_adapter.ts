@@ -148,7 +148,16 @@ function encodeU32(value: number, label: string): string {
 }
 
 function encodeRecord(value: unknown): string {
-  return JSON.stringify(value);
+  const candidate =
+    typeof value === "object" && value !== null && "raw" in value
+      ? (value as { raw: unknown }).raw
+      : value;
+
+  if (typeof candidate === "string") {
+    return candidate;
+  }
+
+  return JSON.stringify(candidate);
 }
 
 function shellQuote(arg: string): string {
