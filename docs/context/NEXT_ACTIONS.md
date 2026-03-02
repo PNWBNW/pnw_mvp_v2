@@ -4,6 +4,10 @@ _Last updated: 2026-03-01_
 
 ## Next best steps (0-3)
 
+## Phase C readiness
+
+_Status: Ready to begin Phase C with guarded testnet execution lane; on-chain broadcast remains explicitly scaffold-only until broadcast wiring is implemented._
+
 0. Finalize Phase A scenario contract and collect sample participant data.
 1. Finalize Phase 4 adapter command codec.
 2. Capture execute gate smoke evidence in protected environment.

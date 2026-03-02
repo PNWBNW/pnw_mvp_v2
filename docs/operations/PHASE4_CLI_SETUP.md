@@ -25,7 +25,7 @@ This repo now uses split workflows:
 - `.github/workflows/deploy.yml` for plan/test gates only
 - `.github/workflows/execute_testnet.yml` for testnet execute gate
 
-`deploy.yml` installs pinned Leo/snarkOS binaries, verifies versions, and runs planner/typecheck/test guards.
+`deploy.yml` installs pinned Leo/snarkOS binaries, verifies versions, and runs planner/typecheck/test guards (triggered on pull requests and pushes to `main`).
 `execute_testnet.yml` runs execute-mode scenarios on `work` pushes or manual `workflow_dispatch`.
 
 Optional local workflow YAML validation (no PyYAML required):
