@@ -1,0 +1,120 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://pnw-mvp-v2.local/config/scenarios/schema.phaseA.json",
+  "title": "PNW Scenario Input (Phase A)",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "schema_version",
+    "scenario_id",
+    "network",
+    "execution_mode",
+    "participants",
+    "payroll"
+  ],
+  "properties": {
+    "schema_version": {
+      "type": "string",
+      "const": "phaseA.scenario.v1"
+    },
+    "scenario_id": {
+      "type": "string",
+      "minLength": 3
+    },
+    "network": {
+      "type": "string",
+      "enum": ["testnet", "mainnet"]
+    },
+    "execution_mode": {
+      "type": "string",
+      "enum": ["plan_only", "dry_run", "broadcast"]
+    },
+    "participants": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["employer", "worker"],
+      "properties": {
+        "employer": {
+          "$ref": "#/$defs/participant"
+        },
+        "worker": {
+          "$ref": "#/$defs/participant"
+        }
+      }
+    },
+    "payroll": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "agreement_id_hex",
+        "epoch_id",
+        "gross_amount",
+        "net_amount",
+        "tax_withheld",
+        "fee_amount",
+        "receipt_anchor_hex",
+        "receipt_pair_hash_hex",
+        "payroll_inputs_hash_hex",
+        "utc_time_hash_hex",
+        "audit_event_hash_hex",
+        "employer_usdcx_record"
+      ],
+      "properties": {
+        "agreement_id_hex": { "$ref": "#/$defs/bytes32Hex" },
+        "epoch_id": { "type": "integer", "minimum": 0, "maximum": 4294967295 },
+        "gross_amount": { "$ref": "#/$defs/u128String" },
+        "net_amount": { "$ref": "#/$defs/u128String" },
+        "tax_withheld": { "$ref": "#/$defs/u128String" },
+        "fee_amount": { "$ref": "#/$defs/u128String" },
+        "receipt_anchor_hex": { "$ref": "#/$defs/bytes32Hex" },
+        "receipt_pair_hash_hex": { "$ref": "#/$defs/bytes32Hex" },
+        "payroll_inputs_hash_hex": { "$ref": "#/$defs/bytes32Hex" },
+        "utc_time_hash_hex": { "$ref": "#/$defs/bytes32Hex" },
+        "audit_event_hash_hex": { "$ref": "#/$defs/bytes32Hex" },
+        "employer_usdcx_record": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": ["raw"],
+          "properties": {
+            "raw": {
+              "type": "string",
+              "minLength": 8,
+              "description": "Opaque test_usdcx_stablecoin.Record literal consumed by adapter codec."
+            }
+          }
+        }
+      }
+    },
+    "notes": {
+      "type": "array",
+      "items": { "type": "string" }
+    }
+  },
+  "$defs": {
+    "participant": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["name_hash_hex", "address"],
+      "properties": {
+        "name_hash_hex": { "$ref": "#/$defs/fieldHex" },
+        "address": {
+          "type": "string",
+          "pattern": "^aleo1[0-9a-z]{30,80}$"
+        }
+      }
+    },
+    "fieldHex": {
+      "type": "string",
+      "pattern": "^0x[0-9a-fA-F]{1,64}$"
+    },
+    "bytes32Hex": {
+      "type": "string",
+      "pattern": "^0x[0-9a-fA-F]{64}$"
+    },
+    "u128String": {
+      "type": "string",
+      "pattern": "^[0-9]+$",
+      "description": "Unsigned integer encoded as base-10 string to avoid JSON number precision loss."
+    }
+  }
+}
