@@ -7,10 +7,10 @@
   "required": [
     "schema_version",
     "scenario_id",
+    "scenario_kind",
     "network",
     "execution_mode",
-    "participants",
-    "payroll"
+    "participants"
   ],
   "properties": {
     "schema_version": {
@@ -20,6 +20,10 @@
     "scenario_id": {
       "type": "string",
       "minLength": 3
+    },
+    "scenario_kind": {
+      "type": "string",
+      "enum": ["payroll", "onboarding"]
     },
     "network": {
       "type": "string",
@@ -85,17 +89,61 @@
         }
       }
     },
+    "onboarding": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "employer_suffix_code",
+        "employer_suffix_label",
+        "worker_fee_amount",
+        "employer_fee_amount"
+      ],
+      "properties": {
+        "employer_suffix_code": {
+          "type": "integer",
+          "minimum": 1,
+          "maximum": 40
+        },
+        "employer_suffix_label": {
+          "type": "string",
+          "minLength": 2
+        },
+        "worker_fee_amount": { "$ref": "#/$defs/u128String" },
+        "employer_fee_amount": { "$ref": "#/$defs/u128String" }
+      }
+    },
     "notes": {
       "type": "array",
       "items": { "type": "string" }
     }
   },
+  "allOf": [
+    {
+      "if": {
+        "properties": { "scenario_kind": { "const": "payroll" } },
+        "required": ["scenario_kind"]
+      },
+      "then": { "required": ["payroll"] }
+    },
+    {
+      "if": {
+        "properties": { "scenario_kind": { "const": "onboarding" } },
+        "required": ["scenario_kind"]
+      },
+      "then": { "required": ["onboarding"] }
+    }
+  ],
   "$defs": {
     "participant": {
       "type": "object",
       "additionalProperties": false,
       "required": ["name_hash_hex", "address"],
       "properties": {
+        "name_raw": {
+          "type": "string",
+          "minLength": 1,
+          "description": "Optional raw name. If provided, validator checks deterministic local hash parity."
+        },
         "name_hash_hex": { "$ref": "#/$defs/fieldHex" },
         "address": {
           "type": "string",

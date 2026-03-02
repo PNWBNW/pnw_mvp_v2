@@ -1,6 +1,6 @@
 # Next Actions (Ordered)
 
-_Last updated: 2026-03-01_
+_Last updated: 2026-03-02_
 
 ## Next best steps (0-3)
 
@@ -10,16 +10,21 @@ _Last updated: 2026-03-01_
 3. Script one reproducible happy-path testnet flow.
 
 
-## 0) Phase A scenario contract (new)
+## 0) Phase A/B scenario contract (new)
 
-_Status: Started — canonical scenario schema and a low-spend testnet sample are now committed under `config/scenarios/`; dependency-free validator added at `scripts/validate_phaseA_scenario.py`._
+_Status: In progress — canonical schema, validator, and Phase B `scenario_file` ingestion are wired; payroll + onboarding min-spend samples now include provided raw names, locally-derived hashes, worker destination address, and WA State suffix mapping._
 
 - Keep one canonical payload format for test deploy + future app/backend dispatch.
 - Collect real participant/test values (name hashes, addresses, agreement/epoch, anchors).
 - Validate every scenario file before execute runs.
+- Keep onboarding tests on tier-1 employer registration path only (10 USDCx base + fee).
 
 **Acceptance checks**
 - `python3 scripts/validate_phaseA_scenario.py config/scenarios/testnet/min_spend.payroll.json`
+- `python3 scripts/validate_phaseA_scenario.py config/scenarios/testnet/min_spend.onboarding.json`
+- `scripts/derive_phaseA_name_hash.py "John D. Doe"`
+- `scripts/derive_phaseA_name_hash.py "Acme Inc."`
+- `scripts/run_phase4_execute_scenario.sh --scenario payroll_smoke --scenario-file config/scenarios/testnet/min_spend.payroll.json`
 - Scenario payload remains compatible with Layer 1 `execute_payroll` field requirements.
 
 ## 1) Finalize Phase 4 adapter command codec
