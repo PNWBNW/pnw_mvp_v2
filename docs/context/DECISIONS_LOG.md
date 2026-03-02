@@ -21,3 +21,8 @@ Format:
   - **Why:** Avoid format drift between operator test-deploy artifacts and React/backend-triggered execution paths.
   - **Impact:** Scenario files in `config/scenarios/` become the shared input surface; test runners and future dispatch tooling should consume this format directly.
 
+
+- `2026-03-02` — **Accept raw-name inputs for Phase A scenarios with deterministic local hash derivation**
+  - **Why:** Operators may only have user-provided names at scenario-authoring time.
+  - **Impact:** Scenario payloads can include `name_raw` + `name_hash_hex`; validator enforces local hash parity for reproducibility.
+
