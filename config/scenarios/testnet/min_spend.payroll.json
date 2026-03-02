@@ -1,0 +1,36 @@
+{
+  "schema_version": "phaseA.scenario.v1",
+  "scenario_id": "testnet.min_spend.payroll",
+  "network": "testnet",
+  "execution_mode": "plan_only",
+  "participants": {
+    "employer": {
+      "name_hash_hex": "0x1111111111111111111111111111111111111111111111111111111111111111",
+      "address": "aleo1qqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqm3k3f"
+    },
+    "worker": {
+      "name_hash_hex": "0x2222222222222222222222222222222222222222222222222222222222222222",
+      "address": "aleo1qqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqm3k3f"
+    }
+  },
+  "payroll": {
+    "agreement_id_hex": "0x3333333333333333333333333333333333333333333333333333333333333333",
+    "epoch_id": 1,
+    "gross_amount": "1000000",
+    "net_amount": "1000000",
+    "tax_withheld": "0",
+    "fee_amount": "0",
+    "receipt_anchor_hex": "0x4444444444444444444444444444444444444444444444444444444444444444",
+    "receipt_pair_hash_hex": "0x5555555555555555555555555555555555555555555555555555555555555555",
+    "payroll_inputs_hash_hex": "0x6666666666666666666666666666666666666666666666666666666666666666",
+    "utc_time_hash_hex": "0x7777777777777777777777777777777777777777777777777777777777777777",
+    "audit_event_hash_hex": "0x8888888888888888888888888888888888888888888888888888888888888888",
+    "employer_usdcx_record": {
+      "raw": "{ owner: aleo1qqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqm3k3f.private, amount: 1u64.private }"
+    }
+  },
+  "notes": [
+    "Replace placeholders before broadcast.",
+    "Use low-value amounts while test credits are limited."
+  ]
+}
