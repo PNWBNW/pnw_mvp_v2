@@ -25,6 +25,11 @@ on:
           - payroll_smoke
           - onboarding_smoke
           - nft_smoke
+      scenario_file:
+        description: "Optional Phase A scenario payload path (e.g. config/scenarios/testnet/min_spend.payroll.json)"
+        required: false
+        default: ""
+        type: string
 
 jobs:
   plan_gate:
@@ -81,8 +86,15 @@ jobs:
       - name: Phase 4 adapter scaffold gate
         run: npx --yes --package typescript tsc -p portal/tsconfig.phase4.json
 
+      - name: Phase 4 adapter codec tests
+        run: scripts/run_phase4_adapter_tests.sh
+
       - name: Validate testnet manifest schema
         run: python3 scripts/validate_testnet_manifest.py config/testnet.manifest.json
+
+      - name: Enforce Layer 1 public-state leakage guard
+        run: python3 scripts/check_layer1_public_leakage_guards.py
+
 
   execute_gate:
     name: execute_gate
@@ -113,6 +125,7 @@ jobs:
       RPC_URL: ${{ secrets.RPC_URL }}
       USDCX_PROGRAM_ID: ${{ secrets.USDCX_PROGRAM_ID }}
       PHASE4_SCENARIO: ${{ github.event.inputs.scenario || 'payroll_smoke' }}
+      PHASE4_SCENARIO_FILE: ${{ github.event.inputs.scenario_file || '' }}
 
     steps:
       - name: Checkout
@@ -158,7 +171,12 @@ jobs:
 
 
       - name: Execute selected Phase 4 scenario
-        run: scripts/run_phase4_execute_scenario.sh "$PHASE4_SCENARIO"
+        run: |
+          if [[ -n "$PHASE4_SCENARIO_FILE" ]]; then
+            scripts/run_phase4_execute_scenario.sh --scenario "$PHASE4_SCENARIO" --scenario-file "$PHASE4_SCENARIO_FILE"
+          else
+            scripts/run_phase4_execute_scenario.sh --scenario "$PHASE4_SCENARIO"
+          fi
 
       - name: Emit execute gate metadata
         run: |
@@ -170,7 +188,8 @@ jobs:
             "aleo_address": "${ALEO_ADDRESS}",
             "rpc_url_present": true,
             "run_mode": "execute",
-            "scenario": "${PHASE4_SCENARIO}"
+            "scenario": "${PHASE4_SCENARIO}",
+            "scenario_file": "${PHASE4_SCENARIO_FILE}"
           }
           META
 
