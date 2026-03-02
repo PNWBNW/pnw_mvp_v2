@@ -6,7 +6,7 @@ _Last updated: 2026-03-01_
 
 0. Finalize Phase A scenario contract and collect sample participant data.
 1. Finalize Phase 4 adapter command codec.
-2. Run execute gate smoke in protected environment.
+2. Capture execute gate smoke evidence in protected environment.
 3. Script one reproducible happy-path testnet flow.
 
 
@@ -46,12 +46,19 @@ _Status: In progress — deterministic `step.kind` command/codec mapping + typed
 
 ## 2) Execute gate smoke run in protected environment
 
-- Run `execute_gate` via manual dispatch (`run_mode=execute`) using `testnet-staging` environment.
-- Confirm required secrets contract is satisfied and metadata artifact uploads.
+_Status: Completed — testnet execute gate succeeded and artifacts were captured with SHA256 references._
+
+- Execute workflow used: `.github/workflows/execute_testnet.yml` (`execute_gate`, `testnet-staging`).
+- Confirmed required secrets contract and metadata/evidence artifact uploads.
 
 **Acceptance checks**
-- Manual execute run requires environment reviewers.
 - Execute gate passes env checks and uploads `execute-gate-metadata` artifact.
+- Evidence bundle upload includes deterministic bundle manifest and verification outputs.
+
+**Captured evidence (2026-03-02 run)**
+- Raw logs: <https://productionresultssa0.blob.core.windows.net/actions-results/c446a758-f61e-4754-ac10-579dd486ff3e/workflow-job-run-50940363-c69a-5633-b98b-e49a1b8199df/logs/job/job-logs.txt?rsct=text%2Fplain&se=2026-03-02T03%3A29%3A04Z&sig=FZB3RIE%2FBL9d5Y2PR3QsnRhPVmYcMcDuCPlWyCqfjyo%3D&ske=2026-03-02T04%3A32%3A44Z&skoid=ca7593d4-ee42-46cd-af88-8b886a2f84eb&sks=b&skt=2026-03-02T00%3A32%3A44Z&sktid=398a6654-997b-47e9-b12b-9515b896b4de&skv=2025-11-05&sp=r&spr=https&sr=b&st=2026-03-02T03%3A18%3A59Z&sv=2025-11-05>
+- `execute-gate-metadata` SHA256: `3d5d6ce776f140765575530a28d1449e96074c2c243989a906fbf7a7c5bf5fc3`
+- `execute-evidence-bundle` SHA256: `b3107697f28fb7c4b8d041b4477be82e2c150d3257a0eaf5e7b20c37dbe0f947`
 
 ## 3) Script one reproducible happy-path testnet flow
 
@@ -62,6 +69,7 @@ _Status: In progress — deterministic `step.kind` command/codec mapping + typed
 
 ## Recently completed
 
+- ✅ Captured first execute-gate artifact SHA references from successful testnet run.
 - ✅ Added static leakage guard script (`scripts/check_layer1_public_leakage_guards.py`) and wired it into `plan_gate`.
 - ✅ Added `scripts/run_phase4_adapter_tests.sh` and wired adapter codec tests into `plan_gate`.
 - ✅ Split GitHub Actions into plan vs execute gates.

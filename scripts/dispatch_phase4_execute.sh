@@ -3,7 +3,7 @@ set -euo pipefail
 
 usage() {
   cat <<USAGE
-Usage: scripts/dispatch_phase4_execute.sh --repo owner/repo --ref <branch-or-sha> --scenario <payroll_smoke|onboarding_smoke|nft_smoke> [--scenario-file <path>] [--dry-run]
+Usage: scripts/dispatch_phase4_execute.sh --repo owner/repo --ref <branch-or-sha> --scenario <payroll_smoke|onboarding_smoke|nft_smoke> [--scenario-file <path>] [--execute-broadcast <true|false>] [--dry-run]
 
 Dispatches the phase4 testnet execute workflow using the GitHub Actions workflow_dispatch API.
 
@@ -19,6 +19,7 @@ REPO=""
 REF=""
 SCENARIO=""
 SCENARIO_FILE=""
+EXECUTE_BROADCAST="false"
 DRY_RUN="false"
 
 while [[ $# -gt 0 ]]; do
@@ -37,6 +38,10 @@ while [[ $# -gt 0 ]]; do
       ;;
     --scenario-file)
       SCENARIO_FILE="${2:-}"
+      shift 2
+      ;;
+    --execute-broadcast)
+      EXECUTE_BROADCAST="${2:-}"
       shift 2
       ;;
     --dry-run)
@@ -70,6 +75,11 @@ case "$SCENARIO" in
     ;;
 esac
 
+if [[ "$EXECUTE_BROADCAST" != "true" && "$EXECUTE_BROADCAST" != "false" ]]; then
+  echo "ERROR: --execute-broadcast must be true or false." >&2
+  exit 1
+fi
+
 if [[ "$DRY_RUN" != "true" && -z "${GH_TOKEN:-}" ]]; then
   echo "ERROR: GH_TOKEN is required." >&2
   exit 1
@@ -83,7 +93,8 @@ read -r -d '' PAYLOAD <<JSON || true
   "ref": "${REF}",
   "inputs": {
     "scenario": "${SCENARIO}",
-    "scenario_file": "${SCENARIO_FILE}"
+    "scenario_file": "${SCENARIO_FILE}",
+    "execute_broadcast": "${EXECUTE_BROADCAST}"
   }
 }
 JSON
@@ -108,4 +119,4 @@ if [[ "$HTTP_CODE" != "204" ]]; then
   exit 1
 fi
 
-echo "Dispatched ${WORKFLOW_FILE} on ${REPO}@${REF} with scenario='${SCENARIO}' and scenario_file='${SCENARIO_FILE}'."
+echo "Dispatched ${WORKFLOW_FILE} on ${REPO}@${REF} with scenario='${SCENARIO}' scenario_file='${SCENARIO_FILE}', and execute_broadcast='${EXECUTE_BROADCAST}'."
