@@ -18,7 +18,7 @@ on:
       scenario_file:
         description: "Optional Phase A scenario payload path (e.g. config/scenarios/testnet/min_spend.payroll.json)"
         required: false
-        default: ""
+        default: "config/scenarios/testnet/min_spend.onboarding.json"
         type: string
       execute_broadcast:
         description: "Attempt broadcast mode"
@@ -61,7 +61,7 @@ jobs:
       ALEO_ADDRESS: ${{ secrets.ALEO_ADDRESS }}
       RPC_URL: ${{ secrets.RPC_URL }}
       USDCX_PROGRAM_ID: ${{ secrets.USDCX_PROGRAM_ID }}
-      PHASE4_SCENARIO: ${{ github.event.inputs.scenario || 'payroll_smoke' }}
+      PHASE4_SCENARIO: ${{ github.event.inputs.scenario || 'onboarding_smoke' }}
       PHASE4_SCENARIO_FILE: ${{ github.event.inputs.scenario_file || '' }}
       EXECUTE_BROADCAST: ${{ github.event.inputs.execute_broadcast || 'false' }}
       PHASE4_BROADCAST_COMMANDS_FILE: ${{ github.event.inputs.broadcast_commands_file || '' }}
