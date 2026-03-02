@@ -56,6 +56,13 @@ esac
 ARTIFACT_DIR="artifacts/phase4_execute_bundle"
 MANIFEST_PATH="${MANIFEST_PATH:-config/testnet.manifest.json}"
 NETWORK="${PNW_NETWORK:-testnet}"
+RPC_URL="${RPC_URL:-}"
+EXECUTE_BROADCAST="${EXECUTE_BROADCAST:-false}"
+
+if [[ "$EXECUTE_BROADCAST" != "true" && "$EXECUTE_BROADCAST" != "false" ]]; then
+  echo "ERROR: EXECUTE_BROADCAST must be true or false (got: $EXECUTE_BROADCAST)" >&2
+  exit 1
+fi
 
 mkdir -p "$ARTIFACT_DIR"
 
@@ -110,13 +117,13 @@ PY
   SCENARIO_PAYLOAD_KIND="${SCENARIO_META[2]:-}"
 fi
 
-python3 - "$SCENARIO" "$NETWORK" "$MANIFEST_PATH" "$ARTIFACT_DIR" "$SCENARIO_FILE" "$SCENARIO_PAYLOAD_ID" "$SCENARIO_PAYLOAD_MODE" "$SCENARIO_PAYLOAD_KIND" <<'PY'
+python3 - "$SCENARIO" "$NETWORK" "$MANIFEST_PATH" "$ARTIFACT_DIR" "$SCENARIO_FILE" "$SCENARIO_PAYLOAD_ID" "$SCENARIO_PAYLOAD_MODE" "$SCENARIO_PAYLOAD_KIND" "$RPC_URL" "$EXECUTE_BROADCAST" <<'PY'
 import json
 import sys
 import time
 from pathlib import Path
 
-scenario, network, manifest_path, artifact_dir, scenario_file, scenario_payload_id, scenario_payload_mode, scenario_payload_kind = sys.argv[1:9]
+scenario, network, manifest_path, artifact_dir, scenario_file, scenario_payload_id, scenario_payload_mode, scenario_payload_kind, rpc_url, execute_broadcast = sys.argv[1:11]
 base = Path(artifact_dir)
 base.mkdir(parents=True, exist_ok=True)
 
@@ -185,6 +192,26 @@ verification_summary = {
         {"name": "execute_env_valid", "status": "pass"},
         {"name": "scenario_selected", "status": "pass", "value": scenario},
         {
+            "name": "rpc_url",
+            "status": "pass" if rpc_url else "skip",
+            "value": rpc_url or None,
+        },
+        {
+            "name": "execute_broadcast",
+            "status": "pass",
+            "value": execute_broadcast,
+        },
+        {
+            "name": "broadcast_mode",
+            "status": "pass",
+            "value": "broadcast_requested_not_implemented" if execute_broadcast == "true" else "simulated_no_onchain_broadcast",
+        },
+        {
+            "name": "explorer_lookup_expected",
+            "status": "skip",
+            "value": "broadcast wiring not implemented in execute scaffold" if execute_broadcast == "true" else "no_tx_ids_emitted_in_current_execute_scaffold",
+        },
+        {
             "name": "scenario_file_valid",
             "status": "pass" if scenario_file else "skip",
             "value": scenario_file or None,
@@ -222,5 +249,9 @@ PY
   echo '  ]'
   echo '}'
 } > "$ARTIFACT_DIR/bundle_manifest.json"
+
+if [[ "$EXECUTE_BROADCAST" == "true" ]]; then
+  echo "WARN: EXECUTE_BROADCAST=true requested, but broadcast wiring is not implemented yet; emitted scaffold evidence only." >&2
+fi
 
 echo "Generated execute evidence bundle in $ARTIFACT_DIR for scenario '$SCENARIO'."

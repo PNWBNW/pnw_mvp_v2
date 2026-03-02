@@ -48,7 +48,8 @@ GH_TOKEN="<github-token>" \
   --repo "<owner>/<repo>" \
   --ref "main" \
   --scenario "payroll_smoke" \
-  --scenario-file "config/scenarios/testnet/min_spend.payroll.json"
+  --scenario-file "config/scenarios/testnet/min_spend.payroll.json" \
+  --execute-broadcast "false"
 ```
 
 This sends the selected `scenario` into `.github/workflows/execute_testnet.yml`.
@@ -57,11 +58,17 @@ This sends the selected `scenario` into `.github/workflows/execute_testnet.yml`.
 
 You can preview the exact dispatch payload without calling GitHub using `--dry-run`.
 
-Optional: include a Phase A scenario payload path via `scenario_file` input (workflow dispatch) to validate and attach scenario metadata in execute evidence artifacts.
-
-You can preview the exact dispatch payload without calling GitHub using `--dry-run`.
+`execute_broadcast` controls intent for broadcast behavior (`false` by default). In the current scaffold, `true` is recorded in artifacts/metadata but does not submit on-chain transactions yet.
 
 Optional: include a Phase A scenario payload path via `scenario_file` input (workflow dispatch) to validate and attach scenario metadata in execute evidence artifacts.
+
+
+> **Important:** Current `execute_gate` is an execution scaffold that validates env/manifest/scenario and emits evidence artifacts, but it does **not** broadcast Aleo transactions yet.
+>
+> As a result, `artifacts/phase4_execute_bundle/tx_ids.json` is expected to be empty in current runs, so you will not find those runs on Provable Explorer until broadcast wiring is implemented.
+>
+> Keep `RPC_URL` explicitly set to your intended node endpoint (for testnet, e.g. `https://api.provable.com/v2/testnet`) so endpoint intent is captured in execute verification metadata.
+
 
 ## 1) Scaffold status in this repo
 

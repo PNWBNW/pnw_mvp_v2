@@ -20,6 +20,14 @@ on:
         required: false
         default: ""
         type: string
+      execute_broadcast:
+        description: "Attempt broadcast mode (currently recorded for intent; scaffold does not submit on-chain tx yet)"
+        required: false
+        default: "false"
+        type: choice
+        options:
+          - "false"
+          - "true"
 
 jobs:
   execute_gate:
@@ -50,6 +58,7 @@ jobs:
       USDCX_PROGRAM_ID: ${{ secrets.USDCX_PROGRAM_ID }}
       PHASE4_SCENARIO: ${{ github.event.inputs.scenario || 'payroll_smoke' }}
       PHASE4_SCENARIO_FILE: ${{ github.event.inputs.scenario_file || '' }}
+      EXECUTE_BROADCAST: ${{ github.event.inputs.execute_broadcast || 'false' }}
 
     steps:
       - name: Checkout
@@ -112,7 +121,8 @@ jobs:
             "rpc_url_present": true,
             "run_mode": "execute",
             "scenario": "${PHASE4_SCENARIO}",
-            "scenario_file": "${PHASE4_SCENARIO_FILE}"
+            "scenario_file": "${PHASE4_SCENARIO_FILE}",
+            "execute_broadcast": "${EXECUTE_BROADCAST}"
           }
           META
 
