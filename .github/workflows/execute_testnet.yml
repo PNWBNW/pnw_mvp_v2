@@ -9,7 +9,7 @@ on:
       scenario:
         description: "Execute scenario"
         required: true
-        default: "payroll_smoke"
+        default: "onboarding_smoke"
         type: choice
         options:
           - payroll_smoke
