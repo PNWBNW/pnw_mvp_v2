@@ -86,6 +86,9 @@ jobs:
       - name: Phase 4 adapter scaffold gate
         run: npx --yes --package typescript tsc -p portal/tsconfig.phase4.json
 
+      - name: Phase 4 adapter codec tests
+        run: scripts/run_phase4_adapter_tests.sh
+
       - name: Validate testnet manifest schema
         run: python3 scripts/validate_testnet_manifest.py config/testnet.manifest.json
 
