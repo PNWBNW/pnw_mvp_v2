@@ -161,3 +161,25 @@ Execute-mode workflows also require env/secrets presence checks via:
 ```bash
 scripts/require_phase4_execute_env.sh
 ```
+
+
+## 8) Reproducible happy-path execute wrapper
+
+Run the end-to-end testnet happy-path wrapper:
+
+```bash
+MANIFEST_PATH=config/testnet.manifest.json \
+PNW_NETWORK=testnet \
+RPC_URL="https://api.provable.com/v2/testnet" \
+USDCX_PROGRAM_ID="test_usdcx_stablecoin.aleo" \
+ALEO_PRIVATE_KEY="<private-key>" \
+ALEO_VIEW_KEY="<view-key>" \
+ALEO_ADDRESS="<address>" \
+scripts/run_phase4_testnet_happy_path.sh \
+  --scenario payroll_smoke \
+  --scenario-file config/scenarios/testnet/min_spend.payroll.json \
+  --execute-broadcast false
+```
+
+This wraps manifest validation, execute env checks, scenario execution, and emits a compact artifact summary.
+
