@@ -67,6 +67,7 @@ Validation notes:
 - `scripts/require_phase4_execute_env.sh` enforces `RPC_URL` scheme (`http://` or `https://`).
 - `scripts/require_phase4_execute_env.sh` verifies `PNW_NETWORK` and `USDCX_PROGRAM_ID` are consistent with `MANIFEST_PATH`.
 - `scripts/verify_phase4_receipts.py` supports `best_effort|required`; use `required` when you need hard receipt confirmation gates (e.g., paystub receipt trails).
+- In `required` mode, `EXECUTE_BROADCAST` must be `true` and `PHASE4_BROADCAST_COMMANDS_FILE` must point to real submission commands (not `broadcast_commands.sample.json`).
 - `scripts/run_phase4_execute_scenario.sh` now emits an evidence bundle under `artifacts/phase4_execute_bundle/` with:
   - `step_traces.json` (`phase4.step_traces.v1`)
   - `tx_ids.json` (`phase4.tx_ids.v1`)

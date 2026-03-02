@@ -117,6 +117,23 @@ jobs:
       - name: Require execute secrets and env
         run: scripts/require_phase4_execute_env.sh
 
+      - name: Validate strict receipt mode prerequisites
+        run: |
+          if [[ "$RECEIPT_VERIFICATION_MODE" == "required" ]]; then
+            if [[ "$EXECUTE_BROADCAST" != "true" ]]; then
+              echo "ERROR: RECEIPT_VERIFICATION_MODE=required requires EXECUTE_BROADCAST=true" >&2
+              exit 1
+            fi
+            if [[ -z "$PHASE4_BROADCAST_COMMANDS_FILE" ]]; then
+              echo "ERROR: RECEIPT_VERIFICATION_MODE=required requires PHASE4_BROADCAST_COMMANDS_FILE" >&2
+              exit 1
+            fi
+            if [[ "$PHASE4_BROADCAST_COMMANDS_FILE" == *"broadcast_commands.sample.json" ]]; then
+              echo "ERROR: required receipt mode cannot use sample broadcast commands file; provide real submit commands that return real tx ids" >&2
+              exit 1
+            fi
+          fi
+
       - name: Execute selected Phase 4 scenario
         run: |
           if [[ -n "$PHASE4_SCENARIO_FILE" ]]; then

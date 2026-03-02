@@ -16,7 +16,8 @@ This avoids reformatting payloads between "test deploy" and "real deploy" paths.
 - `schema.phaseA.json` — canonical scenario schema for current planning/execution boundary.
 - `testnet/min_spend.payroll.json` — starter low-value payroll sample using provided worker/employer inputs.
 - `testnet/min_spend.onboarding.json` — starter low-value onboarding sample (including employer suffix code).
-- `testnet/broadcast_commands.sample.json` — sample command list used when `EXECUTE_BROADCAST=true`.
+- `testnet/broadcast_commands.sample.json` — sample command list (placeholder output only; not for strict receipt mode).
+- `testnet/broadcast_commands.onboarding.template.json` — template for real command-driven submissions when `RECEIPT_VERIFICATION_MODE=required`.
 
 ## Name hash derivation
 
