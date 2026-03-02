@@ -65,7 +65,7 @@ _Status: Completed — testnet execute gate succeeded and artifacts were capture
 - Prereq checks -> plan -> execute -> verify anchors/receipts.
 
 **Acceptance checks**
-- Run emits machine-readable summary and human-readable report.
+- Run emits machine-readable summary and human-readable report (`scripts/run_phase4_testnet_happy_path.sh`).
 
 ## Recently completed
 
