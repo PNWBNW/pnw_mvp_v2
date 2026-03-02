@@ -29,7 +29,7 @@ _Status: In progress — canonical schema, validator, and Phase B `scenario_file
 
 ## 1) Finalize Phase 4 adapter command codec
 
-_Status: In progress — deterministic `step.kind` command/codec mapping + typed adapter errors + trace schema are now scaffolded in `portal/src/adapters/aleo_cli_adapter.ts`; retry boundary scaffold added for retryable execution errors; baseline adapter tests added in `portal/tests/phase4_adapter.test.ts`; expand coverage as new transitions are wired._
+_Status: In progress — deterministic `step.kind` command/codec mapping + typed adapter errors + trace schema are now scaffolded in `portal/src/adapters/aleo_cli_adapter.ts`; retry boundary scaffold added for retryable execution errors; baseline adapter tests added in `portal/tests/phase4_adapter.test.ts`; exhaustive plan-only command coverage now includes all Layer 2 `step.kind` variants._
 
 - Map each `step.kind` to exact `{program, transition, argCodec}`.
 - Replace scaffold command generation with concrete Aleo CLI syntax.
