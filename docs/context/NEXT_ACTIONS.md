@@ -1,12 +1,26 @@
 # Next Actions (Ordered)
 
-_Last updated: 2026-02-28_
+_Last updated: 2026-03-01_
 
-## Next best steps (1-3)
+## Next best steps (0-3)
 
+0. Finalize Phase A scenario contract and collect sample participant data.
 1. Finalize Phase 4 adapter command codec.
 2. Run execute gate smoke in protected environment.
 3. Script one reproducible happy-path testnet flow.
+
+
+## 0) Phase A scenario contract (new)
+
+_Status: Started — canonical scenario schema and a low-spend testnet sample are now committed under `config/scenarios/`; dependency-free validator added at `scripts/validate_phaseA_scenario.py`._
+
+- Keep one canonical payload format for test deploy + future app/backend dispatch.
+- Collect real participant/test values (name hashes, addresses, agreement/epoch, anchors).
+- Validate every scenario file before execute runs.
+
+**Acceptance checks**
+- `python3 scripts/validate_phaseA_scenario.py config/scenarios/testnet/min_spend.payroll.json`
+- Scenario payload remains compatible with Layer 1 `execute_payroll` field requirements.
 
 ## 1) Finalize Phase 4 adapter command codec
 
