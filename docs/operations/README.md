@@ -22,6 +22,7 @@ For thread continuity and action tracking, also review:
 - `../../scripts/validate_testnet_manifest.py` — manifest schema validator used by CI gates.
 - `../../scripts/require_phase4_execute_env.sh` — execute-mode env/secrets presence gate.
 - `../../scripts/check_layer1_public_leakage_guards.py` — CI guardrail against cumulative public spend-counter patterns in Layer 1 Leo sources.
+- `../../scripts/run_phase4_adapter_tests.sh` — compile + execute Phase 4 adapter codec tests (plan-only coverage + retry/error semantics).
 - `../../config/scenarios/schema.phaseA.json` — canonical scenario input contract for test + app dispatch parity.
 - `../../scripts/validate_phaseA_scenario.py` — dependency-free Phase A scenario validator.
 - `../../scripts/derive_phaseA_name_hash.py` — deterministic local hash helper for raw worker/employer names.

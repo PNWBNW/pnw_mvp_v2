@@ -41,7 +41,7 @@ _Status: In progress — deterministic `step.kind` command/codec mapping + typed
 
 **Acceptance checks**
 - `npx --yes --package typescript tsc -p portal/tsconfig.phase4.json`
-- Adapter unit/integration checks for codec serialization and trace schema.
+- Adapter unit/integration checks for codec serialization and trace schema (`scripts/run_phase4_adapter_tests.sh`).
 - Ensure command generation maps each `step.kind` to concrete CLI args (replace generic JSON args mode).
 
 ## 2) Execute gate smoke run in protected environment
@@ -63,5 +63,6 @@ _Status: In progress — deterministic `step.kind` command/codec mapping + typed
 ## Recently completed
 
 - ✅ Added static leakage guard script (`scripts/check_layer1_public_leakage_guards.py`) and wired it into `plan_gate`.
+- ✅ Added `scripts/run_phase4_adapter_tests.sh` and wired adapter codec tests into `plan_gate`.
 - ✅ Split GitHub Actions into plan vs execute gates.
 - ✅ Added canonical testnet manifest + validation script.
