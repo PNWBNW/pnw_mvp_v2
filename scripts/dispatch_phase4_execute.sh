@@ -86,6 +86,12 @@ if [[ "$DRY_RUN" == "true" ]]; then
   exit 0
 fi
 
+if [[ "$DRY_RUN" == "true" ]]; then
+  echo "DRY RUN: would dispatch ${WORKFLOW_FILE} on ${REPO}@${REF} with payload:"
+  echo "$PAYLOAD"
+  exit 0
+fi
+
 HTTP_CODE=$(curl -sS -o /tmp/phase4_dispatch_response.json -w "%{http_code}" \
   -X POST \
   -H "Accept: application/vnd.github+json" \
