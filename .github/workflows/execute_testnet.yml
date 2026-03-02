@@ -33,6 +33,14 @@ on:
         required: false
         default: ""
         type: string
+      receipt_verification_mode:
+        description: "Receipt verification policy"
+        required: false
+        default: "best_effort"
+        type: choice
+        options:
+          - "best_effort"
+          - "required"
 
 jobs:
   execute_gate:
@@ -65,6 +73,7 @@ jobs:
       PHASE4_SCENARIO_FILE: ${{ github.event.inputs.scenario_file || '' }}
       EXECUTE_BROADCAST: ${{ github.event.inputs.execute_broadcast || 'false' }}
       PHASE4_BROADCAST_COMMANDS_FILE: ${{ github.event.inputs.broadcast_commands_file || '' }}
+      RECEIPT_VERIFICATION_MODE: ${{ github.event.inputs.receipt_verification_mode || 'best_effort' }}
 
     steps:
       - name: Checkout
@@ -120,7 +129,7 @@ jobs:
         run: python3 scripts/verify_phase4_execute_artifacts.py artifacts/phase4_execute_bundle
 
       - name: Verify broadcast receipts (best-effort)
-        run: python3 scripts/verify_phase4_receipts.py artifacts/phase4_execute_bundle "$RPC_URL"
+        run: python3 scripts/verify_phase4_receipts.py artifacts/phase4_execute_bundle "$RPC_URL" "$RECEIPT_VERIFICATION_MODE"
 
       - name: Emit execute gate metadata
         run: |
@@ -135,7 +144,8 @@ jobs:
             "scenario": "${PHASE4_SCENARIO}",
             "scenario_file": "${PHASE4_SCENARIO_FILE}",
             "execute_broadcast": "${EXECUTE_BROADCAST}",
-            "broadcast_commands_file": "${PHASE4_BROADCAST_COMMANDS_FILE}"
+            "broadcast_commands_file": "${PHASE4_BROADCAST_COMMANDS_FILE}",
+            "receipt_verification_mode": "${RECEIPT_VERIFICATION_MODE}"
           }
           META
 
