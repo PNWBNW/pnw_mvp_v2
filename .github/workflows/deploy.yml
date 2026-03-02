@@ -69,3 +69,6 @@ jobs:
 
       - name: Enforce Layer 1 public-state leakage guard
         run: python3 scripts/check_layer1_public_leakage_guards.py
+
+      - name: Enforce execute negative-path guards
+        run: scripts/check_phase4_negative_path_guards.sh
