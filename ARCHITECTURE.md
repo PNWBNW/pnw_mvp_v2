@@ -551,3 +551,40 @@ Future enhancements can add:
 - Worker-controlled selective disclosure primitives
 - Advanced invoice/billing workflows
 - Token registry resolution and formal USDCx metadata bindings
+
+## 13. External Review Alignment (Privacy, Audit Semantics, Custody)
+
+This section captures our alignment with common payroll-program review feedback (including concerns raised in buildathon reviews):
+
+### 13.1 Prevent cumulative-total leakage
+
+We do **not** expose cumulative payroll totals in public mappings (for example `total_spent` deltas).
+
+Instead:
+- payroll amounts are processed in private records,
+- public Layer 1 state is commitment-first,
+- and audit anchoring stores hash-only events.
+
+This avoids salary inference from "before/after" public counters.
+
+### 13.2 Distinguish audit evidence classes
+
+Audit data is intentionally separated by evidence type:
+- **existence/order anchors** (Layer 1 hash logs),
+- **document commitments** (`doc_hash` / `root` / `inputs_hash`),
+- **authorization scope** (credential/audit NFTs),
+- **selective disclosure proofs** (Merkle proofs, future ZK extensions).
+
+This is more useful for auditors than a single generic "spent total" record.
+
+### 13.3 Custody model is intentionally non-pooled in MVP
+
+MVP v2 intentionally avoids protocol-level pooled custody.
+
+Current model:
+- employer-owned USDCx input records are consumed,
+- worker-owned output records are created,
+- no protocol treasury or shared payroll pot is maintained.
+
+If budget custody features are introduced later, they will be explicit extension modules with separate risk/compliance controls.
+

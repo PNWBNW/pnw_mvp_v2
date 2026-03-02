@@ -1,0 +1,29 @@
+{
+  "schema_version": "phaseA.scenario.v1",
+  "scenario_id": "testnet.min_spend.onboarding.john-doe-acme",
+  "scenario_kind": "onboarding",
+  "network": "testnet",
+  "execution_mode": "plan_only",
+  "participants": {
+    "employer": {
+      "name_raw": "Acme Inc.",
+      "name_hash_hex": "0x94237d83d5738ff14b43023d4b39324bb6f54eae7163e3195eb179c7fb296fd4",
+      "address": "aleo1qqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqm3k3f"
+    },
+    "worker": {
+      "name_raw": "John D. Doe",
+      "name_hash_hex": "0x07ffe942bd893f22eb76a8ae636230ce3b7d58354bce921bdcfa4bd1f0b3c7ad",
+      "address": "aleo1jtqxvdqdxdw34sh3smjltuh7t3rwrdraa4eq58694rdzf0vk2syq5ajvw6"
+    }
+  },
+  "onboarding": {
+    "employer_suffix_code": 40,
+    "employer_suffix_label": "Washington State",
+    "worker_fee_amount": "0",
+    "employer_fee_amount": "0"
+  },
+  "notes": [
+    "Suffix code 40 corresponds to STATE in pnw_name_registry.",
+    "Use only tier-1 employer registration path (10 USDCx base + fee_amount) during initial tests."
+  ]
+}

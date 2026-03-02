@@ -1,11 +1,46 @@
 #!/usr/bin/env bash
 set -euo pipefail
 
-SCENARIO="${1:-}"
+SCENARIO=""
+SCENARIO_FILE=""
+
+usage() {
+  echo "Usage: scripts/run_phase4_execute_scenario.sh [--scenario <payroll_smoke|onboarding_smoke|nft_smoke>] [--scenario-file <path>]" >&2
+}
+
+while [[ $# -gt 0 ]]; do
+  case "$1" in
+    --scenario)
+      SCENARIO="${2:-}"
+      shift 2
+      ;;
+    --scenario-file)
+      SCENARIO_FILE="${2:-}"
+      shift 2
+      ;;
+    -h|--help)
+      usage
+      exit 0
+      ;;
+    *)
+      if [[ -z "$SCENARIO" ]]; then
+        SCENARIO="$1"
+        shift
+      else
+        echo "ERROR: unsupported argument '$1'" >&2
+        usage
+        exit 1
+      fi
+      ;;
+  esac
+done
+
 if [[ -z "$SCENARIO" ]]; then
-  echo "ERROR: scenario argument is required" >&2
-  echo "Usage: scripts/run_phase4_execute_scenario.sh <payroll_smoke|onboarding_smoke|nft_smoke>" >&2
-  exit 1
+  SCENARIO="${PHASE4_SCENARIO:-payroll_smoke}"
+fi
+
+if [[ -z "$SCENARIO_FILE" ]]; then
+  SCENARIO_FILE="${PHASE4_SCENARIO_FILE:-}"
 fi
 
 case "$SCENARIO" in
@@ -13,6 +48,7 @@ case "$SCENARIO" in
     ;;
   *)
     echo "ERROR: unsupported scenario '$SCENARIO'" >&2
+    usage
     exit 1
     ;;
 esac
@@ -20,19 +56,74 @@ esac
 ARTIFACT_DIR="artifacts/phase4_execute_bundle"
 MANIFEST_PATH="${MANIFEST_PATH:-config/testnet.manifest.json}"
 NETWORK="${PNW_NETWORK:-testnet}"
+RPC_URL="${RPC_URL:-}"
+EXECUTE_BROADCAST="${EXECUTE_BROADCAST:-false}"
+
+if [[ "$EXECUTE_BROADCAST" != "true" && "$EXECUTE_BROADCAST" != "false" ]]; then
+  echo "ERROR: EXECUTE_BROADCAST must be true or false (got: $EXECUTE_BROADCAST)" >&2
+  exit 1
+fi
 
 mkdir -p "$ARTIFACT_DIR"
 
 python3 scripts/validate_testnet_manifest.py "$MANIFEST_PATH"
 scripts/require_phase4_execute_env.sh
 
-python3 - "$SCENARIO" "$NETWORK" "$MANIFEST_PATH" "$ARTIFACT_DIR" <<'PY'
+SCENARIO_PAYLOAD_ID=""
+SCENARIO_PAYLOAD_MODE=""
+SCENARIO_PAYLOAD_KIND=""
+if [[ -n "$SCENARIO_FILE" ]]; then
+  if [[ ! -f "$SCENARIO_FILE" ]]; then
+    echo "ERROR: scenario file not found: $SCENARIO_FILE" >&2
+    exit 1
+  fi
+
+  python3 scripts/validate_phaseA_scenario.py "$SCENARIO_FILE"
+
+  SCENARIO_META_RAW="$(python3 - "$SCENARIO_FILE" "$NETWORK" "$SCENARIO" <<'PY'
+import json
+import sys
+from pathlib import Path
+
+path = Path(sys.argv[1])
+network = sys.argv[2]
+scenario = sys.argv[3]
+data = json.loads(path.read_text(encoding="utf-8"))
+
+if data.get("network") != network:
+    print(f"ERROR: scenario file network '{data.get('network')}' does not match PNW_NETWORK '{network}'", file=sys.stderr)
+    raise SystemExit(1)
+
+scenario_kind = data.get("scenario_kind")
+expected_kind = {
+    "payroll_smoke": "payroll",
+    "onboarding_smoke": "onboarding",
+}.get(scenario)
+if expected_kind is not None and scenario_kind != expected_kind:
+    print(
+        f"ERROR: scenario '{scenario}' expects scenario_kind '{expected_kind}' but scenario file has '{scenario_kind}'",
+        file=sys.stderr,
+    )
+    raise SystemExit(1)
+
+print(data.get("scenario_id", ""))
+print(data.get("execution_mode", ""))
+print(scenario_kind or "")
+PY
+ )" || exit 1
+  IFS=$'\n' read -r -d '' -a SCENARIO_META < <(printf '%s\0' "$SCENARIO_META_RAW")
+  SCENARIO_PAYLOAD_ID="${SCENARIO_META[0]:-}"
+  SCENARIO_PAYLOAD_MODE="${SCENARIO_META[1]:-}"
+  SCENARIO_PAYLOAD_KIND="${SCENARIO_META[2]:-}"
+fi
+
+python3 - "$SCENARIO" "$NETWORK" "$MANIFEST_PATH" "$ARTIFACT_DIR" "$SCENARIO_FILE" "$SCENARIO_PAYLOAD_ID" "$SCENARIO_PAYLOAD_MODE" "$SCENARIO_PAYLOAD_KIND" "$RPC_URL" "$EXECUTE_BROADCAST" <<'PY'
 import json
 import sys
 import time
 from pathlib import Path
 
-scenario, network, manifest_path, artifact_dir = sys.argv[1:5]
+scenario, network, manifest_path, artifact_dir, scenario_file, scenario_payload_id, scenario_payload_mode, scenario_payload_kind, rpc_url, execute_broadcast = sys.argv[1:11]
 base = Path(artifact_dir)
 base.mkdir(parents=True, exist_ok=True)
 
@@ -74,6 +165,10 @@ for idx, kind in enumerate(scenario_steps[scenario]):
 step_traces = {
     "schema_version": "phase4.step_traces.v1",
     "scenario": scenario,
+    "scenario_file": scenario_file or None,
+    "scenario_payload_id": scenario_payload_id or None,
+    "scenario_payload_mode": scenario_payload_mode or None,
+    "scenario_payload_kind": scenario_payload_kind or None,
     "network": network,
     "manifest_path": manifest_path,
     "steps": steps,
@@ -82,6 +177,7 @@ step_traces = {
 transaction_ids = {
     "schema_version": "phase4.tx_ids.v1",
     "scenario": scenario,
+    "scenario_file": scenario_file or None,
     "network": network,
     "tx_ids": [],
 }
@@ -89,11 +185,37 @@ transaction_ids = {
 verification_summary = {
     "schema_version": "phase4.verification_summary.v1",
     "scenario": scenario,
+    "scenario_file": scenario_file or None,
     "network": network,
     "checks": [
         {"name": "manifest_valid", "status": "pass"},
         {"name": "execute_env_valid", "status": "pass"},
         {"name": "scenario_selected", "status": "pass", "value": scenario},
+        {
+            "name": "rpc_url",
+            "status": "pass" if rpc_url else "skip",
+            "value": rpc_url or None,
+        },
+        {
+            "name": "execute_broadcast",
+            "status": "pass",
+            "value": execute_broadcast,
+        },
+        {
+            "name": "broadcast_mode",
+            "status": "pass",
+            "value": "broadcast_requested_not_implemented" if execute_broadcast == "true" else "simulated_no_onchain_broadcast",
+        },
+        {
+            "name": "explorer_lookup_expected",
+            "status": "skip",
+            "value": "broadcast wiring not implemented in execute scaffold" if execute_broadcast == "true" else "no_tx_ids_emitted_in_current_execute_scaffold",
+        },
+        {
+            "name": "scenario_file_valid",
+            "status": "pass" if scenario_file else "skip",
+            "value": scenario_file or None,
+        },
     ],
 }
 
@@ -106,6 +228,10 @@ PY
   echo '{'
   echo '  "schema_version": "phase4.execute_bundle_manifest.v1",'
   echo "  \"scenario\": \"${SCENARIO}\"," 
+  echo "  \"scenario_file\": \"${SCENARIO_FILE}\"," 
+  echo "  \"scenario_payload_id\": \"${SCENARIO_PAYLOAD_ID}\"," 
+  echo "  \"scenario_payload_mode\": \"${SCENARIO_PAYLOAD_MODE}\"," 
+  echo "  \"scenario_payload_kind\": \"${SCENARIO_PAYLOAD_KIND}\"," 
   echo "  \"network\": \"${NETWORK}\"," 
   echo '  "files": ['
   first=1
@@ -123,5 +249,9 @@ PY
   echo '  ]'
   echo '}'
 } > "$ARTIFACT_DIR/bundle_manifest.json"
+
+if [[ "$EXECUTE_BROADCAST" == "true" ]]; then
+  echo "WARN: EXECUTE_BROADCAST=true requested, but broadcast wiring is not implemented yet; emitted scaffold evidence only." >&2
+fi
 
 echo "Generated execute evidence bundle in $ARTIFACT_DIR for scenario '$SCENARIO'."
