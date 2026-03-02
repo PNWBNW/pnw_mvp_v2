@@ -50,7 +50,9 @@ GH_TOKEN="<github-token>" \
   --scenario "payroll_smoke" \
   --scenario-file "config/scenarios/testnet/min_spend.payroll.json" \
   --execute-broadcast "false" \
-  --broadcast-commands-file "config/scenarios/testnet/broadcast_commands.sample.json"
+  --broadcast-commands-file "config/scenarios/testnet/broadcast_commands.sample.json" \
+  # OR pass inline JSON from this interface:
+  # --broadcast-commands-json "{\"schema_version\":\"phase4.broadcast_commands.v1\",\"commands\":[{\"name\":\"submit\",\"command\":\"<real command>\"}]}"
 ```
 
 This sends the selected `scenario` into `.github/workflows/execute_testnet.yml`.
@@ -62,7 +64,7 @@ You can preview the exact dispatch payload without calling GitHub using `--dry-r
 `execute_broadcast` controls whether execute mode will attempt command-driven submission (`false` by default).
 When `true`, set `PHASE4_BROADCAST_COMMANDS_FILE` to a JSON file containing the exact commands to run (see `config/scenarios/testnet/broadcast_commands.onboarding.template.json` for a strict-mode template (do not use `broadcast_commands.sample.json` in required mode)).
 Any extracted transaction IDs are recorded in `artifacts/phase4_execute_bundle/tx_ids.json`.
-When `execute_broadcast=true`, set `broadcast_commands_file` (workflow input) / `--broadcast-commands-file` (dispatch helper) so execute runs can replay explicit submission commands.
+When `execute_broadcast=true`, set `broadcast_commands_file` (workflow input) / `--broadcast-commands-file` (dispatch helper) so execute runs can replay explicit submission commands. You can also pass `broadcast_commands_json` / `--broadcast-commands-json` to avoid creating local files.
 
 Optional: include a Phase A scenario payload path via `scenario_file` input (workflow dispatch) to validate and attach scenario metadata in execute evidence artifacts.
 

@@ -33,6 +33,11 @@ on:
         required: false
         default: ""
         type: string
+      broadcast_commands_json:
+        description: "Inline JSON command list used when execute_broadcast=true (alternative to broadcast_commands_file)"
+        required: false
+        default: ""
+        type: string
       receipt_verification_mode:
         description: "Receipt verification policy"
         required: false
@@ -73,6 +78,7 @@ jobs:
       PHASE4_SCENARIO_FILE: ${{ github.event.inputs.scenario_file || '' }}
       EXECUTE_BROADCAST: ${{ github.event.inputs.execute_broadcast || 'false' }}
       PHASE4_BROADCAST_COMMANDS_FILE: ${{ github.event.inputs.broadcast_commands_file || '' }}
+      PHASE4_BROADCAST_COMMANDS_JSON: ${{ github.event.inputs.broadcast_commands_json || '' }}
       RECEIPT_VERIFICATION_MODE: ${{ github.event.inputs.receipt_verification_mode || 'best_effort' }}
 
     steps:
@@ -117,6 +123,24 @@ jobs:
       - name: Require execute secrets and env
         run: scripts/require_phase4_execute_env.sh
 
+      - name: Resolve broadcast commands source
+        run: |
+          BROADCAST_SOURCE="$PHASE4_BROADCAST_COMMANDS_FILE"
+          if [[ -n "$PHASE4_BROADCAST_COMMANDS_JSON" ]]; then
+            mkdir -p artifacts
+            BROADCAST_SOURCE="artifacts/phase4_broadcast_commands.inline.json"
+            printf '%s\n' "$PHASE4_BROADCAST_COMMANDS_JSON" > "$BROADCAST_SOURCE"
+            python3 - <<'PYINLINE'
+            import json
+            from pathlib import Path
+            p = Path("artifacts/phase4_broadcast_commands.inline.json")
+            obj = json.loads(p.read_text(encoding="utf-8"))
+            if not isinstance(obj, dict) or not isinstance(obj.get("commands"), list) or not obj.get("commands"):
+                raise SystemExit("ERROR: broadcast_commands_json must be a JSON object with non-empty 'commands' list")
+            PYINLINE
+          fi
+          echo "PHASE4_BROADCAST_COMMANDS_EFFECTIVE=$BROADCAST_SOURCE" >> "$GITHUB_ENV"
+
       - name: Validate strict receipt mode prerequisites
         run: |
           if [[ "$RECEIPT_VERIFICATION_MODE" == "required" ]]; then
@@ -124,11 +148,11 @@ jobs:
               echo "ERROR: RECEIPT_VERIFICATION_MODE=required requires EXECUTE_BROADCAST=true" >&2
               exit 1
             fi
-            if [[ -z "$PHASE4_BROADCAST_COMMANDS_FILE" ]]; then
+            if [[ -z "$PHASE4_BROADCAST_COMMANDS_EFFECTIVE" ]]; then
               echo "ERROR: RECEIPT_VERIFICATION_MODE=required requires PHASE4_BROADCAST_COMMANDS_FILE" >&2
               exit 1
             fi
-            if [[ "$PHASE4_BROADCAST_COMMANDS_FILE" == *"broadcast_commands.sample.json" ]]; then
+            if [[ "$PHASE4_BROADCAST_COMMANDS_EFFECTIVE" == *"broadcast_commands.sample.json" ]]; then
               echo "ERROR: required receipt mode cannot use sample broadcast commands file; provide real submit commands that return real tx ids" >&2
               exit 1
             fi
@@ -137,9 +161,9 @@ jobs:
       - name: Execute selected Phase 4 scenario
         run: |
           if [[ -n "$PHASE4_SCENARIO_FILE" ]]; then
-            scripts/run_phase4_execute_scenario.sh --scenario "$PHASE4_SCENARIO" --scenario-file "$PHASE4_SCENARIO_FILE"
+            scripts/run_phase4_execute_scenario.sh --scenario "$PHASE4_SCENARIO" --scenario-file "$PHASE4_SCENARIO_FILE" --broadcast-commands-file "$PHASE4_BROADCAST_COMMANDS_EFFECTIVE"
           else
-            scripts/run_phase4_execute_scenario.sh --scenario "$PHASE4_SCENARIO"
+            scripts/run_phase4_execute_scenario.sh --scenario "$PHASE4_SCENARIO" --broadcast-commands-file "$PHASE4_BROADCAST_COMMANDS_EFFECTIVE"
           fi
 
       - name: Verify execute evidence bundle integrity
@@ -161,7 +185,8 @@ jobs:
             "scenario": "${PHASE4_SCENARIO}",
             "scenario_file": "${PHASE4_SCENARIO_FILE}",
             "execute_broadcast": "${EXECUTE_BROADCAST}",
-            "broadcast_commands_file": "${PHASE4_BROADCAST_COMMANDS_FILE}",
+            "broadcast_commands_file": "${PHASE4_BROADCAST_COMMANDS_EFFECTIVE}",
+            "broadcast_commands_json_present": "${PHASE4_BROADCAST_COMMANDS_JSON:+true}",
             "receipt_verification_mode": "${RECEIPT_VERIFICATION_MODE}"
           }
           META
