@@ -1,16 +1,35 @@
 # Next Actions (Ordered)
 
-_Last updated: 2026-02-28_
+_Last updated: 2026-03-02_
 
-## Next best steps (1-3)
+## Next best steps (0-3)
 
+0. Finalize Phase A scenario contract and collect sample participant data.
 1. Finalize Phase 4 adapter command codec.
 2. Run execute gate smoke in protected environment.
 3. Script one reproducible happy-path testnet flow.
 
+
+## 0) Phase A/B scenario contract (new)
+
+_Status: In progress — canonical schema, validator, and Phase B `scenario_file` ingestion are wired; payroll + onboarding min-spend samples now include provided raw names, locally-derived hashes, worker destination address, and WA State suffix mapping._
+
+- Keep one canonical payload format for test deploy + future app/backend dispatch.
+- Collect real participant/test values (name hashes, addresses, agreement/epoch, anchors).
+- Validate every scenario file before execute runs.
+- Keep onboarding tests on tier-1 employer registration path only (10 USDCx base + fee).
+
+**Acceptance checks**
+- `python3 scripts/validate_phaseA_scenario.py config/scenarios/testnet/min_spend.payroll.json`
+- `python3 scripts/validate_phaseA_scenario.py config/scenarios/testnet/min_spend.onboarding.json`
+- `scripts/derive_phaseA_name_hash.py "John D. Doe"`
+- `scripts/derive_phaseA_name_hash.py "Acme Inc."`
+- `scripts/run_phase4_execute_scenario.sh --scenario payroll_smoke --scenario-file config/scenarios/testnet/min_spend.payroll.json`
+- Scenario payload remains compatible with Layer 1 `execute_payroll` field requirements.
+
 ## 1) Finalize Phase 4 adapter command codec
 
-_Status: In progress — deterministic `step.kind` command/codec mapping + typed adapter errors + trace schema are now scaffolded in `portal/src/adapters/aleo_cli_adapter.ts`; retry boundary scaffold added for retryable execution errors; baseline adapter tests added in `portal/tests/phase4_adapter.test.ts`; expand coverage as new transitions are wired._
+_Status: In progress — deterministic `step.kind` command/codec mapping + typed adapter errors + trace schema are now scaffolded in `portal/src/adapters/aleo_cli_adapter.ts`; retry boundary scaffold added for retryable execution errors; baseline adapter tests added in `portal/tests/phase4_adapter.test.ts`; exhaustive plan-only command coverage now includes all Layer 2 `step.kind` variants._
 
 - Map each `step.kind` to exact `{program, transition, argCodec}`.
 - Replace scaffold command generation with concrete Aleo CLI syntax.
