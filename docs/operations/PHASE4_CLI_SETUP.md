@@ -49,7 +49,8 @@ GH_TOKEN="<github-token>" \
   --ref "main" \
   --scenario "payroll_smoke" \
   --scenario-file "config/scenarios/testnet/min_spend.payroll.json" \
-  --execute-broadcast "false"
+  --execute-broadcast "false" \
+  --broadcast-commands-file "config/scenarios/testnet/broadcast_commands.sample.json"
 ```
 
 This sends the selected `scenario` into `.github/workflows/execute_testnet.yml`.
@@ -58,14 +59,17 @@ This sends the selected `scenario` into `.github/workflows/execute_testnet.yml`.
 
 You can preview the exact dispatch payload without calling GitHub using `--dry-run`.
 
-`execute_broadcast` controls intent for broadcast behavior (`false` by default). In the current scaffold, `true` is recorded in artifacts/metadata but does not submit on-chain transactions yet.
+`execute_broadcast` controls whether execute mode will attempt command-driven submission (`false` by default).
+When `true`, set `PHASE4_BROADCAST_COMMANDS_FILE` to a JSON file containing the exact commands to run (see `config/scenarios/testnet/broadcast_commands.sample.json`).
+Any extracted transaction IDs are recorded in `artifacts/phase4_execute_bundle/tx_ids.json`.
+When `execute_broadcast=true`, set `broadcast_commands_file` (workflow input) / `--broadcast-commands-file` (dispatch helper) so execute runs can replay explicit submission commands.
 
 Optional: include a Phase A scenario payload path via `scenario_file` input (workflow dispatch) to validate and attach scenario metadata in execute evidence artifacts.
 
 
-> **Important:** Current `execute_gate` is an execution scaffold that validates env/manifest/scenario and emits evidence artifacts, but it does **not** broadcast Aleo transactions yet.
+> **Important:** By default (`execute_broadcast=false`), execute runs are scaffold-mode and do not submit transactions.
 >
-> As a result, `artifacts/phase4_execute_bundle/tx_ids.json` is expected to be empty in current runs, so you will not find those runs on Provable Explorer until broadcast wiring is implemented.
+> With `execute_broadcast=true`, execute runs replay commands from `PHASE4_BROADCAST_COMMANDS_FILE` and may populate `artifacts/phase4_execute_bundle/tx_ids.json` from command output extraction.
 >
 > Keep `RPC_URL` explicitly set to your intended node endpoint (for testnet, e.g. `https://api.provable.com/v2/testnet`) so endpoint intent is captured in execute verification metadata.
 
@@ -175,6 +179,7 @@ USDCX_PROGRAM_ID="test_usdcx_stablecoin.aleo" \
 ALEO_PRIVATE_KEY="<private-key>" \
 ALEO_VIEW_KEY="<view-key>" \
 ALEO_ADDRESS="<address>" \
+PHASE4_BROADCAST_COMMANDS_FILE="config/scenarios/testnet/broadcast_commands.sample.json" \
 scripts/run_phase4_testnet_happy_path.sh \
   --scenario payroll_smoke \
   --scenario-file config/scenarios/testnet/min_spend.payroll.json \
