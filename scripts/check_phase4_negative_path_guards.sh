@@ -32,7 +32,7 @@ if [[ "$exit_code" -eq 0 ]]; then
   exit 1
 fi
 
-if ! rg -n "expects scenario_kind 'onboarding'" "$TMP_DIR/stderr.log" >/dev/null; then
+if ! grep -q "expects scenario_kind 'onboarding'" "$TMP_DIR/stderr.log"; then
   echo "negative-path guard: FAIL - expected mismatch error text not found" >&2
   cat "$TMP_DIR/stderr.log" >&2
   exit 1
