@@ -89,6 +89,10 @@ jobs:
       - name: Validate testnet manifest schema
         run: python3 scripts/validate_testnet_manifest.py config/testnet.manifest.json
 
+      - name: Enforce Layer 1 public-state leakage guard
+        run: python3 scripts/check_layer1_public_leakage_guards.py
+
+
   execute_gate:
     name: execute_gate
     if: ${{ github.event_name == 'workflow_dispatch' && github.event.inputs.run_mode == 'execute' }}

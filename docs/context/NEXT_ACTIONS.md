@@ -1,6 +1,6 @@
 # Next Actions (Ordered)
 
-_Last updated: 2026-03-02_
+_Last updated: 2026-03-01_
 
 ## Next best steps (0-3)
 
@@ -62,5 +62,6 @@ _Status: In progress — deterministic `step.kind` command/codec mapping + typed
 
 ## Recently completed
 
+- ✅ Added static leakage guard script (`scripts/check_layer1_public_leakage_guards.py`) and wired it into `plan_gate`.
 - ✅ Split GitHub Actions into plan vs execute gates.
 - ✅ Added canonical testnet manifest + validation script.
