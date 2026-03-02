@@ -6,7 +6,7 @@ _Last updated: 2026-03-01_
 
 ## Phase C readiness
 
-_Status: Ready to begin Phase C with guarded testnet execution lane; on-chain broadcast remains explicitly scaffold-only until broadcast wiring is implemented._
+_Status: Phase C started — guarded testnet execution lane is active; execute artifact integrity verifier now gates bundle consistency before upload; on-chain broadcast remains scaffold-only until broadcast wiring is implemented._
 
 0. Finalize Phase A scenario contract and collect sample participant data.
 1. Finalize Phase 4 adapter command codec.
@@ -73,6 +73,7 @@ _Status: Completed — testnet execute gate succeeded and artifacts were capture
 
 ## Recently completed
 
+- ✅ Added execute artifact integrity verifier (`scripts/verify_phase4_execute_artifacts.py`) and wired it into `execute_gate`.
 - ✅ Captured first execute-gate artifact SHA references from successful testnet run.
 - ✅ Added static leakage guard script (`scripts/check_layer1_public_leakage_guards.py`) and wired it into `plan_gate`.
 - ✅ Added `scripts/run_phase4_adapter_tests.sh` and wired adapter codec tests into `plan_gate`.
