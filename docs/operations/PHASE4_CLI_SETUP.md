@@ -26,8 +26,14 @@ This repo also includes a pinned workflow bootstrap:
 
 It installs pinned Leo/snarkOS binaries, verifies versions, and runs both planner typecheck gates.
 Use `workflow_dispatch` with:
-- `run_mode=plan_only` (default), or
-- `run_mode=execute` (runs a selected Phase 4 scenario via `scripts/run_phase4_execute_scenario.sh`).
+- `run_mode=execute` (default; runs a selected Phase 4 scenario via `scripts/run_phase4_execute_scenario.sh`), or
+- `run_mode=plan_only` (optional planner-only verification).
+
+Optional local workflow YAML validation (no PyYAML required):
+
+```bash
+scripts/validate_workflow_yaml.sh .github/workflows/deploy.yml
+```
 
 
 ### Dispatch execute runs from an app/backend
@@ -41,10 +47,15 @@ GH_TOKEN="<github-token>" \
   scripts/dispatch_phase4_execute.sh \
   --repo "<owner>/<repo>" \
   --ref "main" \
-  --scenario "payroll_smoke"
+  --scenario "payroll_smoke" \
+  --scenario-file "config/scenarios/testnet/min_spend.payroll.json"
 ```
 
 This sends `run_mode=execute` and the selected `scenario` into `.github/workflows/deploy.yml`.
+
+You can preview the exact dispatch payload without calling GitHub using `--dry-run`.
+
+Optional: include a Phase A scenario payload path via `scenario_file` input (workflow dispatch) to validate and attach scenario metadata in execute evidence artifacts.
 
 ## 1) Scaffold status in this repo
 
