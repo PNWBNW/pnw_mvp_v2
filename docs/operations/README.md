@@ -21,3 +21,7 @@ For thread continuity and action tracking, also review:
 - `../../config/testnet.manifest.json` — canonical testnet program-ID manifest for execute workflows.
 - `../../scripts/validate_testnet_manifest.py` — manifest schema validator used by CI gates.
 - `../../scripts/require_phase4_execute_env.sh` — execute-mode env/secrets presence gate.
+- `../../scripts/check_layer1_public_leakage_guards.py` — CI guardrail against cumulative public spend-counter patterns in Layer 1 Leo sources.
+- `../../config/scenarios/schema.phaseA.json` — canonical scenario input contract for test + app dispatch parity.
+- `../../scripts/validate_phaseA_scenario.py` — dependency-free Phase A scenario validator.
+- `../../scripts/derive_phaseA_name_hash.py` — deterministic local hash helper for raw worker/employer names.
