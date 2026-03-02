@@ -11,11 +11,11 @@ on:
       run_mode:
         description: "Execution mode (plan_only or execute)"
         required: true
-        default: "plan_only"
+        default: "execute"
         type: choice
         options:
-          - plan_only
           - execute
+          - plan_only
       scenario:
         description: "Execute scenario (used when run_mode=execute)"
         required: true
