@@ -22,7 +22,7 @@ on:
         type: string
       execute_broadcast:
         description: "Attempt broadcast mode (currently recorded for intent; scaffold does not submit on-chain tx yet)"
-        required: false
+        required: true
         default: "false"
         type: choice
         options:
