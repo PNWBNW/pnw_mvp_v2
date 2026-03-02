@@ -1,6 +1,6 @@
 # Phase 4 Execution Checklist (GitHub Actions + Secrets)
 
-_Last updated: 2026-02-27_
+_Last updated: 2026-03-02_
 
 This checklist is the **operator-focused sequence** to move from planning-only to testnet execution with minimal risk.
 
@@ -28,15 +28,15 @@ Runs on `pull_request` and `push`:
 - no secrets
 - no transaction execution
 
-### Lane B — `execute_gate` (manual + protected)
+### Lane B — `execute_gate` (testnet protected execute lane)
 
-Runs only on `workflow_dispatch` and protected environments:
-- requires environment reviewers
+Runs on `work` pushes and `workflow_dispatch` in protected environment context:
+- uses `testnet-staging` environment controls
 - consumes GitHub Secrets
 - executes limited happy-path script
 - uploads artifacts (trace JSON, tx IDs, verification summary)
 
-**Exit condition:** branch protection requires `plan_gate`; `execute_gate` cannot run from PR context.
+**Exit condition:** `plan_gate` remains PR-safe; `execute_gate` remains isolated in dedicated testnet execute workflow.
 
 ---
 
@@ -66,6 +66,8 @@ Rules:
 Validation notes:
 - `scripts/require_phase4_execute_env.sh` enforces `RPC_URL` scheme (`http://` or `https://`).
 - `scripts/require_phase4_execute_env.sh` verifies `PNW_NETWORK` and `USDCX_PROGRAM_ID` are consistent with `MANIFEST_PATH`.
+- `scripts/verify_phase4_receipts.py` supports `best_effort|required`; use `required` when you need hard receipt confirmation gates (e.g., paystub receipt trails).
+- In `required` mode, `EXECUTE_BROADCAST` must be `true` and `PHASE4_BROADCAST_COMMANDS_FILE` must point to real submission commands (not `broadcast_commands.sample.json`).
 - `scripts/run_phase4_execute_scenario.sh` now emits an evidence bundle under `artifacts/phase4_execute_bundle/` with:
   - `step_traces.json` (`phase4.step_traces.v1`)
   - `tx_ids.json` (`phase4.tx_ids.v1`)
@@ -120,12 +122,17 @@ Validation targets:
 
 **Exit condition:** one reproducible runbook command with artifacts attached.
 
+Latest captured execute evidence (2026-03-02):
+- `execute-gate-metadata` artifact SHA256: `3d5d6ce776f140765575530a28d1449e96074c2c243989a906fbf7a7c5bf5fc3`
+- `execute-evidence-bundle` artifact SHA256: `b3107697f28fb7c4b8d041b4477be82e2c150d3257a0eaf5e7b20c37dbe0f947`
+
 ---
 
 ## 7) Expand into Phase 5/6 after first green run
 
 Phase 5 (correctness):
 - add one negative-path test per critical invariant
+- enforce onboarding/payroll scenario-kind mismatch rejection in CI (`scripts/check_phase4_negative_path_guards.sh`)
 - confirm payroll NFT mint from real receipts
 - confirm minimal audit auth + attestation lifecycle
 
