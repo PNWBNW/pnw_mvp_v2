@@ -46,6 +46,8 @@ GH_TOKEN="<github-token>" \
 
 This sends `run_mode=execute` and the selected `scenario` into `.github/workflows/deploy.yml`.
 
+Optional: include a Phase A scenario payload path via `scenario_file` input (workflow dispatch) to validate and attach scenario metadata in execute evidence artifacts.
+
 ## 1) Scaffold status in this repo
 
 Phase 4 now includes a baseline Layer 2 adapter scaffold:
