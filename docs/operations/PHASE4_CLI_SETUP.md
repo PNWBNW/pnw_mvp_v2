@@ -21,13 +21,19 @@ Reference artifacts:
 
 ## CI workflow bootstrap (GitHub Actions)
 
-This repo also includes a pinned workflow bootstrap:
-- `.github/workflows/deploy.yml`
+This repo now uses split workflows:
+- `.github/workflows/deploy.yml` for plan/test gates only
+- `.github/workflows/execute_testnet.yml` for testnet execute gate
 
-It installs pinned Leo/snarkOS binaries, verifies versions, and runs both planner typecheck gates.
-Use `workflow_dispatch` with:
-- `run_mode=plan_only` (default), or
-- `run_mode=execute` (runs a selected Phase 4 scenario via `scripts/run_phase4_execute_scenario.sh`).
+`deploy.yml` installs pinned Leo/snarkOS binaries, verifies versions, and runs planner/typecheck/test guards (triggered on pull requests and pushes to `main`).
+`execute_testnet.yml` runs execute-mode scenarios on `work` pushes or manual `workflow_dispatch`.
+
+Optional local workflow YAML validation (no PyYAML required):
+
+```bash
+scripts/validate_workflow_yaml.sh .github/workflows/deploy.yml
+scripts/validate_workflow_yaml.sh .github/workflows/execute_testnet.yml
+```
 
 
 ### Dispatch execute runs from an app/backend
@@ -41,10 +47,28 @@ GH_TOKEN="<github-token>" \
   scripts/dispatch_phase4_execute.sh \
   --repo "<owner>/<repo>" \
   --ref "main" \
-  --scenario "payroll_smoke"
+  --scenario "payroll_smoke" \
+  --scenario-file "config/scenarios/testnet/min_spend.payroll.json" \
+  --execute-broadcast "false"
 ```
 
-This sends `run_mode=execute` and the selected `scenario` into `.github/workflows/deploy.yml`.
+This sends the selected `scenario` into `.github/workflows/execute_testnet.yml`.
+
+`execute_gate` runs automatically on pushes to the `work` branch (testnet-staging environment), or by manual workflow dispatch.
+
+You can preview the exact dispatch payload without calling GitHub using `--dry-run`.
+
+`execute_broadcast` controls intent for broadcast behavior (`false` by default). In the current scaffold, `true` is recorded in artifacts/metadata but does not submit on-chain transactions yet.
+
+Optional: include a Phase A scenario payload path via `scenario_file` input (workflow dispatch) to validate and attach scenario metadata in execute evidence artifacts.
+
+
+> **Important:** Current `execute_gate` is an execution scaffold that validates env/manifest/scenario and emits evidence artifacts, but it does **not** broadcast Aleo transactions yet.
+>
+> As a result, `artifacts/phase4_execute_bundle/tx_ids.json` is expected to be empty in current runs, so you will not find those runs on Provable Explorer until broadcast wiring is implemented.
+>
+> Keep `RPC_URL` explicitly set to your intended node endpoint (for testnet, e.g. `https://api.provable.com/v2/testnet`) so endpoint intent is captured in execute verification metadata.
+
 
 ## 1) Scaffold status in this repo
 
@@ -137,3 +161,27 @@ Execute-mode workflows also require env/secrets presence checks via:
 ```bash
 scripts/require_phase4_execute_env.sh
 ```
+
+
+## 8) Reproducible happy-path execute wrapper
+
+Run the end-to-end testnet happy-path wrapper:
+
+```bash
+MANIFEST_PATH=config/testnet.manifest.json \
+PNW_NETWORK=testnet \
+RPC_URL="https://api.provable.com/v2/testnet" \
+USDCX_PROGRAM_ID="test_usdcx_stablecoin.aleo" \
+ALEO_PRIVATE_KEY="<private-key>" \
+ALEO_VIEW_KEY="<view-key>" \
+ALEO_ADDRESS="<address>" \
+scripts/run_phase4_testnet_happy_path.sh \
+  --scenario payroll_smoke \
+  --scenario-file config/scenarios/testnet/min_spend.payroll.json \
+  --execute-broadcast false
+```
+
+This wraps manifest validation, execute env checks, scenario execution, and emits a compact artifact summary.
+
+`execute_testnet.yml` now also verifies execute evidence bundle integrity before artifact upload via `scripts/verify_phase4_execute_artifacts.py`.
+
