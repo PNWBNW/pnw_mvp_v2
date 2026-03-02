@@ -130,6 +130,7 @@ Latest captured execute evidence (2026-03-02):
 
 Phase 5 (correctness):
 - add one negative-path test per critical invariant
+- enforce onboarding/payroll scenario-kind mismatch rejection in CI (`scripts/check_phase4_negative_path_guards.sh`)
 - confirm payroll NFT mint from real receipts
 - confirm minimal audit auth + attestation lifecycle
 

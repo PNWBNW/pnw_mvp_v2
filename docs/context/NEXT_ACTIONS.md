@@ -1,6 +1,6 @@
 # Next Actions (Ordered)
 
-_Last updated: 2026-03-01_
+_Last updated: 2026-03-02_
 
 ## Next best steps (0-3)
 
@@ -73,6 +73,8 @@ _Status: Completed — testnet execute gate succeeded and artifacts were capture
 
 ## Recently completed
 
+- ✅ C3 started: added intentional negative-path guard test (`scripts/check_phase4_negative_path_guards.sh`) and wired it into `plan_gate`.
+- ✅ C2 started: best-effort RPC receipt verification now runs in `execute_gate` and emits `receipt_verification.json`.
 - ✅ C1 started: `EXECUTE_BROADCAST=true` now uses command-driven submission via `PHASE4_BROADCAST_COMMANDS_FILE` and records extracted tx IDs in execute artifacts.
 - ✅ Added execute artifact integrity verifier (`scripts/verify_phase4_execute_artifacts.py`) and wired it into `execute_gate`.
 - ✅ Captured first execute-gate artifact SHA references from successful testnet run.

@@ -119,6 +119,9 @@ jobs:
       - name: Verify execute evidence bundle integrity
         run: python3 scripts/verify_phase4_execute_artifacts.py artifacts/phase4_execute_bundle
 
+      - name: Verify broadcast receipts (best-effort)
+        run: python3 scripts/verify_phase4_receipts.py artifacts/phase4_execute_bundle "$RPC_URL"
+
       - name: Emit execute gate metadata
         run: |
           mkdir -p artifacts
