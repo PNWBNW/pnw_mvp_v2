@@ -14,6 +14,15 @@ _Status: Phase C started — guarded testnet execution lane is active; execute a
 3. Script one reproducible happy-path testnet flow.
 
 
+## PR-C4 preflight (targeted review)
+
+_Status: Ready for PR-C4 execution. This is a short alignment pass only; full readiness review is intentionally deferred until after first successful PR-C4 run._
+
+- ✅ Keep current plan/execute split and guards unchanged for PR-C4.
+- ✅ Use matching execute inputs only (`onboarding_smoke` + onboarding scenario file, or payroll pair).
+- 🔎 During PR-C4, capture run evidence links + artifact SHAs in this file immediately after each successful run.
+- 📌 After first successful PR-C4, run full readiness review and update statuses for sections 0/1 with operational evidence.
+
 ## 0) Phase A/B scenario contract (new)
 
 _Status: In progress — canonical schema, validator, and Phase B `scenario_file` ingestion are wired; payroll + onboarding min-spend samples now include provided raw names, locally-derived hashes, worker destination address, and WA State suffix mapping._
