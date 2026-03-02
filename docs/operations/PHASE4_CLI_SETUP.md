@@ -21,18 +21,18 @@ Reference artifacts:
 
 ## CI workflow bootstrap (GitHub Actions)
 
-This repo also includes a pinned workflow bootstrap:
-- `.github/workflows/deploy.yml`
+This repo now uses split workflows:
+- `.github/workflows/deploy.yml` for plan/test gates only
+- `.github/workflows/execute_testnet.yml` for testnet execute gate
 
-It installs pinned Leo/snarkOS binaries, verifies versions, and runs both planner typecheck gates.
-Use `workflow_dispatch` with:
-- `run_mode=execute` (default; runs a selected Phase 4 scenario via `scripts/run_phase4_execute_scenario.sh`), or
-- `run_mode=plan_only` (optional planner-only verification).
+`deploy.yml` installs pinned Leo/snarkOS binaries, verifies versions, and runs planner/typecheck/test guards.
+`execute_testnet.yml` runs execute-mode scenarios on `work` pushes or manual `workflow_dispatch`.
 
 Optional local workflow YAML validation (no PyYAML required):
 
 ```bash
 scripts/validate_workflow_yaml.sh .github/workflows/deploy.yml
+scripts/validate_workflow_yaml.sh .github/workflows/execute_testnet.yml
 ```
 
 
@@ -51,7 +51,13 @@ GH_TOKEN="<github-token>" \
   --scenario-file "config/scenarios/testnet/min_spend.payroll.json"
 ```
 
-This sends `run_mode=execute` and the selected `scenario` into `.github/workflows/deploy.yml`.
+This sends the selected `scenario` into `.github/workflows/execute_testnet.yml`.
+
+`execute_gate` runs automatically on pushes to the `work` branch (testnet-staging environment), or by manual workflow dispatch.
+
+You can preview the exact dispatch payload without calling GitHub using `--dry-run`.
+
+Optional: include a Phase A scenario payload path via `scenario_file` input (workflow dispatch) to validate and attach scenario metadata in execute evidence artifacts.
 
 You can preview the exact dispatch payload without calling GitHub using `--dry-run`.
 
