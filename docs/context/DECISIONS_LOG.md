@@ -26,3 +26,8 @@ Format:
   - **Why:** Operators may only have user-provided names at scenario-authoring time.
   - **Impact:** Scenario payloads can include `name_raw` + `name_hash_hex`; validator enforces local hash parity for reproducibility.
 
+
+- `2026-03-02` — **Keep cumulative payroll totals off public state; treat audit logs as typed evidence classes**
+  - **Why:** Public cumulative deltas can leak salary information and blur auditor evidence semantics.
+  - **Impact:** Preserve hash-only audit anchoring + separate commitment/scope/proof layers; do not add on-chain `total_spent`-style counters in MVP.
+

@@ -31,6 +31,10 @@ _Status: In progress — canonical schema, validator, and Phase B `scenario_file
 
 _Status: In progress — deterministic `step.kind` command/codec mapping + typed adapter errors + trace schema are now scaffolded in `portal/src/adapters/aleo_cli_adapter.ts`; retry boundary scaffold added for retryable execution errors; baseline adapter tests added in `portal/tests/phase4_adapter.test.ts`; exhaustive plan-only command coverage now includes all Layer 2 `step.kind` variants._
 
+- Add anti-leak invariants for public-state surfaces (no cumulative spend counters in public mappings).
+- Add an audit evidence taxonomy note/checklist for operator docs (anchor vs commitment vs scope vs proof).
+- Keep pooled custody as extension-only; do not introduce budget pot semantics in MVP execute path.
+
 - Map each `step.kind` to exact `{program, transition, argCodec}`.
 - Replace scaffold command generation with concrete Aleo CLI syntax.
 - Add typed error taxonomy and retry policy boundaries.
