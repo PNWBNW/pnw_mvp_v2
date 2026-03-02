@@ -41,10 +41,15 @@ GH_TOKEN="<github-token>" \
   scripts/dispatch_phase4_execute.sh \
   --repo "<owner>/<repo>" \
   --ref "main" \
-  --scenario "payroll_smoke"
+  --scenario "payroll_smoke" \
+  --scenario-file "config/scenarios/testnet/min_spend.payroll.json"
 ```
 
 This sends `run_mode=execute` and the selected `scenario` into `.github/workflows/deploy.yml`.
+
+You can preview the exact dispatch payload without calling GitHub using `--dry-run`.
+
+Optional: include a Phase A scenario payload path via `scenario_file` input (workflow dispatch) to validate and attach scenario metadata in execute evidence artifacts.
 
 ## 1) Scaffold status in this repo
 
