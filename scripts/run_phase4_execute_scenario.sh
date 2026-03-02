@@ -58,6 +58,7 @@ MANIFEST_PATH="${MANIFEST_PATH:-config/testnet.manifest.json}"
 NETWORK="${PNW_NETWORK:-testnet}"
 RPC_URL="${RPC_URL:-}"
 EXECUTE_BROADCAST="${EXECUTE_BROADCAST:-false}"
+BROADCAST_COMMANDS_FILE="${PHASE4_BROADCAST_COMMANDS_FILE:-}"
 
 if [[ "$EXECUTE_BROADCAST" != "true" && "$EXECUTE_BROADCAST" != "false" ]]; then
   echo "ERROR: EXECUTE_BROADCAST must be true or false (got: $EXECUTE_BROADCAST)" >&2
@@ -117,13 +118,15 @@ PY
   SCENARIO_PAYLOAD_KIND="${SCENARIO_META[2]:-}"
 fi
 
-python3 - "$SCENARIO" "$NETWORK" "$MANIFEST_PATH" "$ARTIFACT_DIR" "$SCENARIO_FILE" "$SCENARIO_PAYLOAD_ID" "$SCENARIO_PAYLOAD_MODE" "$SCENARIO_PAYLOAD_KIND" "$RPC_URL" "$EXECUTE_BROADCAST" <<'PY'
+python3 - "$SCENARIO" "$NETWORK" "$MANIFEST_PATH" "$ARTIFACT_DIR" "$SCENARIO_FILE" "$SCENARIO_PAYLOAD_ID" "$SCENARIO_PAYLOAD_MODE" "$SCENARIO_PAYLOAD_KIND" "$RPC_URL" "$EXECUTE_BROADCAST" "$BROADCAST_COMMANDS_FILE" <<'PY'
 import json
 import sys
 import time
+import re
+import subprocess
 from pathlib import Path
 
-scenario, network, manifest_path, artifact_dir, scenario_file, scenario_payload_id, scenario_payload_mode, scenario_payload_kind, rpc_url, execute_broadcast = sys.argv[1:11]
+scenario, network, manifest_path, artifact_dir, scenario_file, scenario_payload_id, scenario_payload_mode, scenario_payload_kind, rpc_url, execute_broadcast, broadcast_commands_file = sys.argv[1:12]
 base = Path(artifact_dir)
 base.mkdir(parents=True, exist_ok=True)
 
@@ -174,13 +177,73 @@ step_traces = {
     "steps": steps,
 }
 
+tx_id_entries = []
+
+if execute_broadcast == "true":
+    if not broadcast_commands_file:
+        raise SystemExit("ERROR: EXECUTE_BROADCAST=true requires PHASE4_BROADCAST_COMMANDS_FILE")
+
+    commands_path = Path(broadcast_commands_file)
+    if not commands_path.is_file():
+        raise SystemExit(f"ERROR: broadcast commands file not found: {commands_path}")
+
+    payload = json.loads(commands_path.read_text(encoding="utf-8"))
+    commands = payload.get("commands")
+    if not isinstance(commands, list) or len(commands) == 0:
+        raise SystemExit("ERROR: broadcast commands file must contain a non-empty 'commands' list")
+
+    txid_patterns = [
+        re.compile(r"transaction\s+id\s*[:=]\s*([A-Za-z0-9_.:-]+)", re.IGNORECASE),
+        re.compile(r"\b([a-fA-F0-9]{64})\b"),
+    ]
+
+    for i, cmd in enumerate(commands):
+        if not isinstance(cmd, dict):
+            raise SystemExit("ERROR: each broadcast command entry must be an object")
+        name = str(cmd.get("name") or f"command_{i}")
+        command = str(cmd.get("command") or "").strip()
+        if not command:
+            raise SystemExit(f"ERROR: broadcast command missing 'command' at index {i}")
+
+        proc = subprocess.run(command, shell=True, text=True, capture_output=True)
+        if proc.returncode != 0:
+            raise SystemExit(
+                f"ERROR: broadcast command failed ({name}) exit={proc.returncode} stderr={proc.stderr.strip()}"
+            )
+
+        merged = f"{proc.stdout}\n{proc.stderr}"
+        tx_id = None
+        for pattern in txid_patterns:
+            m = pattern.search(merged)
+            if m:
+                tx_id = m.group(1)
+                break
+
+        tx_id_entries.append(
+            {
+                "index": i,
+                "name": name,
+                "command": command,
+                "tx_id": tx_id,
+                "stdout": proc.stdout.strip(),
+                "stderr": proc.stderr.strip(),
+            }
+        )
+
 transaction_ids = {
     "schema_version": "phase4.tx_ids.v1",
     "scenario": scenario,
     "scenario_file": scenario_file or None,
     "network": network,
-    "tx_ids": [],
+    "tx_ids": tx_id_entries,
 }
+
+if tx_id_entries:
+    for i, entry in enumerate(tx_id_entries):
+        if i >= len(steps):
+            break
+        steps[i]["status"] = "submitted"
+        steps[i]["tx_id"] = entry.get("tx_id")
 
 verification_summary = {
     "schema_version": "phase4.verification_summary.v1",
@@ -202,14 +265,24 @@ verification_summary = {
             "value": execute_broadcast,
         },
         {
+            "name": "broadcast_commands_file",
+            "status": "pass" if broadcast_commands_file else ("skip" if execute_broadcast != "true" else "fail"),
+            "value": broadcast_commands_file or None,
+        },
+        {
+            "name": "broadcast_submission_count",
+            "status": "pass" if (execute_broadcast != "true" or len(tx_id_entries) > 0) else "fail",
+            "value": len(tx_id_entries),
+        },
+        {
             "name": "broadcast_mode",
             "status": "pass",
-            "value": "broadcast_requested_not_implemented" if execute_broadcast == "true" else "simulated_no_onchain_broadcast",
+            "value": "command_driven_submission" if execute_broadcast == "true" else "simulated_no_onchain_broadcast",
         },
         {
             "name": "explorer_lookup_expected",
             "status": "skip",
-            "value": "broadcast wiring not implemented in execute scaffold" if execute_broadcast == "true" else "no_tx_ids_emitted_in_current_execute_scaffold",
+            "value": "transaction ids may be present from command outputs" if execute_broadcast == "true" else "no_tx_ids_emitted_in_current_execute_scaffold",
         },
         {
             "name": "scenario_file_valid",
@@ -251,7 +324,7 @@ PY
 } > "$ARTIFACT_DIR/bundle_manifest.json"
 
 if [[ "$EXECUTE_BROADCAST" == "true" ]]; then
-  echo "WARN: EXECUTE_BROADCAST=true requested, but broadcast wiring is not implemented yet; emitted scaffold evidence only." >&2
+  echo "WARN: EXECUTE_BROADCAST=true requested; using PHASE4_BROADCAST_COMMANDS_FILE-driven submission path." >&2
 fi
 
 echo "Generated execute evidence bundle in $ARTIFACT_DIR for scenario '$SCENARIO'."

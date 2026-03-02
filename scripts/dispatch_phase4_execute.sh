@@ -3,7 +3,7 @@ set -euo pipefail
 
 usage() {
   cat <<USAGE
-Usage: scripts/dispatch_phase4_execute.sh --repo owner/repo --ref <branch-or-sha> --scenario <payroll_smoke|onboarding_smoke|nft_smoke> [--scenario-file <path>] [--execute-broadcast <true|false>] [--dry-run]
+Usage: scripts/dispatch_phase4_execute.sh --repo owner/repo --ref <branch-or-sha> --scenario <payroll_smoke|onboarding_smoke|nft_smoke> [--scenario-file <path>] [--execute-broadcast <true|false>] [--broadcast-commands-file <path>] [--dry-run]
 
 Dispatches the phase4 testnet execute workflow using the GitHub Actions workflow_dispatch API.
 
@@ -20,6 +20,7 @@ REF=""
 SCENARIO=""
 SCENARIO_FILE=""
 EXECUTE_BROADCAST="false"
+BROADCAST_COMMANDS_FILE=""
 DRY_RUN="false"
 
 while [[ $# -gt 0 ]]; do
@@ -42,6 +43,10 @@ while [[ $# -gt 0 ]]; do
       ;;
     --execute-broadcast)
       EXECUTE_BROADCAST="${2:-}"
+      shift 2
+      ;;
+    --broadcast-commands-file)
+      BROADCAST_COMMANDS_FILE="${2:-}"
       shift 2
       ;;
     --dry-run)
@@ -94,7 +99,8 @@ read -r -d '' PAYLOAD <<JSON || true
   "inputs": {
     "scenario": "${SCENARIO}",
     "scenario_file": "${SCENARIO_FILE}",
-    "execute_broadcast": "${EXECUTE_BROADCAST}"
+    "execute_broadcast": "${EXECUTE_BROADCAST}",
+    "broadcast_commands_file": "${BROADCAST_COMMANDS_FILE}"
   }
 }
 JSON
@@ -119,4 +125,4 @@ if [[ "$HTTP_CODE" != "204" ]]; then
   exit 1
 fi
 
-echo "Dispatched ${WORKFLOW_FILE} on ${REPO}@${REF} with scenario='${SCENARIO}' scenario_file='${SCENARIO_FILE}', and execute_broadcast='${EXECUTE_BROADCAST}'."
+echo "Dispatched ${WORKFLOW_FILE} on ${REPO}@${REF} with scenario='${SCENARIO}' scenario_file='${SCENARIO_FILE}', execute_broadcast='${EXECUTE_BROADCAST}', and broadcast_commands_file='${BROADCAST_COMMANDS_FILE}'."

@@ -21,13 +21,18 @@ on:
         default: ""
         type: string
       execute_broadcast:
-        description: "Attempt broadcast mode (currently recorded for intent; scaffold does not submit on-chain tx yet)"
+        description: "Attempt broadcast mode"
         required: false
         default: "false"
         type: choice
         options:
           - "false"
           - "true"
+      broadcast_commands_file:
+        description: "Path to command list JSON used when execute_broadcast=true"
+        required: false
+        default: ""
+        type: string
 
 jobs:
   execute_gate:
@@ -59,6 +64,7 @@ jobs:
       PHASE4_SCENARIO: ${{ github.event.inputs.scenario || 'payroll_smoke' }}
       PHASE4_SCENARIO_FILE: ${{ github.event.inputs.scenario_file || '' }}
       EXECUTE_BROADCAST: ${{ github.event.inputs.execute_broadcast || 'false' }}
+      PHASE4_BROADCAST_COMMANDS_FILE: ${{ github.event.inputs.broadcast_commands_file || '' }}
 
     steps:
       - name: Checkout
@@ -125,7 +131,8 @@ jobs:
             "run_mode": "execute",
             "scenario": "${PHASE4_SCENARIO}",
             "scenario_file": "${PHASE4_SCENARIO_FILE}",
-            "execute_broadcast": "${EXECUTE_BROADCAST}"
+            "execute_broadcast": "${EXECUTE_BROADCAST}",
+            "broadcast_commands_file": "${PHASE4_BROADCAST_COMMANDS_FILE}"
           }
           META
 

@@ -73,6 +73,7 @@ _Status: Completed — testnet execute gate succeeded and artifacts were capture
 
 ## Recently completed
 
+- ✅ C1 started: `EXECUTE_BROADCAST=true` now uses command-driven submission via `PHASE4_BROADCAST_COMMANDS_FILE` and records extracted tx IDs in execute artifacts.
 - ✅ Added execute artifact integrity verifier (`scripts/verify_phase4_execute_artifacts.py`) and wired it into `execute_gate`.
 - ✅ Captured first execute-gate artifact SHA references from successful testnet run.
 - ✅ Added static leakage guard script (`scripts/check_layer1_public_leakage_guards.py`) and wired it into `plan_gate`.
