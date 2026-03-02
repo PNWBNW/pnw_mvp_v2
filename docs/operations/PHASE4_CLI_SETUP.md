@@ -183,3 +183,5 @@ scripts/run_phase4_testnet_happy_path.sh \
 
 This wraps manifest validation, execute env checks, scenario execution, and emits a compact artifact summary.
 
+`execute_testnet.yml` now also verifies execute evidence bundle integrity before artifact upload via `scripts/verify_phase4_execute_artifacts.py`.
+
