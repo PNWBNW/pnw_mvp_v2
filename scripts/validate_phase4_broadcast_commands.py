@@ -57,6 +57,10 @@ def main() -> None:
         joined = " ".join(tokens) if tokens else command
 
         if "snarkos" in joined and " developer " in f" {joined} " and " execute " in f" {joined} ":
+            if not command.strip().startswith("bash -lc "):
+                errors.append(
+                    f"{name}: command should be wrapped with 'bash -lc ...' to avoid /bin/sh parsing differences in CI"
+                )
             if "--endpoint" not in tokens and "--endpoint=" not in joined:
                 warnings.append(f"{name}: snarkos execute command does not include --endpoint")
 

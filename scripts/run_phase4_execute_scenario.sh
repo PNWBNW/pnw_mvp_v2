@@ -215,7 +215,7 @@ if execute_broadcast == "true":
                 "Replace template text with a real submit command before running EXECUTE_BROADCAST=true."
             )
 
-        proc = subprocess.run(command, shell=True, text=True, capture_output=True)
+        proc = subprocess.run(command, shell=True, executable="/bin/bash", text=True, capture_output=True)
         if proc.returncode != 0:
             stdout_text = proc.stdout.strip()
             stderr_text = proc.stderr.strip()
