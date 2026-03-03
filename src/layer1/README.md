@@ -11,7 +11,7 @@ Layer 1 contains the **canonical on-chain programs** for PNW MVP v2. These progr
 - **`employer_agreement.aleo`** — employment agreement lifecycle (offer → acceptance → active/pause/terminate/resume) with anchored agreement IDs.
 - **`payroll_core.aleo`** — payroll settlement using **private USDCx records** via `transfer_private`; consumes employer USDCx and outputs worker USDCx as private records; issues paystub receipts; anchors audit events.
 - **`paystub_receipts.aleo`** — private paystub receipt minting (worker + employer receipts) and reversal/correction receipts; anchor utilities.
-- **`payroll_audit_log.aleo`** — minimal hash-only audit anchoring and height lookup for payroll events.
+- **`payroll_audit_log.aleo`** — minimal hash-only audit anchoring and height lookup for payroll events (see `payroll_audit_log.aleo/README.md` for evidence taxonomy and privacy rationale).
 - **`pnw_router.aleo`** — Layer 1 orchestration surface for the Portal (routes common workflows across Layer 1 programs).
 - **`LAYER1_INTERFACE.md`** — the canonical “callable surface” reference (transitions/records/functions) used by the Portal router and adapters.
 
