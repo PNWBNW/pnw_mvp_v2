@@ -1,0 +1,163 @@
+name: phase4-testnet-execute-gate
+
+on:
+  push:
+    branches:
+      - work
+  workflow_dispatch:
+    inputs:
+      scenario:
+        description: "Execute scenario"
+        required: true
+        default: "onboarding_smoke"
+        type: choice
+        options:
+          - payroll_smoke
+          - onboarding_smoke
+
+jobs:
+  execute_gate:
+    name: execute_gate
+    runs-on: ubuntu-latest
+    environment: testnet-staging
+    concurrency:
+      group: phase4-execute-${{ github.ref }}
+      cancel-in-progress: false
+    permissions:
+      contents: read
+      actions: read
+
+    env:
+      LEO_VERSION: 3.4.0
+      SNARKOS_VERSION: v4.4.0
+      LEO_URL: https://github.com/ProvableHQ/leo/releases/download/v3.4.0/leo-v3.4.0-x86_64-unknown-linux-gnu.zip
+      SNARKOS_URL: https://github.com/ProvableHQ/snarkOS/releases/download/v4.4.0/aleo-v4.4.0-x86_64-unknown-linux-gnu.zip
+      LEO_SHA256: ${{ vars.LEO_SHA256 }}
+      SNARKOS_SHA256: ${{ vars.SNARKOS_SHA256 }}
+      STRICT_VERSION_CHECK: "false"
+      PNW_NETWORK: testnet
+      MANIFEST_PATH: config/testnet.manifest.json
+      ALEO_PRIVATE_KEY: ${{ secrets.ALEO_PRIVATE_KEY }}
+      ALEO_VIEW_KEY: ${{ secrets.ALEO_VIEW_KEY }}
+      ALEO_ADDRESS: ${{ secrets.ALEO_ADDRESS }}
+      RPC_URL: ${{ secrets.RPC_URL }}
+      SNARKOS_ENDPOINT: ${{ secrets.SNARKOS_ENDPOINT }}
+      USDCX_PROGRAM_ID: ${{ secrets.USDCX_PROGRAM_ID }}
+      PHASE4_SCENARIO: ${{ github.event.inputs.scenario || 'onboarding_smoke' }}
+      EXECUTE_BROADCAST: "true"
+      RECEIPT_VERIFICATION_MODE: "required"
+      PHASE4_BROADCAST_COMMANDS_JSON: ${{ secrets.PHASE4_BROADCAST_COMMANDS_JSON }}
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+
+      - name: Install Leo (pinned)
+        run: |
+          curl -fsSL "$LEO_URL" -o leo.zip
+          if [[ -n "${LEO_SHA256}" ]]; then
+            echo "${LEO_SHA256}  leo.zip" | sha256sum -c -
+          else
+            echo "WARN: LEO_SHA256 not set; skipping artifact checksum verification" >&2
+          fi
+          unzip -o leo.zip -d leo-bin
+          chmod +x leo-bin/leo
+          sudo mv leo-bin/leo /usr/local/bin/leo
+
+      - name: Install snarkOS CLI (pinned)
+        run: |
+          curl -fsSL "$SNARKOS_URL" -o snarkos.zip
+          if [[ -n "${SNARKOS_SHA256}" ]]; then
+            echo "${SNARKOS_SHA256}  snarkos.zip" | sha256sum -c -
+          else
+            echo "WARN: SNARKOS_SHA256 not set; skipping artifact checksum verification" >&2
+          fi
+          unzip -o snarkos.zip -d snarkos-bin
+          chmod +x snarkos-bin/snarkos
+          sudo mv snarkos-bin/snarkos /usr/local/bin/snarkos
+
+      - name: Verify pinned CLI versions
+        run: scripts/verify_provable_cli.sh
+
+      - name: Validate testnet manifest schema
+        run: python3 scripts/validate_testnet_manifest.py "$MANIFEST_PATH"
+
+      - name: Require execute secrets and env
+        run: scripts/require_phase4_execute_env.sh
+
+      - name: Resolve scenario payload path
+        run: |
+          case "$PHASE4_SCENARIO" in
+            payroll_smoke)
+              echo "PHASE4_SCENARIO_FILE=config/scenarios/testnet/min_spend.payroll.json" >> "$GITHUB_ENV"
+              ;;
+            onboarding_smoke)
+              echo "PHASE4_SCENARIO_FILE=config/scenarios/testnet/min_spend.onboarding.json" >> "$GITHUB_ENV"
+              ;;
+            *)
+              echo "ERROR: unsupported scenario '$PHASE4_SCENARIO'" >&2
+              exit 1
+              ;;
+          esac
+
+      - name: Resolve broadcast commands (required)
+        run: |
+          if [[ -z "$PHASE4_BROADCAST_COMMANDS_JSON" ]]; then
+            echo "ERROR: missing required secret PHASE4_BROADCAST_COMMANDS_JSON" >&2
+            exit 1
+          fi
+          mkdir -p artifacts
+          BROADCAST_SOURCE="artifacts/phase4_broadcast_commands.required.json"
+          printf '%s\n' "$PHASE4_BROADCAST_COMMANDS_JSON" > "$BROADCAST_SOURCE"
+          python3 - <<'PYINLINE'
+          import json
+          from pathlib import Path
+          p = Path("artifacts/phase4_broadcast_commands.required.json")
+          obj = json.loads(p.read_text(encoding="utf-8"))
+          if not isinstance(obj, dict) or not isinstance(obj.get("commands"), list) or not obj.get("commands"):
+              raise SystemExit("ERROR: PHASE4_BROADCAST_COMMANDS_JSON must contain non-empty commands list")
+          PYINLINE
+          echo "PHASE4_BROADCAST_COMMANDS_EFFECTIVE=$BROADCAST_SOURCE" >> "$GITHUB_ENV"
+      - name: Execute selected Phase 4 scenario
+        run: scripts/run_phase4_execute_scenario.sh --scenario "$PHASE4_SCENARIO" --scenario-file "$PHASE4_SCENARIO_FILE" --broadcast-commands-file "$PHASE4_BROADCAST_COMMANDS_EFFECTIVE"
+
+      - name: Verify execute evidence bundle integrity
+        run: python3 scripts/verify_phase4_execute_artifacts.py artifacts/phase4_execute_bundle
+
+      - name: Verify broadcast receipts (required)
+        run: python3 scripts/verify_phase4_receipts.py artifacts/phase4_execute_bundle "$RPC_URL" "$RECEIPT_VERIFICATION_MODE"
+
+      - name: Emit execute gate metadata
+        run: |
+          mkdir -p artifacts
+          cat > artifacts/execute_gate_metadata.json <<META
+          {
+            "network": "${PNW_NETWORK}",
+            "manifest_path": "${MANIFEST_PATH}",
+            "aleo_address": "${ALEO_ADDRESS}",
+            "rpc_url_present": true,
+            "run_mode": "execute",
+            "scenario": "${PHASE4_SCENARIO}",
+            "scenario_file": "${PHASE4_SCENARIO_FILE}",
+            "execute_broadcast": "${EXECUTE_BROADCAST}",
+            "receipt_verification_mode": "${RECEIPT_VERIFICATION_MODE}",
+            "broadcast_commands_source": "required_secret_json"
+          }
+          META
+
+      - name: Upload execute gate metadata
+        uses: actions/upload-artifact@v4
+        with:
+          name: execute-gate-metadata
+          path: artifacts/execute_gate_metadata.json
+
+      - name: Upload execute evidence bundle
+        uses: actions/upload-artifact@v4
+        with:
+          name: execute-evidence-bundle
+          path: artifacts/phase4_execute_bundle/*.json
