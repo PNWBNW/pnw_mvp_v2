@@ -122,6 +122,7 @@ jobs:
           if not isinstance(obj, dict) or not isinstance(obj.get("commands"), list) or not obj.get("commands"):
               raise SystemExit("ERROR: PHASE4_BROADCAST_COMMANDS_JSON must contain non-empty commands list")
           PYINLINE
+          python3 scripts/validate_phase4_broadcast_commands.py "$BROADCAST_SOURCE"
           echo "PHASE4_BROADCAST_COMMANDS_EFFECTIVE=$BROADCAST_SOURCE" >> "$GITHUB_ENV"
       - name: Execute selected Phase 4 scenario
         run: scripts/run_phase4_execute_scenario.sh --scenario "$PHASE4_SCENARIO" --scenario-file "$PHASE4_SCENARIO_FILE" --broadcast-commands-file "$PHASE4_BROADCAST_COMMANDS_EFFECTIVE"
