@@ -97,13 +97,15 @@ Broadcast mode is hardcoded ON in this lane (`EXECUTE_BROADCAST=true`) with stri
 > Provide `PHASE4_BROADCAST_COMMANDS_JSON` as a protected environment secret containing real submit commands that emit real tx ids.
 >
 > Keep `RPC_URL` explicitly set to your intended node endpoint (for testnet, e.g. `https://api.provable.com/v2/testnet`) so endpoint intent is captured in execute verification metadata.
+> Set `SNARKOS_ENDPOINT` to the snarkOS REST base endpoint (for example `https://api.explorer.provable.com/v2`) used by `snarkos developer execute --endpoint ...`.
+
 
 For `onboarding_smoke`, generate this secret payload from deterministic codec inputs:
 
 ```bash
 python3 scripts/build_onboarding_broadcast_commands.py \
   --args-file config/scenarios/testnet/onboarding_mint_args.sample.json \
-  --submit-prefix 'snarkos developer execute --endpoint "$RPC_URL" --broadcast --private-key "$ALEO_PRIVATE_KEY" credential_nft.aleo mint_credential_nft' \
+  --submit-prefix 'snarkos developer execute --endpoint "$SNARKOS_ENDPOINT" --broadcast --private-key "$ALEO_PRIVATE_KEY" credential_nft.aleo mint_credential_nft' \
   --out artifacts/phase4_broadcast_commands.required.json
 ```
 

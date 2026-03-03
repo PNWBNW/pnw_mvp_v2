@@ -51,7 +51,7 @@ def main() -> None:
         required=True,
         help=(
             "Shell command prefix used to submit transition (must include executable/flags/program/transition). "
-            "Example: \"snarkos developer execute credential_nft.aleo mint_credential_nft --private-key '$ALEO_PRIVATE_KEY' --query '$RPC_URL/broadcast'\""
+            "Example: \"snarkos developer execute --endpoint '$SNARKOS_ENDPOINT' --broadcast --private-key '$ALEO_PRIVATE_KEY' credential_nft.aleo mint_credential_nft\""
         ),
     )
     ap.add_argument("--name", default="submit_onboarding", help="Command entry name")
