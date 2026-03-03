@@ -18,6 +18,7 @@ This avoids reformatting payloads between "test deploy" and "real deploy" paths.
 - `testnet/min_spend.onboarding.json` — starter low-value onboarding sample (including employer suffix code).
 - `testnet/broadcast_commands.sample.json` — sample command list (placeholder output only; not for strict receipt mode).
 - `testnet/broadcast_commands.onboarding.template.json` — template for real command-driven submissions when `RECEIPT_VERIFICATION_MODE=required`.
+- `testnet/onboarding_mint_args.sample.json` — sample args payload for onboarding submit command generation.
 
 ## Name hash derivation
 
@@ -47,3 +48,17 @@ If a scenario file is provided, the runner validates it with `scripts/validate_p
 - These files are **non-secret** and can be committed.
 - Wallet keys, RPC endpoints, and signing credentials remain in environment secrets.
 - Replace placeholder wallet values before real execution.
+
+## Deterministic onboarding command/codec mapping
+
+To avoid ad-hoc onboarding submit commands, generate `PHASE4_BROADCAST_COMMANDS_JSON` from a typed args file:
+
+```bash
+python3 scripts/build_onboarding_broadcast_commands.py \
+  --args-file config/scenarios/testnet/onboarding_mint_args.sample.json \
+  --submit-prefix "snarkos developer execute credential_nft.aleo mint_credential_nft --private-key '$ALEO_PRIVATE_KEY' --query '$RPC_URL'" \
+  --out artifacts/phase4_broadcast_commands.required.json
+```
+
+The generator enforces the onboarding mint codec ordering:
+`credential_id, subject_hash, issuer_hash, scope_hash, doc_hash, root, schema_v, policy_v`.
