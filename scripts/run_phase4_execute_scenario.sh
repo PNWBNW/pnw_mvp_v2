@@ -217,8 +217,11 @@ if execute_broadcast == "true":
 
         proc = subprocess.run(command, shell=True, text=True, capture_output=True)
         if proc.returncode != 0:
+            stdout_text = proc.stdout.strip()
+            stderr_text = proc.stderr.strip()
             raise SystemExit(
-                f"ERROR: broadcast command failed ({name}) exit={proc.returncode} stderr={proc.stderr.strip()}"
+                f"ERROR: broadcast command failed ({name}) exit={proc.returncode} "
+                f"stdout={stdout_text} stderr={stderr_text}"
             )
 
         merged = f"{proc.stdout}\n{proc.stderr}"
