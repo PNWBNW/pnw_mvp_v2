@@ -1,0 +1,14 @@
+{
+  "schema_version": "phase4.broadcast_commands.v1",
+  "notes": [
+    "Template for REQUIRED receipt verification runs.",
+    "Copy this file to a private operator path and replace command strings with real submit commands.",
+    "Each command must submit a real testnet transaction and print a transaction id in stdout/stderr."
+  ],
+  "commands": [
+    {
+      "name": "submit_onboarding_step_1",
+      "command": "bash -lc 'echo REPLACE_WITH_REAL_SUBMIT_COMMAND_FOR_STEP_1'"
+    }
+  ]
+}
