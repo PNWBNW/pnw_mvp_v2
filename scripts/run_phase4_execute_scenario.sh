@@ -219,9 +219,16 @@ if execute_broadcast == "true":
         if proc.returncode != 0:
             stdout_text = proc.stdout.strip()
             stderr_text = proc.stderr.strip()
+            hint = ""
+            merged_err = f"{stdout_text}\n{stderr_text}".lower()
+            if "failed to parse json error response" in merged_err or "line 1 column 1" in merged_err:
+                hint = (
+                    " hint=submit endpoint likely returned non-JSON; verify --endpoint uses explicit testnet URI "
+                    "(e.g. https://api.explorer.provable.com/v2/testnet)"
+                )
             raise SystemExit(
                 f"ERROR: broadcast command failed ({name}) exit={proc.returncode} "
-                f"stdout={stdout_text} stderr={stderr_text}"
+                f"stdout={stdout_text} stderr={stderr_text}{hint}"
             )
 
         merged = f"{proc.stdout}\n{proc.stderr}"

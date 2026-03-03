@@ -34,6 +34,16 @@ if [[ "$RPC_URL" != http://* && "$RPC_URL" != https://* ]]; then
   exit 1
 fi
 
+if [[ "$SNARKOS_ENDPOINT" != http://* && "$SNARKOS_ENDPOINT" != https://* ]]; then
+  echo "execute env check: FAIL - SNARKOS_ENDPOINT must start with http:// or https://" >&2
+  exit 1
+fi
+
+if [[ "$PNW_NETWORK" == "testnet" && "$SNARKOS_ENDPOINT" != *"/testnet"* ]]; then
+  echo "execute env check: FAIL - SNARKOS_ENDPOINT must include '/testnet' when PNW_NETWORK=testnet" >&2
+  exit 1
+fi
+
 if ! python3 - <<'PY'
 import json
 import os
