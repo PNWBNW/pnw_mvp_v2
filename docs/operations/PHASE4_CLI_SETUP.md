@@ -72,6 +72,17 @@ Broadcast mode is hardcoded ON in this lane (`EXECUTE_BROADCAST=true`) with stri
 >
 > Keep `RPC_URL` explicitly set to your intended node endpoint (for testnet, e.g. `https://api.provable.com/v2/testnet`) so endpoint intent is captured in execute verification metadata.
 
+For `onboarding_smoke`, generate this secret payload from deterministic codec inputs:
+
+```bash
+python3 scripts/build_onboarding_broadcast_commands.py \
+  --args-file config/scenarios/testnet/onboarding_mint_args.sample.json \
+  --submit-prefix "snarkos developer execute credential_nft.aleo mint_credential_nft --private-key '$ALEO_PRIVATE_KEY' --query '$RPC_URL'" \
+  --out artifacts/phase4_broadcast_commands.required.json
+```
+
+Then copy the JSON file contents into the protected `PHASE4_BROADCAST_COMMANDS_JSON` secret.
+
 
 ## 1) Scaffold status in this repo
 
@@ -188,4 +199,3 @@ This wraps manifest validation, execute env checks, scenario execution, and emit
 
 `execute_testnet.yml` now also verifies execute evidence bundle integrity before artifact upload via `scripts/verify_phase4_execute_artifacts.py`.
 `execute_testnet.yml` now also performs best-effort receipt verification via `scripts/verify_phase4_receipts.py` (writes `artifacts/phase4_execute_bundle/receipt_verification.json`).
-
