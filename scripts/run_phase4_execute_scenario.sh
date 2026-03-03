@@ -3,9 +3,10 @@ set -euo pipefail
 
 SCENARIO=""
 SCENARIO_FILE=""
+BROADCAST_COMMANDS_FILE_ARG=""
 
 usage() {
-  echo "Usage: scripts/run_phase4_execute_scenario.sh [--scenario <payroll_smoke|onboarding_smoke|nft_smoke>] [--scenario-file <path>]" >&2
+  echo "Usage: scripts/run_phase4_execute_scenario.sh [--scenario <payroll_smoke|onboarding_smoke|nft_smoke>] [--scenario-file <path>] [--broadcast-commands-file <path>]" >&2
 }
 
 while [[ $# -gt 0 ]]; do
@@ -16,6 +17,10 @@ while [[ $# -gt 0 ]]; do
       ;;
     --scenario-file)
       SCENARIO_FILE="${2:-}"
+      shift 2
+      ;;
+    --broadcast-commands-file)
+      BROADCAST_COMMANDS_FILE_ARG="${2:-}"
       shift 2
       ;;
     -h|--help)
@@ -58,7 +63,7 @@ MANIFEST_PATH="${MANIFEST_PATH:-config/testnet.manifest.json}"
 NETWORK="${PNW_NETWORK:-testnet}"
 RPC_URL="${RPC_URL:-}"
 EXECUTE_BROADCAST="${EXECUTE_BROADCAST:-false}"
-BROADCAST_COMMANDS_FILE="${PHASE4_BROADCAST_COMMANDS_FILE:-}"
+BROADCAST_COMMANDS_FILE="${BROADCAST_COMMANDS_FILE_ARG:-${PHASE4_BROADCAST_COMMANDS_FILE:-}}"
 
 if [[ "$EXECUTE_BROADCAST" != "true" && "$EXECUTE_BROADCAST" != "false" ]]; then
   echo "ERROR: EXECUTE_BROADCAST must be true or false (got: $EXECUTE_BROADCAST)" >&2
