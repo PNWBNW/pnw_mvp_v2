@@ -1,0 +1,39 @@
+{
+  "schema_version": "phaseA.scenario.v1",
+  "scenario_id": "testnet.min_spend.payroll.john-doe-acme",
+  "scenario_kind": "payroll",
+  "network": "testnet",
+  "execution_mode": "plan_only",
+  "participants": {
+    "employer": {
+      "name_raw": "Acme Inc.",
+      "name_hash_hex": "0x94237d83d5738ff14b43023d4b39324bb6f54eae7163e3195eb179c7fb296fd4",
+      "address": "aleo1qqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqm3k3f"
+    },
+    "worker": {
+      "name_raw": "John D. Doe",
+      "name_hash_hex": "0x07ffe942bd893f22eb76a8ae636230ce3b7d58354bce921bdcfa4bd1f0b3c7ad",
+      "address": "aleo1jtqxvdqdxdw34sh3smjltuh7t3rwrdraa4eq58694rdzf0vk2syq5ajvw6"
+    }
+  },
+  "payroll": {
+    "agreement_id_hex": "0x7c71b9e765b95269c4656c8416fa7fb6253d8eeefdf5411c7d9b534c55ca71e9",
+    "epoch_id": 20260302,
+    "gross_amount": "1",
+    "net_amount": "1",
+    "tax_withheld": "0",
+    "fee_amount": "0",
+    "receipt_anchor_hex": "0x888d3c0dd27877935d4e394e3af8f524470dd9764344ea2733bbb822f2791c93",
+    "receipt_pair_hash_hex": "0x54c6931522892dc5ac1cd1049fba47ac3ffefef29e8acb0f35620e7dd8f543ca",
+    "payroll_inputs_hash_hex": "0x02286bf719d3a3c39ebb3344f868c06f0a1b209b0fb450764457318c50a655ef",
+    "utc_time_hash_hex": "0x127c37c6257eb5902e19ee1e2a14ea0153abead69042bfd7c6b43bedf3c5fd3c",
+    "audit_event_hash_hex": "0x6922e6bd85c075465ab57ccd65dfa287dc9629320da5b25faa24212f358a141d",
+    "employer_usdcx_record": {
+      "raw": "{ owner: aleo1qqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqm3k3f.private, amount: 1u64.private }"
+    }
+  },
+  "notes": [
+    "Employer/fee wallet currently uses placeholder. Replace with secret wallet address before execute broadcast.",
+    "All hash values are deterministic local placeholders suitable for test wiring; replace with canonical commitment outputs during real execution."
+  ]
+}

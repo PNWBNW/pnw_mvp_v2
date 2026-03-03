@@ -1,0 +1,9 @@
+{
+  "schema_version": "phase4.broadcast_commands.v1",
+  "commands": [
+    {
+      "name": "example_submit",
+      "command": "echo 'transaction id: 0123456789abcdef0123456789abcdef0123456789abcdef0123456789abcdef'"
+    }
+  ]
+}
