@@ -17,6 +17,7 @@ import argparse
 import json
 import re
 import shlex
+from urllib.parse import urlparse
 from pathlib import Path
 from typing import Any
 
@@ -51,7 +52,7 @@ def main() -> None:
         required=True,
         help=(
             "Shell command prefix used to submit transition (must include executable/flags/program/transition). "
-            "Example: \"snarkos developer execute --endpoint 'https://api.explorer.provable.com/v2' --broadcast --private-key '$ALEO_PRIVATE_KEY' credential_nft.aleo mint_credential_nft\""
+            "Example: \"snarkos developer execute --endpoint 'https://api.explorer.provable.com/v2/testnet' --broadcast --private-key '$ALEO_PRIVATE_KEY' credential_nft.aleo mint_credential_nft\""
         ),
     )
     ap.add_argument("--name", default="submit_onboarding", help="Command entry name")
@@ -80,6 +81,28 @@ def main() -> None:
     if "$SNARKOS_ENDPOINT" in prefix or "${SNARKOS_ENDPOINT}" in prefix:
         raise SystemExit(
             "ERROR: --submit-prefix must use an explicit broadcast URI (do not pass SNARKOS_ENDPOINT env interpolation)"
+        )
+
+    tokens = shlex.split(prefix)
+    endpoint = ""
+    for i, tok in enumerate(tokens):
+        if tok == "--endpoint":
+            endpoint = tokens[i + 1] if i + 1 < len(tokens) else ""
+            break
+        if tok.startswith("--endpoint="):
+            endpoint = tok.split("=", 1)[1]
+            break
+
+    if not endpoint:
+        raise SystemExit("ERROR: --submit-prefix must provide a concrete endpoint value for --endpoint")
+    if "$" in endpoint or "{" in endpoint or "}" in endpoint:
+        raise SystemExit("ERROR: endpoint must be a concrete URI, not a shell variable expression")
+    parsed = urlparse(endpoint)
+    if parsed.scheme not in {"http", "https"}:
+        raise SystemExit("ERROR: endpoint must be an http(s) URI")
+    if "/testnet" not in parsed.path:
+        raise SystemExit(
+            "ERROR: endpoint must include '/testnet' path segment (example: https://api.explorer.provable.com/v2/testnet)"
         )
 
     command = (
