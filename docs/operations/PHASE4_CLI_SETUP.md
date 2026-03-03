@@ -61,17 +61,14 @@ This sends the selected `scenario` into `.github/workflows/execute_testnet.yml`.
 
 You can preview the exact dispatch payload without calling GitHub using `--dry-run`.
 
-`execute_broadcast` controls whether execute mode will attempt command-driven submission (`false` by default).
-When `true`, set `PHASE4_BROADCAST_COMMANDS_FILE` to a JSON file containing the exact commands to run (see `config/scenarios/testnet/broadcast_commands.onboarding.template.json` for a strict-mode template (do not use `broadcast_commands.sample.json` in required mode)).
-Any extracted transaction IDs are recorded in `artifacts/phase4_execute_bundle/tx_ids.json`.
-When `execute_broadcast=true`, set `broadcast_commands_file` (workflow input) / `--broadcast-commands-file` (dispatch helper) so execute runs can replay explicit submission commands. You can also pass `broadcast_commands_json` / `--broadcast-commands-json` to avoid creating local files.
+The workflow is streamlined to a single operator choice (`scenario`). Scenario payload path is resolved automatically by workflow mapping.
 
-Optional: include a Phase A scenario payload path via `scenario_file` input (workflow dispatch) to validate and attach scenario metadata in execute evidence artifacts.
+Broadcast mode is hardcoded ON in this lane (`EXECUTE_BROADCAST=true`) with strict receipt verification (`RECEIPT_VERIFICATION_MODE=required`) for testnet-ready execution evidence.
 
 
-> **Important:** By default (`execute_broadcast=false`), execute runs are scaffold-mode and do not submit transactions.
+> **Important:** execute runs in this workflow are configured for broadcast + strict receipts.
 >
-> With `execute_broadcast=true`, execute runs replay commands from `PHASE4_BROADCAST_COMMANDS_FILE` and may populate `artifacts/phase4_execute_bundle/tx_ids.json` from command output extraction.
+> Provide `PHASE4_BROADCAST_COMMANDS_JSON` as a protected environment secret containing real submit commands that emit real tx ids.
 >
 > Keep `RPC_URL` explicitly set to your intended node endpoint (for testnet, e.g. `https://api.provable.com/v2/testnet`) so endpoint intent is captured in execute verification metadata.
 
@@ -181,7 +178,6 @@ USDCX_PROGRAM_ID="test_usdcx_stablecoin.aleo" \
 ALEO_PRIVATE_KEY="<private-key>" \
 ALEO_VIEW_KEY="<view-key>" \
 ALEO_ADDRESS="<address>" \
-PHASE4_BROADCAST_COMMANDS_FILE="config/scenarios/testnet/broadcast_commands.onboarding.template.json" \
 scripts/run_phase4_testnet_happy_path.sh \
   --scenario payroll_smoke \
   --scenario-file config/scenarios/testnet/min_spend.payroll.json \

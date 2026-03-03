@@ -14,38 +14,6 @@ on:
         options:
           - payroll_smoke
           - onboarding_smoke
-          - nft_smoke
-      scenario_file:
-        description: "Optional Phase A scenario payload path (e.g. config/scenarios/testnet/min_spend.payroll.json)"
-        required: false
-        default: "config/scenarios/testnet/min_spend.onboarding.json"
-        type: string
-      execute_broadcast:
-        description: "Attempt broadcast mode"
-        required: false
-        default: "false"
-        type: choice
-        options:
-          - "false"
-          - "true"
-      broadcast_commands_file:
-        description: "Path to command list JSON used when execute_broadcast=true"
-        required: false
-        default: ""
-        type: string
-      broadcast_commands_json:
-        description: "Inline JSON command list used when execute_broadcast=true (alternative to broadcast_commands_file)"
-        required: false
-        default: ""
-        type: string
-      receipt_verification_mode:
-        description: "Receipt verification policy"
-        required: false
-        default: "best_effort"
-        type: choice
-        options:
-          - "best_effort"
-          - "required"
 
 jobs:
   execute_gate:
@@ -75,11 +43,9 @@ jobs:
       RPC_URL: ${{ secrets.RPC_URL }}
       USDCX_PROGRAM_ID: ${{ secrets.USDCX_PROGRAM_ID }}
       PHASE4_SCENARIO: ${{ github.event.inputs.scenario || 'onboarding_smoke' }}
-      PHASE4_SCENARIO_FILE: ${{ github.event.inputs.scenario_file || '' }}
-      EXECUTE_BROADCAST: ${{ github.event.inputs.execute_broadcast || 'false' }}
-      PHASE4_BROADCAST_COMMANDS_FILE: ${{ github.event.inputs.broadcast_commands_file || '' }}
-      PHASE4_BROADCAST_COMMANDS_JSON: ${{ github.event.inputs.broadcast_commands_json || '' }}
-      RECEIPT_VERIFICATION_MODE: ${{ github.event.inputs.receipt_verification_mode || 'best_effort' }}
+      EXECUTE_BROADCAST: "true"
+      RECEIPT_VERIFICATION_MODE: "required"
+      PHASE4_BROADCAST_COMMANDS_JSON: ${{ secrets.PHASE4_BROADCAST_COMMANDS_JSON }}
 
     steps:
       - name: Checkout
@@ -123,53 +89,46 @@ jobs:
       - name: Require execute secrets and env
         run: scripts/require_phase4_execute_env.sh
 
-      - name: Resolve broadcast commands source
+      - name: Resolve scenario payload path
         run: |
-          BROADCAST_SOURCE="$PHASE4_BROADCAST_COMMANDS_FILE"
-          if [[ -n "$PHASE4_BROADCAST_COMMANDS_JSON" ]]; then
-            mkdir -p artifacts
-            BROADCAST_SOURCE="artifacts/phase4_broadcast_commands.inline.json"
-            printf '%s\n' "$PHASE4_BROADCAST_COMMANDS_JSON" > "$BROADCAST_SOURCE"
-            python3 - <<'PYINLINE'
-            import json
-            from pathlib import Path
-            p = Path("artifacts/phase4_broadcast_commands.inline.json")
-            obj = json.loads(p.read_text(encoding="utf-8"))
-            if not isinstance(obj, dict) or not isinstance(obj.get("commands"), list) or not obj.get("commands"):
-                raise SystemExit("ERROR: broadcast_commands_json must be a JSON object with non-empty 'commands' list")
-            PYINLINE
+          case "$PHASE4_SCENARIO" in
+            payroll_smoke)
+              echo "PHASE4_SCENARIO_FILE=config/scenarios/testnet/min_spend.payroll.json" >> "$GITHUB_ENV"
+              ;;
+            onboarding_smoke)
+              echo "PHASE4_SCENARIO_FILE=config/scenarios/testnet/min_spend.onboarding.json" >> "$GITHUB_ENV"
+              ;;
+            *)
+              echo "ERROR: unsupported scenario '$PHASE4_SCENARIO'" >&2
+              exit 1
+              ;;
+          esac
+
+      - name: Resolve broadcast commands (required)
+        run: |
+          if [[ -z "$PHASE4_BROADCAST_COMMANDS_JSON" ]]; then
+            echo "ERROR: missing required secret PHASE4_BROADCAST_COMMANDS_JSON" >&2
+            exit 1
           fi
+          mkdir -p artifacts
+          BROADCAST_SOURCE="artifacts/phase4_broadcast_commands.required.json"
+          printf '%s\n' "$PHASE4_BROADCAST_COMMANDS_JSON" > "$BROADCAST_SOURCE"
+          python3 - <<'PYINLINE'
+          import json
+          from pathlib import Path
+          p = Path("artifacts/phase4_broadcast_commands.required.json")
+          obj = json.loads(p.read_text(encoding="utf-8"))
+          if not isinstance(obj, dict) or not isinstance(obj.get("commands"), list) or not obj.get("commands"):
+              raise SystemExit("ERROR: PHASE4_BROADCAST_COMMANDS_JSON must contain non-empty commands list")
+          PYINLINE
           echo "PHASE4_BROADCAST_COMMANDS_EFFECTIVE=$BROADCAST_SOURCE" >> "$GITHUB_ENV"
-
-      - name: Validate strict receipt mode prerequisites
-        run: |
-          if [[ "$RECEIPT_VERIFICATION_MODE" == "required" ]]; then
-            if [[ "$EXECUTE_BROADCAST" != "true" ]]; then
-              echo "ERROR: RECEIPT_VERIFICATION_MODE=required requires EXECUTE_BROADCAST=true" >&2
-              exit 1
-            fi
-            if [[ -z "$PHASE4_BROADCAST_COMMANDS_EFFECTIVE" ]]; then
-              echo "ERROR: RECEIPT_VERIFICATION_MODE=required requires PHASE4_BROADCAST_COMMANDS_FILE" >&2
-              exit 1
-            fi
-            if [[ "$PHASE4_BROADCAST_COMMANDS_EFFECTIVE" == *"broadcast_commands.sample.json" ]]; then
-              echo "ERROR: required receipt mode cannot use sample broadcast commands file; provide real submit commands that return real tx ids" >&2
-              exit 1
-            fi
-          fi
-
       - name: Execute selected Phase 4 scenario
-        run: |
-          if [[ -n "$PHASE4_SCENARIO_FILE" ]]; then
-            scripts/run_phase4_execute_scenario.sh --scenario "$PHASE4_SCENARIO" --scenario-file "$PHASE4_SCENARIO_FILE" --broadcast-commands-file "$PHASE4_BROADCAST_COMMANDS_EFFECTIVE"
-          else
-            scripts/run_phase4_execute_scenario.sh --scenario "$PHASE4_SCENARIO" --broadcast-commands-file "$PHASE4_BROADCAST_COMMANDS_EFFECTIVE"
-          fi
+        run: scripts/run_phase4_execute_scenario.sh --scenario "$PHASE4_SCENARIO" --scenario-file "$PHASE4_SCENARIO_FILE" --broadcast-commands-file "$PHASE4_BROADCAST_COMMANDS_EFFECTIVE"
 
       - name: Verify execute evidence bundle integrity
         run: python3 scripts/verify_phase4_execute_artifacts.py artifacts/phase4_execute_bundle
 
-      - name: Verify broadcast receipts (best-effort)
+      - name: Verify broadcast receipts (required)
         run: python3 scripts/verify_phase4_receipts.py artifacts/phase4_execute_bundle "$RPC_URL" "$RECEIPT_VERIFICATION_MODE"
 
       - name: Emit execute gate metadata
@@ -185,9 +144,8 @@ jobs:
             "scenario": "${PHASE4_SCENARIO}",
             "scenario_file": "${PHASE4_SCENARIO_FILE}",
             "execute_broadcast": "${EXECUTE_BROADCAST}",
-            "broadcast_commands_file": "${PHASE4_BROADCAST_COMMANDS_EFFECTIVE}",
-            "broadcast_commands_json_present": "${PHASE4_BROADCAST_COMMANDS_JSON:+true}",
-            "receipt_verification_mode": "${RECEIPT_VERIFICATION_MODE}"
+            "receipt_verification_mode": "${RECEIPT_VERIFICATION_MODE}",
+            "broadcast_commands_source": "required_secret_json"
           }
           META
 

@@ -3,7 +3,7 @@ set -euo pipefail
 
 usage() {
   cat <<USAGE
-Usage: scripts/dispatch_phase4_execute.sh --repo owner/repo --ref <branch-or-sha> --scenario <payroll_smoke|onboarding_smoke|nft_smoke> [--scenario-file <path>] [--execute-broadcast <true|false>] [--broadcast-commands-file <path>] [--broadcast-commands-json <json-string>] [--dry-run]
+Usage: scripts/dispatch_phase4_execute.sh --repo owner/repo --ref <branch-or-sha> --scenario <payroll_smoke|onboarding_smoke> [--dry-run]
 
 Dispatches the phase4 testnet execute workflow using the GitHub Actions workflow_dispatch API.
 
@@ -18,10 +18,6 @@ USAGE
 REPO=""
 REF=""
 SCENARIO=""
-SCENARIO_FILE=""
-EXECUTE_BROADCAST="false"
-BROADCAST_COMMANDS_FILE=""
-BROADCAST_COMMANDS_JSON=""
 DRY_RUN="false"
 
 while [[ $# -gt 0 ]]; do
@@ -29,10 +25,6 @@ while [[ $# -gt 0 ]]; do
     --repo) REPO="${2:-}"; shift 2 ;;
     --ref) REF="${2:-}"; shift 2 ;;
     --scenario) SCENARIO="${2:-}"; shift 2 ;;
-    --scenario-file) SCENARIO_FILE="${2:-}"; shift 2 ;;
-    --execute-broadcast) EXECUTE_BROADCAST="${2:-}"; shift 2 ;;
-    --broadcast-commands-file) BROADCAST_COMMANDS_FILE="${2:-}"; shift 2 ;;
-    --broadcast-commands-json) BROADCAST_COMMANDS_JSON="${2:-}"; shift 2 ;;
     --dry-run) DRY_RUN="true"; shift ;;
     --help|-h) usage; exit 0 ;;
     *) echo "Unknown argument: $1" >&2; usage >&2; exit 1 ;;
@@ -46,14 +38,9 @@ if [[ -z "$REPO" || -z "$REF" || -z "$SCENARIO" ]]; then
 fi
 
 case "$SCENARIO" in
-  payroll_smoke|onboarding_smoke|nft_smoke) ;;
+  payroll_smoke|onboarding_smoke) ;;
   *) echo "ERROR: unsupported scenario '$SCENARIO'." >&2; exit 1 ;;
 esac
-
-if [[ "$EXECUTE_BROADCAST" != "true" && "$EXECUTE_BROADCAST" != "false" ]]; then
-  echo "ERROR: --execute-broadcast must be true or false." >&2
-  exit 1
-fi
 
 if [[ "$DRY_RUN" != "true" && -z "${GH_TOKEN:-}" ]]; then
   echo "ERROR: GH_TOKEN is required." >&2
@@ -63,7 +50,7 @@ fi
 API_URL="${GITHUB_API_URL:-https://api.github.com}"
 WORKFLOW_FILE="execute_testnet.yml"
 
-export REF SCENARIO SCENARIO_FILE EXECUTE_BROADCAST BROADCAST_COMMANDS_FILE BROADCAST_COMMANDS_JSON
+export REF SCENARIO
 PAYLOAD=$(python3 - <<'PY'
 import json
 import os
@@ -71,20 +58,10 @@ print(json.dumps({
   "ref": os.environ["REF"],
   "inputs": {
     "scenario": os.environ["SCENARIO"],
-    "scenario_file": os.environ["SCENARIO_FILE"],
-    "execute_broadcast": os.environ["EXECUTE_BROADCAST"],
-    "broadcast_commands_file": os.environ["BROADCAST_COMMANDS_FILE"],
-    "broadcast_commands_json": os.environ["BROADCAST_COMMANDS_JSON"],
   },
 }))
 PY
 )
-
-if [[ "$DRY_RUN" == "true" ]]; then
-  echo "DRY RUN: would dispatch ${WORKFLOW_FILE} on ${REPO}@${REF} with payload:"
-  echo "$PAYLOAD"
-  exit 0
-fi
 
 if [[ "$DRY_RUN" == "true" ]]; then
   echo "DRY RUN: would dispatch ${WORKFLOW_FILE} on ${REPO}@${REF} with payload:"
@@ -106,4 +83,4 @@ if [[ "$HTTP_CODE" != "204" ]]; then
   exit 1
 fi
 
-echo "Dispatched ${WORKFLOW_FILE} on ${REPO}@${REF} with scenario='${SCENARIO}' scenario_file='${SCENARIO_FILE}', execute_broadcast='${EXECUTE_BROADCAST}', and broadcast_commands_file='${BROADCAST_COMMANDS_FILE}', broadcast_commands_json_present='$([[ -n "${BROADCAST_COMMANDS_JSON}" ]] && echo true || echo false)'."
+echo "Dispatched ${WORKFLOW_FILE} on ${REPO}@${REF} with scenario='${SCENARIO}'."
