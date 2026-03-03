@@ -56,7 +56,7 @@ To avoid ad-hoc onboarding submit commands, generate `PHASE4_BROADCAST_COMMANDS_
 ```bash
 python3 scripts/build_onboarding_broadcast_commands.py \
   --args-file config/scenarios/testnet/onboarding_mint_args.sample.json \
-  --submit-prefix 'snarkos developer execute --endpoint "$SNARKOS_ENDPOINT" --broadcast --private-key "$ALEO_PRIVATE_KEY" credential_nft.aleo mint_credential_nft' \
+  --submit-prefix 'snarkos developer execute --endpoint "https://api.explorer.provable.com/v2" --broadcast --private-key "$ALEO_PRIVATE_KEY" credential_nft.aleo mint_credential_nft' \
   --out artifacts/phase4_broadcast_commands.required.json
 ```
 

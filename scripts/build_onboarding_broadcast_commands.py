@@ -51,7 +51,7 @@ def main() -> None:
         required=True,
         help=(
             "Shell command prefix used to submit transition (must include executable/flags/program/transition). "
-            "Example: \"snarkos developer execute --endpoint '$SNARKOS_ENDPOINT' --broadcast --private-key '$ALEO_PRIVATE_KEY' credential_nft.aleo mint_credential_nft\""
+            "Example: \"snarkos developer execute --endpoint 'https://api.explorer.provable.com/v2' --broadcast --private-key '$ALEO_PRIVATE_KEY' credential_nft.aleo mint_credential_nft\""
         ),
     )
     ap.add_argument("--name", default="submit_onboarding", help="Command entry name")
@@ -75,6 +75,12 @@ def main() -> None:
     prefix = ns.submit_prefix.strip()
     if not prefix:
         raise SystemExit("ERROR: --submit-prefix must be non-empty")
+    if "--endpoint" not in prefix:
+        raise SystemExit("ERROR: --submit-prefix must include an explicit --endpoint '<broadcast-uri>'")
+    if "$SNARKOS_ENDPOINT" in prefix or "${SNARKOS_ENDPOINT}" in prefix:
+        raise SystemExit(
+            "ERROR: --submit-prefix must use an explicit broadcast URI (do not pass SNARKOS_ENDPOINT env interpolation)"
+        )
 
     command = (
         "bash -lc "
