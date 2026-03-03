@@ -47,7 +47,12 @@ GH_TOKEN="<github-token>" \
   scripts/dispatch_phase4_execute.sh \
   --repo "<owner>/<repo>" \
   --ref "main" \
-  --scenario "payroll_smoke"
+  --scenario "payroll_smoke" \
+  --scenario-file "config/scenarios/testnet/min_spend.payroll.json" \
+  --execute-broadcast "false" \
+  --broadcast-commands-file "config/scenarios/testnet/broadcast_commands.sample.json" \
+  # OR pass inline JSON from this interface:
+  # --broadcast-commands-json "{\"schema_version\":\"phase4.broadcast_commands.v1\",\"commands\":[{\"name\":\"submit\",\"command\":\"<real command>\"}]}"
 ```
 
 This sends the selected `scenario` into `.github/workflows/execute_testnet.yml`.
