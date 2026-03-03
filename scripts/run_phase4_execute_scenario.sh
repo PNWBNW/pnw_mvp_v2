@@ -209,6 +209,11 @@ if execute_broadcast == "true":
         command = str(cmd.get("command") or "").strip()
         if not command:
             raise SystemExit(f"ERROR: broadcast command missing 'command' at index {i}")
+        if "REPLACE_WITH_REAL_SUBMIT_COMMAND" in command or ("<" in command and ">" in command):
+            raise SystemExit(
+                f"ERROR: broadcast command '{name}' appears to be a placeholder. "
+                "Replace template text with a real submit command before running EXECUTE_BROADCAST=true."
+            )
 
         proc = subprocess.run(command, shell=True, text=True, capture_output=True)
         if proc.returncode != 0:
