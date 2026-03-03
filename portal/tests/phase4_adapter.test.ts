@@ -4,6 +4,7 @@ import {
   type CliCommandExecutor,
   type Layer2CliExecutionReport,
 } from "../src/adapters/aleo_cli_adapter";
+import type { Layer2CallPlanStep } from "../src/router/layer2_router";
 
 function assert(condition: unknown, message: string): asserts condition {
   if (!condition) {
@@ -13,6 +14,155 @@ function assert(condition: unknown, message: string): asserts condition {
 
 function bytes32(fill: number): Uint8Array {
   return new Uint8Array(32).fill(fill);
+}
+
+function payrollRecord(amount = 1): { raw: string } {
+  return {
+    raw: `{ owner: aleo1qqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqm3k3f.private, amount: ${amount}u64.private }`,
+  };
+}
+
+function authorizationRecord(): { raw: string } {
+  return {
+    raw: "{ owner: aleo1qqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqm3k3f.private, auth_id: [1u8; 32].private }",
+  };
+}
+
+function credentialRecord(): { raw: string } {
+  return {
+    raw: "{ owner: aleo1qqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqm3k3f.private, credential_id: [2u8; 32].private }",
+  };
+}
+
+function buildCoveragePlan(): Layer2CallPlanStep[] {
+  return [
+    {
+      kind: "mint_cycle_nft",
+      args: {
+        nft_id: bytes32(1),
+        agreement_id: bytes32(2),
+        period_start: 1,
+        period_end: 2,
+        doc_hash: bytes32(3),
+        root: bytes32(4),
+        inputs_hash: bytes32(5),
+        schema_v: 1,
+        calc_v: 1,
+        policy_v: 1,
+      },
+    },
+    {
+      kind: "mint_quarter_nft",
+      args: {
+        nft_id: bytes32(6),
+        agreement_id: bytes32(7),
+        period_start: 1,
+        period_end: 2,
+        doc_hash: bytes32(8),
+        root: bytes32(9),
+        inputs_hash: bytes32(10),
+        schema_v: 1,
+        calc_v: 1,
+        policy_v: 1,
+      },
+    },
+    {
+      kind: "mint_ytd_nft",
+      args: {
+        nft_id: bytes32(11),
+        agreement_id: bytes32(12),
+        period_start: 1,
+        period_end: 2,
+        doc_hash: bytes32(13),
+        root: bytes32(14),
+        inputs_hash: bytes32(15),
+        schema_v: 1,
+        calc_v: 1,
+        policy_v: 1,
+      },
+    },
+    {
+      kind: "mint_eoy_nft",
+      args: {
+        nft_id: bytes32(16),
+        agreement_id: bytes32(17),
+        period_start: 1,
+        period_end: 2,
+        doc_hash: bytes32(18),
+        root: bytes32(19),
+        inputs_hash: bytes32(20),
+        schema_v: 1,
+        calc_v: 1,
+        policy_v: 1,
+      },
+    },
+    { kind: "revoke_payroll_nft", nft: payrollRecord(1) as never },
+    { kind: "mark_payroll_nft_superseded", old_nft: payrollRecord(2) as never, new_nft_id: bytes32(21) },
+    { kind: "assert_payroll_nft_exists", nft_id: bytes32(22) },
+    { kind: "get_payroll_nft_anchor_height", nft_id: bytes32(23) },
+    { kind: "get_payroll_nft_status", nft_id: bytes32(24) },
+    { kind: "get_payroll_nft_superseded_by", nft_id: bytes32(25) },
+
+    {
+      kind: "mint_credential_nft",
+      args: {
+        credential_id: bytes32(26),
+        subject_hash: bytes32(27),
+        issuer_hash: bytes32(28),
+        scope_hash: bytes32(29),
+        doc_hash: bytes32(30),
+        root: bytes32(31),
+        schema_v: 1,
+        policy_v: 1,
+      },
+    },
+    { kind: "revoke_credential_nft", nft: credentialRecord() as never },
+    { kind: "assert_credential_exists", credential_id: bytes32(32) },
+    { kind: "get_credential_anchor_height", credential_id: bytes32(33) },
+    { kind: "get_credential_status", credential_id: bytes32(34) },
+    { kind: "get_credential_revoked_height", credential_id: bytes32(35) },
+    { kind: "assert_scope_anchored", scope_hash: bytes32(36) },
+    { kind: "get_scope_anchor_height", scope_hash: bytes32(37) },
+
+    {
+      kind: "mint_authorization_nft",
+      args: {
+        auth_id: bytes32(38),
+        scope_hash: bytes32(39),
+        authorization_event_hash: bytes32(40),
+        policy_hash: bytes32(41),
+        issued_epoch: 10,
+        expires_epoch: 20,
+        schema_v: 1,
+        policy_v: 1,
+      },
+    },
+    { kind: "revoke_authorization_nft", nft: authorizationRecord() as never },
+    { kind: "mark_authorization_expired", auth_id: bytes32(42), current_epoch: 11 },
+    { kind: "anchor_audit_attestation", auth_id: bytes32(43), attestation_hash: bytes32(44), current_epoch: 12 },
+    { kind: "assert_authorization_exists", auth_id: bytes32(45) },
+    { kind: "assert_authorization_active", auth_id: bytes32(46), current_epoch: 13 },
+    { kind: "get_authorization_anchor_height", auth_id: bytes32(47) },
+    { kind: "get_authorization_status", auth_id: bytes32(48) },
+    { kind: "get_authorization_expiry", auth_id: bytes32(49) },
+    { kind: "get_authorization_revoked_height", auth_id: bytes32(50) },
+    { kind: "assert_attestation_anchored", attestation_hash: bytes32(51) },
+    { kind: "get_attestation_anchor_height", attestation_hash: bytes32(52) },
+    { kind: "get_attestation_authorization", attestation_hash: bytes32(53) },
+  ];
+}
+
+async function testAllStepKindsBuildCommands(): Promise<void> {
+  const adapter = new Layer2CliAdapter("plan_only");
+  const plan = buildCoveragePlan();
+  const report = (await adapter.executePlan("testnet", plan)) as Layer2CliExecutionReport;
+
+  assert(report.steps.length === plan.length, "expected one trace per plan step");
+  for (const step of report.steps) {
+    assert(step.command.includes("aleo execute"), `expected command prefix for ${step.kind}`);
+    assert(step.endpoint.program.endsWith(".aleo"), `expected aleo program for ${step.kind}`);
+    assert(step.endpoint.transition.length > 0, `expected transition for ${step.kind}`);
+  }
 }
 
 async function testRecordEncodingUsesRawPayload(): Promise<void> {
@@ -127,6 +277,7 @@ async function testExecuteFailureRaisesTypedExecutionError(): Promise<void> {
 }
 
 async function main(): Promise<void> {
+  await testAllStepKindsBuildCommands();
   await testRecordEncodingUsesRawPayload();
   await testDeterministicCommandCodecAcrossStepKinds();
   await testRetryOnThrownExecutionError();
