@@ -101,8 +101,10 @@ def main() -> None:
     if parsed.scheme not in {"http", "https"}:
         raise SystemExit("ERROR: endpoint must be an http(s) URI")
     if "/testnet" not in parsed.path:
-        raise SystemExit(
-            "ERROR: endpoint must include '/testnet' path segment (example: https://api.explorer.provable.com/v2/testnet)"
+        print(
+            "WARNING: endpoint does not include '/testnet'. Some environments require a network-qualified URI "
+            "(for example https://api.explorer.provable.com/v2/testnet).",
+            flush=True,
         )
 
     command = (
@@ -131,6 +133,7 @@ def main() -> None:
             "Codec mapping: credential_nft.aleo/mint_credential_nft",
             "Args order: credential_id, subject_hash, issuer_hash, scope_hash, doc_hash, root, schema_v, policy_v",
             "Hex inputs are encoded into Leo [u8;32] literals for snarkOS CLI compatibility.",
+            "Endpoint behavior may vary by snarkOS/provider; if submit returns non-JSON parse errors, test both /v2 and /v2/testnet endpoint forms.",
             "Submit wrapper prints captured output before failing when the submit command exits non-zero.",
         ],
         "commands": [{"name": ns.name, "command": command}],

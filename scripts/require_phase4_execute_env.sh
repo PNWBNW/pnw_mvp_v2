@@ -40,8 +40,7 @@ if [[ "$SNARKOS_ENDPOINT" != http://* && "$SNARKOS_ENDPOINT" != https://* ]]; th
 fi
 
 if [[ "$PNW_NETWORK" == "testnet" && "$SNARKOS_ENDPOINT" != *"/testnet"* ]]; then
-  echo "execute env check: FAIL - SNARKOS_ENDPOINT must include '/testnet' when PNW_NETWORK=testnet" >&2
-  exit 1
+  echo "execute env check: WARN - SNARKOS_ENDPOINT does not include '/testnet'; some snarkOS builds expect a network-qualified path while others expect base /v2. If broadcast fails with JSON parse errors, try '/v2/testnet'." >&2
 fi
 
 if ! python3 - <<'PY'
