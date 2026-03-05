@@ -129,6 +129,7 @@ import sys
 import time
 import re
 import subprocess
+import shlex
 from pathlib import Path
 
 scenario, network, manifest_path, artifact_dir, scenario_file, scenario_payload_id, scenario_payload_mode, scenario_payload_kind, rpc_url, execute_broadcast, broadcast_commands_file = sys.argv[1:12]
@@ -215,7 +216,15 @@ if execute_broadcast == "true":
                 "Replace template text with a real submit command before running EXECUTE_BROADCAST=true."
             )
 
-        proc = subprocess.run(command, shell=True, executable="/bin/bash", text=True, capture_output=True)
+        run_kwargs = {"text": True, "capture_output": True}
+        if command.startswith("bash -lc "):
+            try:
+                argv = shlex.split(command)
+            except ValueError as exc:
+                raise SystemExit(f"ERROR: broadcast command parse failed ({name}): {exc}")
+            proc = subprocess.run(argv, **run_kwargs)
+        else:
+            proc = subprocess.run(command, shell=True, executable="/bin/bash", **run_kwargs)
         if proc.returncode != 0:
             stdout_text = proc.stdout.strip()
             stderr_text = proc.stderr.strip()

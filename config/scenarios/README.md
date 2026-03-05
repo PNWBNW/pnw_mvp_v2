@@ -62,3 +62,8 @@ python3 scripts/build_onboarding_broadcast_commands.py \
 
 The generator enforces the onboarding mint codec ordering:
 `credential_id, subject_hash, issuer_hash, scope_hash, doc_hash, root, schema_v, policy_v`.
+
+
+If you run through `execute_testnet.yml`, you can either:
+- store the generated payload in `PHASE4_BROADCAST_COMMANDS_JSON`, or
+- for `onboarding_smoke`, store your mint args JSON in `PHASE4_ONBOARDING_MINT_ARGS_JSON` and let the workflow generate broadcast commands mid-run.
