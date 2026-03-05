@@ -47,7 +47,6 @@ jobs:
       EXECUTE_BROADCAST: "true"
       RECEIPT_VERIFICATION_MODE: "required"
       PHASE4_BROADCAST_COMMANDS_JSON: ${{ secrets.PHASE4_BROADCAST_COMMANDS_JSON }}
-      PHASE4_ONBOARDING_MINT_ARGS_JSON: ${{ secrets.PHASE4_ONBOARDING_MINT_ARGS_JSON }}
 
     steps:
       - name: Checkout
@@ -108,39 +107,23 @@ jobs:
 
       - name: Resolve broadcast commands (required)
         run: |
-          mkdir -p artifacts
-          BROADCAST_SOURCE="artifacts/phase4_broadcast_commands.required.json"
-
-          if [[ "$PHASE4_SCENARIO" == "onboarding_smoke" && -n "$PHASE4_ONBOARDING_MINT_ARGS_JSON" ]]; then
-            ARGS_SOURCE="artifacts/onboarding_mint_args.secret.json"
-            printf '%s\n' "$PHASE4_ONBOARDING_MINT_ARGS_JSON" > "$ARGS_SOURCE"
-            SUBMIT_PREFIX="snarkos developer execute --network 1 --endpoint \"${SNARKOS_ENDPOINT}\" --broadcast --private-key \"\$ALEO_PRIVATE_KEY\" credential_nft.aleo mint_credential_nft"
-            python3 scripts/build_onboarding_broadcast_commands.py \
-              --args-file "$ARGS_SOURCE" \
-              --submit-prefix "$SUBMIT_PREFIX" \
-              --out "$BROADCAST_SOURCE"
-            BROADCAST_SOURCE_KIND="generated_from_onboarding_args_secret"
-          elif [[ -n "$PHASE4_BROADCAST_COMMANDS_JSON" ]]; then
-            printf '%s\n' "$PHASE4_BROADCAST_COMMANDS_JSON" > "$BROADCAST_SOURCE"
-            BROADCAST_SOURCE_KIND="provided_secret_json"
-          else
-            echo "ERROR: missing broadcast command input." >&2
-            echo "Provide PHASE4_BROADCAST_COMMANDS_JSON, or for onboarding_smoke provide PHASE4_ONBOARDING_MINT_ARGS_JSON." >&2
+          if [[ -z "$PHASE4_BROADCAST_COMMANDS_JSON" ]]; then
+            echo "ERROR: missing required secret PHASE4_BROADCAST_COMMANDS_JSON" >&2
             exit 1
           fi
-
-          python3 - "$BROADCAST_SOURCE" <<'PYINLINE'
+          mkdir -p artifacts
+          BROADCAST_SOURCE="artifacts/phase4_broadcast_commands.required.json"
+          printf '%s\n' "$PHASE4_BROADCAST_COMMANDS_JSON" > "$BROADCAST_SOURCE"
+          python3 - <<'PYINLINE'
           import json
-          import sys
           from pathlib import Path
-          p = Path(sys.argv[1])
+          p = Path("artifacts/phase4_broadcast_commands.required.json")
           obj = json.loads(p.read_text(encoding="utf-8"))
           if not isinstance(obj, dict) or not isinstance(obj.get("commands"), list) or not obj.get("commands"):
-              raise SystemExit("ERROR: broadcast commands payload must contain non-empty commands list")
+              raise SystemExit("ERROR: PHASE4_BROADCAST_COMMANDS_JSON must contain non-empty commands list")
           PYINLINE
           python3 scripts/validate_phase4_broadcast_commands.py "$BROADCAST_SOURCE"
           echo "PHASE4_BROADCAST_COMMANDS_EFFECTIVE=$BROADCAST_SOURCE" >> "$GITHUB_ENV"
-          echo "PHASE4_BROADCAST_COMMANDS_SOURCE_KIND=$BROADCAST_SOURCE_KIND" >> "$GITHUB_ENV"
       - name: Execute selected Phase 4 scenario
         run: scripts/run_phase4_execute_scenario.sh --scenario "$PHASE4_SCENARIO" --scenario-file "$PHASE4_SCENARIO_FILE" --broadcast-commands-file "$PHASE4_BROADCAST_COMMANDS_EFFECTIVE"
 
@@ -164,7 +147,7 @@ jobs:
             "scenario_file": "${PHASE4_SCENARIO_FILE}",
             "execute_broadcast": "${EXECUTE_BROADCAST}",
             "receipt_verification_mode": "${RECEIPT_VERIFICATION_MODE}",
-            "broadcast_commands_source": "${PHASE4_BROADCAST_COMMANDS_SOURCE_KIND:-unknown}"
+            "broadcast_commands_source": "required_secret_json"
           }
           META
 
