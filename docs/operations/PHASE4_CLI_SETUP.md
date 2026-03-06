@@ -99,9 +99,10 @@ Broadcast mode is hardcoded ON in this lane (`EXECUTE_BROADCAST=true`) with stri
 > You can provide broadcast inputs in either mode:
 > 1. `PHASE4_BROADCAST_COMMANDS_JSON` (full command payload secret), or
 > 2. for `onboarding_smoke`, `PHASE4_ONBOARDING_MINT_ARGS_JSON` (typed args JSON) and the workflow will generate broadcast commands on the fly.
+> Optional override: set `PHASE4_SUBMIT_ENDPOINT` if your submit endpoint differs from `RPC_URL`.
 >
 > Keep `RPC_URL` explicitly set to your intended node endpoint (for testnet, e.g. `https://api.provable.com/v2/testnet`) so endpoint intent is captured in execute verification metadata.
-> Set `SNARKOS_ENDPOINT` to the snarkOS REST endpoint used by `snarkos developer execute --endpoint ...` (provider/CLI combos may expect either `.../v2` or `.../v2/testnet`).
+> Set `SNARKOS_ENDPOINT` for tooling that requires it. Onboarding submit generation in `execute_testnet.yml` defaults to `RPC_URL` for `snarkos developer execute --endpoint ...` (override with `PHASE4_SUBMIT_ENDPOINT` when needed).
 
 
 For `onboarding_smoke`, generate this secret payload from deterministic codec inputs:
