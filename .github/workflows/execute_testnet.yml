@@ -115,7 +115,7 @@ jobs:
           if [[ "$PHASE4_SCENARIO" == "onboarding_smoke" && -n "$PHASE4_ONBOARDING_MINT_ARGS_JSON" ]]; then
             ARGS_SOURCE="artifacts/onboarding_mint_args.secret.json"
             printf '%s\n' "$PHASE4_ONBOARDING_MINT_ARGS_JSON" > "$ARGS_SOURCE"
-            SUBMIT_PREFIX="snarkos developer execute --network 1 --endpoint \"${SNARKOS_ENDPOINT}\" --broadcast --private-key \"\$ALEO_PRIVATE_KEY\" credential_nft.aleo mint_credential_nft"
+            SUBMIT_PREFIX="snarkos developer execute --endpoint \"${SNARKOS_ENDPOINT}\" --broadcast --private-key \"\$ALEO_PRIVATE_KEY\" credential_nft.aleo mint_credential_nft"
             python3 scripts/build_onboarding_broadcast_commands.py \
               --args-file "$ARGS_SOURCE" \
               --submit-prefix "$SUBMIT_PREFIX" \
