@@ -49,6 +49,7 @@ jobs:
       RECEIPT_VERIFICATION_MODE: "required"
       PHASE4_BROADCAST_COMMANDS_JSON: ${{ secrets.PHASE4_BROADCAST_COMMANDS_JSON }}
       PHASE4_ONBOARDING_MINT_ARGS_JSON: ${{ secrets.PHASE4_ONBOARDING_MINT_ARGS_JSON }}
+      PHASE4_SUBMIT_ENDPOINT: ${{ secrets.PHASE4_SUBMIT_ENDPOINT }}
 
     steps:
       - name: Checkout
@@ -115,7 +116,13 @@ jobs:
           if [[ "$PHASE4_SCENARIO" == "onboarding_smoke" && -n "$PHASE4_ONBOARDING_MINT_ARGS_JSON" ]]; then
             ARGS_SOURCE="artifacts/onboarding_mint_args.secret.json"
             printf '%s\n' "$PHASE4_ONBOARDING_MINT_ARGS_JSON" > "$ARGS_SOURCE"
-            SUBMIT_PREFIX="snarkos developer execute --endpoint \"${SNARKOS_ENDPOINT}\" --broadcast --private-key \"\$ALEO_PRIVATE_KEY\" credential_nft.aleo mint_credential_nft"
+            SUBMIT_ENDPOINT="${PHASE4_SUBMIT_ENDPOINT:-$RPC_URL}"
+            if [[ -z "$SUBMIT_ENDPOINT" ]]; then
+              echo "ERROR: submit endpoint is empty (set RPC_URL or PHASE4_SUBMIT_ENDPOINT)" >&2
+              exit 1
+            fi
+            echo "Using submit endpoint source: ${PHASE4_SUBMIT_ENDPOINT:+PHASE4_SUBMIT_ENDPOINT}${PHASE4_SUBMIT_ENDPOINT:-RPC_URL}" >&2
+            SUBMIT_PREFIX="snarkos developer execute --endpoint \"${SUBMIT_ENDPOINT}\" --broadcast --private-key \"\$ALEO_PRIVATE_KEY\" credential_nft.aleo mint_credential_nft"
             python3 scripts/build_onboarding_broadcast_commands.py \
               --args-file "$ARGS_SOURCE" \
               --submit-prefix "$SUBMIT_PREFIX" \
