@@ -1,0 +1,189 @@
+name: phase4-testnet-execute-gate
+
+on:
+  push:
+    branches:
+      - work
+      - main
+  workflow_dispatch:
+    inputs:
+      scenario:
+        description: "Execute scenario"
+        required: true
+        default: "onboarding_smoke"
+        type: choice
+        options:
+          - payroll_smoke
+          - onboarding_smoke
+
+jobs:
+  execute_gate:
+    name: execute_gate
+    runs-on: ubuntu-latest
+    environment: testnet-staging
+    concurrency:
+      group: phase4-execute-${{ github.ref }}
+      cancel-in-progress: false
+    permissions:
+      contents: read
+      actions: read
+
+    env:
+      LEO_VERSION: 3.4.0
+      SNARKOS_VERSION: v4.4.0
+      LEO_URL: https://github.com/ProvableHQ/leo/releases/download/v3.4.0/leo-v3.4.0-x86_64-unknown-linux-gnu.zip
+      SNARKOS_URL: https://github.com/ProvableHQ/snarkOS/releases/download/v4.4.0/aleo-v4.4.0-x86_64-unknown-linux-gnu.zip
+      LEO_SHA256: ${{ vars.LEO_SHA256 }}
+      SNARKOS_SHA256: ${{ vars.SNARKOS_SHA256 }}
+      STRICT_VERSION_CHECK: "false"
+      PNW_NETWORK: testnet
+      MANIFEST_PATH: config/testnet.manifest.json
+      ALEO_PRIVATE_KEY: ${{ secrets.ALEO_PRIVATE_KEY }}
+      ALEO_VIEW_KEY: ${{ secrets.ALEO_VIEW_KEY }}
+      ALEO_ADDRESS: ${{ secrets.ALEO_ADDRESS }}
+      RPC_URL: ${{ secrets.RPC_URL }}
+      SNARKOS_ENDPOINT: ${{ secrets.SNARKOS_ENDPOINT }}
+      USDCX_PROGRAM_ID: ${{ secrets.USDCX_PROGRAM_ID }}
+      PHASE4_SCENARIO: ${{ github.event.inputs.scenario || 'onboarding_smoke' }}
+      EXECUTE_BROADCAST: "true"
+      RECEIPT_VERIFICATION_MODE: "required"
+      PHASE4_BROADCAST_COMMANDS_JSON: ${{ secrets.PHASE4_BROADCAST_COMMANDS_JSON }}
+      PHASE4_ONBOARDING_MINT_ARGS_JSON: ${{ secrets.PHASE4_ONBOARDING_MINT_ARGS_JSON }}
+      PHASE4_SUBMIT_ENDPOINT: ${{ secrets.PHASE4_SUBMIT_ENDPOINT }}
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+
+      - name: Install Leo (pinned)
+        run: |
+          curl -fsSL "$LEO_URL" -o leo.zip
+          if [[ -n "${LEO_SHA256}" ]]; then
+            echo "${LEO_SHA256}  leo.zip" | sha256sum -c -
+          else
+            echo "WARN: LEO_SHA256 not set; skipping artifact checksum verification" >&2
+          fi
+          unzip -o leo.zip -d leo-bin
+          chmod +x leo-bin/leo
+          sudo mv leo-bin/leo /usr/local/bin/leo
+
+      - name: Install snarkOS CLI (pinned)
+        run: |
+          curl -fsSL "$SNARKOS_URL" -o snarkos.zip
+          if [[ -n "${SNARKOS_SHA256}" ]]; then
+            echo "${SNARKOS_SHA256}  snarkos.zip" | sha256sum -c -
+          else
+            echo "WARN: SNARKOS_SHA256 not set; skipping artifact checksum verification" >&2
+          fi
+          unzip -o snarkos.zip -d snarkos-bin
+          chmod +x snarkos-bin/snarkos
+          sudo mv snarkos-bin/snarkos /usr/local/bin/snarkos
+
+      - name: Verify pinned CLI versions
+        run: scripts/verify_provable_cli.sh
+
+      - name: Validate testnet manifest schema
+        run: python3 scripts/validate_testnet_manifest.py "$MANIFEST_PATH"
+
+      - name: Require execute secrets and env
+        run: scripts/require_phase4_execute_env.sh
+
+      - name: Resolve scenario payload path
+        run: |
+          case "$PHASE4_SCENARIO" in
+            payroll_smoke)
+              echo "PHASE4_SCENARIO_FILE=config/scenarios/testnet/min_spend.payroll.json" >> "$GITHUB_ENV"
+              ;;
+            onboarding_smoke)
+              echo "PHASE4_SCENARIO_FILE=config/scenarios/testnet/min_spend.onboarding.json" >> "$GITHUB_ENV"
+              ;;
+            *)
+              echo "ERROR: unsupported scenario '$PHASE4_SCENARIO'" >&2
+              exit 1
+              ;;
+          esac
+
+      - name: Resolve broadcast commands (required)
+        run: |
+          mkdir -p artifacts
+          BROADCAST_SOURCE="artifacts/phase4_broadcast_commands.required.json"
+
+          if [[ "$PHASE4_SCENARIO" == "onboarding_smoke" && -n "$PHASE4_ONBOARDING_MINT_ARGS_JSON" ]]; then
+            ARGS_SOURCE="artifacts/onboarding_mint_args.secret.json"
+            printf '%s\n' "$PHASE4_ONBOARDING_MINT_ARGS_JSON" > "$ARGS_SOURCE"
+            SUBMIT_ENDPOINT="${PHASE4_SUBMIT_ENDPOINT:-$RPC_URL}"
+            if [[ -z "$SUBMIT_ENDPOINT" ]]; then
+              echo "ERROR: submit endpoint is empty (set RPC_URL or PHASE4_SUBMIT_ENDPOINT)" >&2
+              exit 1
+            fi
+            echo "Using submit endpoint source: ${PHASE4_SUBMIT_ENDPOINT:+PHASE4_SUBMIT_ENDPOINT}${PHASE4_SUBMIT_ENDPOINT:-RPC_URL}" >&2
+            SUBMIT_PREFIX="snarkos developer execute --endpoint \"${SUBMIT_ENDPOINT}\" --broadcast --private-key \"\$ALEO_PRIVATE_KEY\" credential_nft.aleo mint_credential_nft"
+            python3 scripts/build_onboarding_broadcast_commands.py \
+              --args-file "$ARGS_SOURCE" \
+              --submit-prefix "$SUBMIT_PREFIX" \
+              --out "$BROADCAST_SOURCE"
+            BROADCAST_SOURCE_KIND="generated_from_onboarding_args_secret"
+          elif [[ -n "$PHASE4_BROADCAST_COMMANDS_JSON" ]]; then
+            printf '%s\n' "$PHASE4_BROADCAST_COMMANDS_JSON" > "$BROADCAST_SOURCE"
+            BROADCAST_SOURCE_KIND="provided_secret_json"
+          else
+            echo "ERROR: missing broadcast command input." >&2
+            echo "Provide PHASE4_BROADCAST_COMMANDS_JSON, or for onboarding_smoke provide PHASE4_ONBOARDING_MINT_ARGS_JSON." >&2
+            exit 1
+          fi
+
+          python3 - "$BROADCAST_SOURCE" <<'PYINLINE'
+          import json
+          import sys
+          from pathlib import Path
+          p = Path(sys.argv[1])
+          obj = json.loads(p.read_text(encoding="utf-8"))
+          if not isinstance(obj, dict) or not isinstance(obj.get("commands"), list) or not obj.get("commands"):
+              raise SystemExit("ERROR: broadcast commands payload must contain non-empty commands list")
+          PYINLINE
+          python3 scripts/validate_phase4_broadcast_commands.py "$BROADCAST_SOURCE"
+          echo "PHASE4_BROADCAST_COMMANDS_EFFECTIVE=$BROADCAST_SOURCE" >> "$GITHUB_ENV"
+          echo "PHASE4_BROADCAST_COMMANDS_SOURCE_KIND=$BROADCAST_SOURCE_KIND" >> "$GITHUB_ENV"
+      - name: Execute selected Phase 4 scenario
+        run: scripts/run_phase4_execute_scenario.sh --scenario "$PHASE4_SCENARIO" --scenario-file "$PHASE4_SCENARIO_FILE" --broadcast-commands-file "$PHASE4_BROADCAST_COMMANDS_EFFECTIVE"
+
+      - name: Verify execute evidence bundle integrity
+        run: python3 scripts/verify_phase4_execute_artifacts.py artifacts/phase4_execute_bundle
+
+      - name: Verify broadcast receipts (required)
+        run: python3 scripts/verify_phase4_receipts.py artifacts/phase4_execute_bundle "$RPC_URL" "$RECEIPT_VERIFICATION_MODE"
+
+      - name: Emit execute gate metadata
+        run: |
+          mkdir -p artifacts
+          cat > artifacts/execute_gate_metadata.json <<META
+          {
+            "network": "${PNW_NETWORK}",
+            "manifest_path": "${MANIFEST_PATH}",
+            "aleo_address": "${ALEO_ADDRESS}",
+            "rpc_url_present": true,
+            "run_mode": "execute",
+            "scenario": "${PHASE4_SCENARIO}",
+            "scenario_file": "${PHASE4_SCENARIO_FILE}",
+            "execute_broadcast": "${EXECUTE_BROADCAST}",
+            "receipt_verification_mode": "${RECEIPT_VERIFICATION_MODE}",
+            "broadcast_commands_source": "${PHASE4_BROADCAST_COMMANDS_SOURCE_KIND:-unknown}"
+          }
+          META
+
+      - name: Upload execute gate metadata
+        uses: actions/upload-artifact@v4
+        with:
+          name: execute-gate-metadata
+          path: artifacts/execute_gate_metadata.json
+
+      - name: Upload execute evidence bundle
+        uses: actions/upload-artifact@v4
+        with:
+          name: execute-evidence-bundle
+          path: artifacts/phase4_execute_bundle/*.json
