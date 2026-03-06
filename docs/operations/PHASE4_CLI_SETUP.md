@@ -120,6 +120,7 @@ Alternative (recommended for onboarding): store the args JSON itself in `PHASE4_
 > **Broadcast flag gotcha (important):** for `snarkos developer execute`, use `--broadcast` as a flag.
 > Do **not** pass a URL argument like `--broadcast "$SNARKOS_ENDPOINT/testnet/transaction/broadcast"`.
 > Keep the target URI in `--endpoint` only.
+> Avoid forcing `--network` in onboarding submit-prefix unless you have validated the provider-specific mapping; network/endpoint mismatches can produce opaque JSON error-shape failures.
 
 
 ## 1) Scaffold status in this repo
