@@ -4,6 +4,7 @@ on:
   push:
     branches:
       - work
+      - main
   workflow_dispatch:
     inputs:
       scenario:

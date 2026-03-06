@@ -85,7 +85,7 @@ python3 scripts/build_onboarding_broadcast_commands.py \
 
 This sends the selected `scenario` into `.github/workflows/execute_testnet.yml`.
 
-`execute_gate` runs automatically on pushes to the `work` branch (testnet-staging environment), or by manual workflow dispatch.
+`execute_gate` runs automatically on pushes to the `work` and `main` branches (testnet-staging environment), or by manual workflow dispatch.
 
 You can preview the exact dispatch payload without calling GitHub using `--dry-run`.
 
