@@ -197,98 +197,15 @@ Current priorities:
 - minimal on-chain surface area
 - long-term extensibility
 
-## Phase Planning References
+## Session Context & Issue Tracker
 
-- Operations docs index: [docs/operations/README.md](./docs/operations/README.md)
-- Build sequence: [BUILD_ORDER.md](./docs/operations/BUILD_ORDER.md)
-- Phase 3 completion checklist: [PHASE3_SIGNOFF.md](./docs/operations/PHASE3_SIGNOFF.md)
-- Phase 4 CLI pin/setup guide: [PHASE4_CLI_SETUP.md](./docs/operations/PHASE4_CLI_SETUP.md)
-- Phase 4+ execution/testnet gameplan: [PHASE4_TESTNET_GAMEPLAN.md](./docs/operations/PHASE4_TESTNET_GAMEPLAN.md)
-- Thread-handoff context hub: [docs/context/README.md](./docs/context/README.md)
+- **[CLAUDE.md](./CLAUDE.md)** — phase status, bug list, file map, architecture invariants (start here every session)
+- **[NOTES.md](./NOTES.md)** — full issue tracker, fix priority order, per-issue acceptance criteria
 
----
+## Operator References
 
-## Repository Audit Snapshot (Pre-Phase 4)
-
-This README section is a **pause-point snapshot** after a full repo pass (Layer 1, Layer 2, Portal planners/adapters, and module READMEs) so we can align before adapter execution work.
-
-### What is implemented and stable
-
-**Layer 1 (on-chain canonical programs) is broadly complete and cohesive:**
-- Identity + eligibility surfaces exist (`pnw_name_registry`, `employer_license_registry`).
-- Private profile record flows exist (worker + employer create/update + anchors).
-- Agreement lifecycle is implemented (offer, accept, pause, terminate, staged resume, supersede).
-- Payroll settlement path is implemented in `payroll_core.aleo` with private USDCx movement and anchor outputs.
-- Receipt minting/anchoring and audit-event anchoring primitives are present.
-- A protocol router (`pnw_router.aleo`) exists for orchestrated Layer 1 entrypoints.
-
-**Layer 2 on-chain NFT primitives are implemented:**
-- `payroll_nfts.aleo` (cycle/quarterly/YTD/EOY + revoke + supersede).
-- `credential_nft.aleo` (mint/revoke + scope anchoring).
-- `audit_nft.aleo` (authorization lifecycle + expiry + attestation anchoring).
-
-**Portal planning stack is in place:**
-- Workflow definitions are present for payroll, audit, onboarding, and profile updates.
-- Layer 1 + Layer 2 router plan surfaces are implemented.
-- Program/transition mapping is centralized in adapter mapping modules.
-- Commitment toolkit and payroll normalization/building pipeline are present.
-
----
-
-## Phase 3 Status — Completed
-
-Phase 3 is complete. The canonical completion record is captured in:
-- `docs/operations/PHASE3_SIGNOFF.md`
-- `docs/operations/BUILD_ORDER.md` (Phase 3 marked completed)
-
-### Completed closeout outcomes
-- Layer 2 call-plan step coverage and adapter endpoint mapping are implemented.
-- Router API contract is frozen with stable helper methods plus raw `plan/planMany` for advanced composition.
-- Shared scalar/record type contract boundaries are fixed for planning modules.
-- Planner contracts are compile-gated (`portal/tsconfig.phase3.json`) and pass typecheck.
-- Phase 3 signoff checklist is committed in-repo.
-
----
-
-## Phase 4 Start Plan (Step-by-Step)
-
-Phase 4 is where many pieces come together. To reduce risk, start with a narrow, testable execution spine.
-
-1. **Adapter execution scaffold PR**
-   - Implement one concrete execution backend shape (CLI-first), preserving adapter isolation.
-   - No workflow changes in this step.
-
-2. **Router-step → transaction binding PR**
-   - Wire deterministic translation from planned steps to executable calls using existing endpoint resolvers.
-   - Add structured per-step execution result envelopes.
-
-3. **Error taxonomy + retry policy PR**
-   - Introduce explicit categories (validation, network, signer, chain rejection, transient).
-   - Add retry policy only for recoverable/transient categories.
-
-4. **Observability/tracing PR**
-   - Add deterministic trace IDs tied to workflow outputs (agreement/epoch/anchors/hashes).
-   - Ensure logs avoid plaintext sensitive payroll payloads.
-
-5. **Thin end-to-end happy-path PR (local/testnet-ready harness)**
-   - Execute one payroll flow through planner → adapter interface (without broad feature expansion).
-   - Keep scope intentionally minimal to validate architecture seam quality.
-
-### Phase 4 guardrails
-- Keep workflows planning-only.
-- Keep program/transition strings centralized in adapters.
-- Avoid re-opening commitment encoding or Layer 1 protocol design unless a blocking defect is found.
-- Prefer small, sequence-safe PRs over one large integration PR.
-
----
-
-## Immediate Pre-Phase-4 Checklist
-
-- [x] Phase 3 signoff checklist committed (API + types + compile gate).
-- [x] Root and module docs aligned with actual implementation state.
-- [ ] First adapter execution target picked (recommended: payroll happy-path only).
-- [ ] Logging and error envelope format agreed before implementation.
-
+- Phase 4 CLI setup guide: [docs/operations/PHASE4_CLI_SETUP.md](./docs/operations/PHASE4_CLI_SETUP.md)
+- Phase 4→6 testnet gameplan: [docs/operations/PHASE4_TESTNET_GAMEPLAN.md](./docs/operations/PHASE4_TESTNET_GAMEPLAN.md)
 
 ## License
 
