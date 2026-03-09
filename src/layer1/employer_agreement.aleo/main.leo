@@ -166,6 +166,16 @@ program employer_agreement.aleo {
         key as [u8; 32].public,
         value as u8.public;
 
+    // Stores the employer and worker name hashes per agreement so that
+    // role-specific transitions can verify the caller is actually a party.
+    mapping agreement_employer_hash:
+        key as [u8; 32].public,
+        value as field.public;
+
+    mapping agreement_worker_hash:
+        key as [u8; 32].public,
+        value as field.public;
+
     // -----------------------------
     // Internal helpers
     // -----------------------------
@@ -202,6 +212,21 @@ program employer_agreement.aleo {
     function assert_is_dao() {
         // Placeholder for vote-gated DAO action.
         assert(caller == DAO_ADDRESS);
+    }
+
+    // Ensures employer_name_hash is the recorded employer for agreement_id.
+    // Prevents any verified employer from acting on agreements they are not party to.
+    function assert_is_agreement_employer(agreement_id: [u8; 32], employer_name_hash: field) {
+        let stored: field = Mapping::get_or_use(agreement_employer_hash, agreement_id, 0field);
+        assert(stored != 0field);
+        assert(stored == employer_name_hash);
+    }
+
+    // Ensures worker_name_hash is the recorded worker for agreement_id.
+    function assert_is_agreement_worker(agreement_id: [u8; 32], worker_name_hash: field) {
+        let stored: field = Mapping::get_or_use(agreement_worker_hash, agreement_id, 0field);
+        assert(stored != 0field);
+        assert(stored == worker_name_hash);
     }
 
     // -----------------------------
@@ -254,6 +279,9 @@ program employer_agreement.aleo {
         Mapping::set(agreement_parties_key, agreement_id, parties_key);
         Mapping::set(agreement_status, agreement_id, STATUS_PENDING);
         Mapping::set(resume_approvals, agreement_id, 0u8);
+        // Bind name hashes to this agreement for role-specific authorization.
+        Mapping::set(agreement_employer_hash, agreement_id, employer_name_hash);
+        Mapping::set(agreement_worker_hash, agreement_id, worker_name_hash);
 
         let h: u32 = block.height;
 
@@ -467,6 +495,7 @@ program employer_agreement.aleo {
         employer_name_hash: field
     ) {
         assert_is_employer(employer_name_hash);
+        assert_is_agreement_employer(agreement_id, employer_name_hash);
         assert_agreement_exists(agreement_id);
         assert_parties_key_matches(agreement_id, parties_key);
 
@@ -484,6 +513,7 @@ program employer_agreement.aleo {
         worker_name_hash: field
     ) {
         assert_is_worker(worker_name_hash);
+        assert_is_agreement_worker(agreement_id, worker_name_hash);
         assert_agreement_exists(agreement_id);
         assert_parties_key_matches(agreement_id, parties_key);
 
@@ -517,6 +547,7 @@ program employer_agreement.aleo {
         employer_name_hash: field
     ) {
         assert_is_employer(employer_name_hash);
+        assert_is_agreement_employer(agreement_id, employer_name_hash);
         assert_agreement_exists(agreement_id);
         assert_parties_key_matches(agreement_id, parties_key);
 
@@ -534,6 +565,7 @@ program employer_agreement.aleo {
         worker_name_hash: field
     ) {
         assert_is_worker(worker_name_hash);
+        assert_is_agreement_worker(agreement_id, worker_name_hash);
         assert_agreement_exists(agreement_id);
         assert_parties_key_matches(agreement_id, parties_key);
 
@@ -567,6 +599,7 @@ program employer_agreement.aleo {
         employer_name_hash: field
     ) {
         assert_is_employer(employer_name_hash);
+        assert_is_agreement_employer(agreement_id, employer_name_hash);
         assert_agreement_exists(agreement_id);
         assert_parties_key_matches(agreement_id, parties_key);
 
@@ -584,6 +617,7 @@ program employer_agreement.aleo {
         worker_name_hash: field
     ) {
         assert_is_worker(worker_name_hash);
+        assert_is_agreement_worker(agreement_id, worker_name_hash);
         assert_agreement_exists(agreement_id);
         assert_parties_key_matches(agreement_id, parties_key);
 
