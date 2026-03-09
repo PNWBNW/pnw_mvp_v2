@@ -5,7 +5,6 @@
 // - Typed adapter error taxonomy.
 // - Structured execution traces for plan-only and execute modes.
 
-import type { Network } from "../config/env";
 import { assertU16, assertU32 } from "../types/aleo_types";
 import type { Layer2CallPlanResult, Layer2CallPlanStep } from "../router/layer2_router";
 import { resolveLayer2Endpoint, type Layer2Adapter, type Layer2TxMeta } from "./layer2_adapter";
@@ -444,7 +443,7 @@ export class Layer2CliAdapter implements Layer2Adapter {
     };
   }
 
-  async executePlan(network: Network, plan: Layer2CallPlanStep[]): Promise<Layer2CallPlanResult> {
+  async executePlan(network: Layer2TxMeta["network"], plan: Layer2CallPlanStep[]): Promise<Layer2CallPlanResult> {
     const traces: CliStepTrace<Layer2CallPlanStep["kind"], Layer2TxMeta>[] = [];
 
     for (const [index, step] of plan.entries()) {
