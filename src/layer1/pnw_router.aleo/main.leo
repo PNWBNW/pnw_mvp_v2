@@ -83,68 +83,84 @@ program pnw_router.aleo {
     transition pause_agreement_employer(
         agreement_id: [u8; 32],
         parties_key: [u8; 32],
-        employer_name_hash: field
+        employer_name_hash: field,
+        worker_name_hash: field
     ) {
         employer_agreement.aleo/pause_agreement_employer(
             agreement_id,
             parties_key,
-            employer_name_hash
+            employer_name_hash,
+            worker_name_hash
         );
     }
 
     transition pause_agreement_worker(
         agreement_id: [u8; 32],
         parties_key: [u8; 32],
+        employer_name_hash: field,
         worker_name_hash: field
     ) {
         employer_agreement.aleo/pause_agreement_worker(
             agreement_id,
             parties_key,
+            employer_name_hash,
             worker_name_hash
         );
     }
 
     transition pause_agreement_dao(
         agreement_id: [u8; 32],
-        parties_key: [u8; 32]
+        parties_key: [u8; 32],
+        employer_name_hash: field,
+        worker_name_hash: field
     ) {
         employer_agreement.aleo/pause_agreement_dao(
             agreement_id,
-            parties_key
+            parties_key,
+            employer_name_hash,
+            worker_name_hash
         );
     }
 
     transition terminate_agreement_employer(
         agreement_id: [u8; 32],
         parties_key: [u8; 32],
-        employer_name_hash: field
+        employer_name_hash: field,
+        worker_name_hash: field
     ) {
         employer_agreement.aleo/terminate_agreement_employer(
             agreement_id,
             parties_key,
-            employer_name_hash
+            employer_name_hash,
+            worker_name_hash
         );
     }
 
     transition terminate_agreement_worker(
         agreement_id: [u8; 32],
         parties_key: [u8; 32],
+        employer_name_hash: field,
         worker_name_hash: field
     ) {
         employer_agreement.aleo/terminate_agreement_worker(
             agreement_id,
             parties_key,
+            employer_name_hash,
             worker_name_hash
         );
     }
 
     transition terminate_agreement_dao(
         agreement_id: [u8; 32],
-        parties_key: [u8; 32]
+        parties_key: [u8; 32],
+        employer_name_hash: field,
+        worker_name_hash: field
     ) {
         employer_agreement.aleo/terminate_agreement_dao(
             agreement_id,
-            parties_key
+            parties_key,
+            employer_name_hash,
+            worker_name_hash
         );
     }
 
@@ -155,44 +171,56 @@ program pnw_router.aleo {
     transition approve_resume_employer(
         agreement_id: [u8; 32],
         parties_key: [u8; 32],
-        employer_name_hash: field
+        employer_name_hash: field,
+        worker_name_hash: field
     ) {
         employer_agreement.aleo/approve_resume_employer(
             agreement_id,
             parties_key,
-            employer_name_hash
+            employer_name_hash,
+            worker_name_hash
         );
     }
 
     transition approve_resume_worker(
         agreement_id: [u8; 32],
         parties_key: [u8; 32],
+        employer_name_hash: field,
         worker_name_hash: field
     ) {
         employer_agreement.aleo/approve_resume_worker(
             agreement_id,
             parties_key,
+            employer_name_hash,
             worker_name_hash
         );
     }
 
     transition approve_resume_dao(
         agreement_id: [u8; 32],
-        parties_key: [u8; 32]
+        parties_key: [u8; 32],
+        employer_name_hash: field,
+        worker_name_hash: field
     ) {
         employer_agreement.aleo/approve_resume_dao(
             agreement_id,
-            parties_key
+            parties_key,
+            employer_name_hash,
+            worker_name_hash
         );
     }
 
     transition resume_agreement(
         agreement_id: [u8; 32],
-        parties_key: [u8; 32]
+        parties_key: [u8; 32],
+        employer_name_hash: field,
+        worker_name_hash: field
     ) {
         employer_agreement.aleo/resume_agreement(
             agreement_id,
-            parties_key
+            parties_key,
+            employer_name_hash,
+            worker_name_hash
         );
     }
 
