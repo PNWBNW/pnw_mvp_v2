@@ -15,12 +15,14 @@ program employer_agreement.aleo {
     // Public minimal mappings:
     // - agreement existence + first-seen height (anchor)
     // - agreement status (PENDING/ACTIVE/PAUSED/TERMINATED/SUPERSEDED)
-    // - parties_key (capability commitment)
+    // - parties_commitment (BHP1024 hash of parties_key + employer_name_hash + worker_name_hash)
     // - resume approvals (3-of-3: Employer + Worker + DAO)
     //
     // Privacy:
-    // - No plaintext identities or terms are stored publicly.
+    // - No plaintext identities, terms, or capability keys are stored publicly.
     // - Only anchors/flags/heights are public.
+    // - parties_key and identity hashes are private (held in records); only their
+    //   compound hash commitment is stored on-chain.
     //
     // Timestamp note:
     // - On-chain wall-clock does not exist; we store block.height on-chain.
@@ -73,6 +75,19 @@ program employer_agreement.aleo {
             code == PAY_MONTHLY ||
             code == PAY_QUARTERLY
         );
+    }
+
+    // -----------------------------
+    // Structs
+    // -----------------------------
+
+    // Input for the parties commitment hash.
+    // Commitment = BHP1024::hash_to_field(PartiesCommitmentInput { ... })
+    // Stored on-chain instead of plaintext parties_key or identity hashes.
+    struct PartiesCommitmentInput {
+        parties_key: [u8; 32],
+        employer_name_hash: field,
+        worker_name_hash: field,
     }
 
     // -----------------------------
@@ -154,9 +169,11 @@ program employer_agreement.aleo {
         key as [u8; 32].public,
         value as u32.public;
 
-    mapping agreement_parties_key:
+    // Stores BHP1024::hash_to_field({ parties_key, employer_name_hash, worker_name_hash }).
+    // parties_key and identity hashes are never stored plaintext on-chain.
+    mapping agreement_parties_commitment:
         key as [u8; 32].public,
-        value as [u8; 32].public;
+        value as field.public;
 
     mapping agreement_status:
         key as [u8; 32].public,
@@ -183,9 +200,31 @@ program employer_agreement.aleo {
         assert(h != 0u32);
     }
 
-    function assert_parties_key_matches(agreement_id: [u8; 32], parties_key: [u8; 32]) {
-        let stored: [u8; 32] = Mapping::get_or_use(agreement_parties_key, agreement_id, [0u8; 32]);
-        assert(stored == parties_key);
+    // Computes the parties commitment hash from the three private values.
+    function compute_parties_commitment(
+        parties_key: [u8; 32],
+        employer_name_hash: field,
+        worker_name_hash: field
+    ) -> field {
+        return BHP1024::hash_to_field(PartiesCommitmentInput {
+            parties_key: parties_key,
+            employer_name_hash: employer_name_hash,
+            worker_name_hash: worker_name_hash,
+        });
+    }
+
+    // Verifies that the provided private values match the stored on-chain commitment.
+    // A caller who cannot supply all three correct values will fail the proof.
+    function assert_parties_commitment_matches(
+        agreement_id: [u8; 32],
+        parties_key: [u8; 32],
+        employer_name_hash: field,
+        worker_name_hash: field
+    ) {
+        let computed: field = compute_parties_commitment(parties_key, employer_name_hash, worker_name_hash);
+        let stored: field = Mapping::get_or_use(agreement_parties_commitment, agreement_id, 0field);
+        assert(stored != 0field);
+        assert(stored == computed);
     }
 
     function assert_is_employer(employer_name_hash: field) {
@@ -250,8 +289,10 @@ program employer_agreement.aleo {
         assert(review_epoch >= start_epoch);
 
         // Anchor + minimal public state.
+        // Store commitment hash instead of plaintext parties_key or identity hashes.
         anchor_once(agreement_id);
-        Mapping::set(agreement_parties_key, agreement_id, parties_key);
+        let commitment: field = compute_parties_commitment(parties_key, employer_name_hash, worker_name_hash);
+        Mapping::set(agreement_parties_commitment, agreement_id, commitment);
         Mapping::set(agreement_status, agreement_id, STATUS_PENDING);
         Mapping::set(resume_approvals, agreement_id, 0u8);
 
@@ -305,7 +346,6 @@ program employer_agreement.aleo {
         assert_is_worker(offer.worker_name_hash);
 
         let agreement_id: [u8; 32] = offer.agreement_id;
-        let parties_key: [u8; 32] = offer.parties_key;
 
         assert_agreement_exists(agreement_id);
 
@@ -313,7 +353,13 @@ program employer_agreement.aleo {
         assert_status_valid(s);
         assert(s == STATUS_PENDING);
 
-        assert_parties_key_matches(agreement_id, parties_key);
+        // Verify commitment using values carried privately in the offer record.
+        assert_parties_commitment_matches(
+            agreement_id,
+            offer.parties_key,
+            offer.employer_name_hash,
+            offer.worker_name_hash
+        );
 
         consume offer;
 
@@ -325,7 +371,7 @@ program employer_agreement.aleo {
 
         let final: FinalAgreement = FinalAgreement {
             agreement_id: agreement_id.private,
-            parties_key: parties_key.private,
+            parties_key: offer.parties_key,
 
             employer_name_hash: offer.employer_name_hash,
             worker_name_hash: offer.worker_name_hash,
@@ -361,11 +407,16 @@ program employer_agreement.aleo {
     }
 
     // -----------------------------
-    // 3) Pause / terminate (capability-gated via parties_key)
+    // 3) Pause / terminate (capability-gated via parties_commitment)
     // -----------------------------
-    transition pause_agreement(agreement_id: [u8; 32], parties_key: [u8; 32]) {
+    transition pause_agreement(
+        agreement_id: [u8; 32],
+        parties_key: [u8; 32],
+        employer_name_hash: field,
+        worker_name_hash: field
+    ) {
         assert_agreement_exists(agreement_id);
-        assert_parties_key_matches(agreement_id, parties_key);
+        assert_parties_commitment_matches(agreement_id, parties_key, employer_name_hash, worker_name_hash);
 
         let s: u8 = Mapping::get_or_use(agreement_status, agreement_id, 255u8);
         assert_status_valid(s);
@@ -375,9 +426,14 @@ program employer_agreement.aleo {
         Mapping::set(resume_approvals, agreement_id, 0u8);
     }
 
-    transition terminate_agreement(agreement_id: [u8; 32], parties_key: [u8; 32]) {
+    transition terminate_agreement(
+        agreement_id: [u8; 32],
+        parties_key: [u8; 32],
+        employer_name_hash: field,
+        worker_name_hash: field
+    ) {
         assert_agreement_exists(agreement_id);
-        assert_parties_key_matches(agreement_id, parties_key);
+        assert_parties_commitment_matches(agreement_id, parties_key, employer_name_hash, worker_name_hash);
 
         let s: u8 = Mapping::get_or_use(agreement_status, agreement_id, 255u8);
         assert_status_valid(s);
@@ -390,9 +446,14 @@ program employer_agreement.aleo {
     // -----------------------------
     // 4) Resume approvals (3-of-3)
     // -----------------------------
-    transition resume_agreement_employer(agreement_id: [u8; 32], parties_key: [u8; 32]) {
+    transition resume_agreement_employer(
+        agreement_id: [u8; 32],
+        parties_key: [u8; 32],
+        employer_name_hash: field,
+        worker_name_hash: field
+    ) {
         assert_agreement_exists(agreement_id);
-        assert_parties_key_matches(agreement_id, parties_key);
+        assert_parties_commitment_matches(agreement_id, parties_key, employer_name_hash, worker_name_hash);
 
         let s: u8 = Mapping::get_or_use(agreement_status, agreement_id, 255u8);
         assert_status_valid(s);
@@ -402,9 +463,14 @@ program employer_agreement.aleo {
         Mapping::set(resume_approvals, agreement_id, m | RESUME_EMPLOYER_BIT);
     }
 
-    transition resume_agreement_worker(agreement_id: [u8; 32], parties_key: [u8; 32]) {
+    transition resume_agreement_worker(
+        agreement_id: [u8; 32],
+        parties_key: [u8; 32],
+        employer_name_hash: field,
+        worker_name_hash: field
+    ) {
         assert_agreement_exists(agreement_id);
-        assert_parties_key_matches(agreement_id, parties_key);
+        assert_parties_commitment_matches(agreement_id, parties_key, employer_name_hash, worker_name_hash);
 
         let s: u8 = Mapping::get_or_use(agreement_status, agreement_id, 255u8);
         assert_status_valid(s);
@@ -414,11 +480,16 @@ program employer_agreement.aleo {
         Mapping::set(resume_approvals, agreement_id, m | RESUME_WORKER_BIT);
     }
 
-    transition resume_agreement_dao(agreement_id: [u8; 32], parties_key: [u8; 32]) {
+    transition resume_agreement_dao(
+        agreement_id: [u8; 32],
+        parties_key: [u8; 32],
+        employer_name_hash: field,
+        worker_name_hash: field
+    ) {
         assert_is_dao();
 
         assert_agreement_exists(agreement_id);
-        assert_parties_key_matches(agreement_id, parties_key);
+        assert_parties_commitment_matches(agreement_id, parties_key, employer_name_hash, worker_name_hash);
 
         let s: u8 = Mapping::get_or_use(agreement_status, agreement_id, 255u8);
         assert_status_valid(s);
@@ -428,9 +499,14 @@ program employer_agreement.aleo {
         Mapping::set(resume_approvals, agreement_id, m | RESUME_DAO_BIT);
     }
 
-    transition finalize_resume(agreement_id: [u8; 32], parties_key: [u8; 32]) {
+    transition finalize_resume(
+        agreement_id: [u8; 32],
+        parties_key: [u8; 32],
+        employer_name_hash: field,
+        worker_name_hash: field
+    ) {
         assert_agreement_exists(agreement_id);
-        assert_parties_key_matches(agreement_id, parties_key);
+        assert_parties_commitment_matches(agreement_id, parties_key, employer_name_hash, worker_name_hash);
 
         let s: u8 = Mapping::get_or_use(agreement_status, agreement_id, 255u8);
         assert_status_valid(s);
@@ -446,9 +522,14 @@ program employer_agreement.aleo {
     // -----------------------------
     // 5) Supersede
     // -----------------------------
-    transition supersede_agreement(agreement_id: [u8; 32], parties_key: [u8; 32]) {
+    transition supersede_agreement(
+        agreement_id: [u8; 32],
+        parties_key: [u8; 32],
+        employer_name_hash: field,
+        worker_name_hash: field
+    ) {
         assert_agreement_exists(agreement_id);
-        assert_parties_key_matches(agreement_id, parties_key);
+        assert_parties_commitment_matches(agreement_id, parties_key, employer_name_hash, worker_name_hash);
 
         let s: u8 = Mapping::get_or_use(agreement_status, agreement_id, 255u8);
         assert_status_valid(s);
@@ -464,11 +545,12 @@ program employer_agreement.aleo {
     transition pause_agreement_employer(
         agreement_id: [u8; 32],
         parties_key: [u8; 32],
-        employer_name_hash: field
+        employer_name_hash: field,
+        worker_name_hash: field
     ) {
         assert_is_employer(employer_name_hash);
         assert_agreement_exists(agreement_id);
-        assert_parties_key_matches(agreement_id, parties_key);
+        assert_parties_commitment_matches(agreement_id, parties_key, employer_name_hash, worker_name_hash);
 
         let s: u8 = Mapping::get_or_use(agreement_status, agreement_id, 255u8);
         assert_status_valid(s);
@@ -481,11 +563,12 @@ program employer_agreement.aleo {
     transition pause_agreement_worker(
         agreement_id: [u8; 32],
         parties_key: [u8; 32],
+        employer_name_hash: field,
         worker_name_hash: field
     ) {
         assert_is_worker(worker_name_hash);
         assert_agreement_exists(agreement_id);
-        assert_parties_key_matches(agreement_id, parties_key);
+        assert_parties_commitment_matches(agreement_id, parties_key, employer_name_hash, worker_name_hash);
 
         let s: u8 = Mapping::get_or_use(agreement_status, agreement_id, 255u8);
         assert_status_valid(s);
@@ -495,10 +578,15 @@ program employer_agreement.aleo {
         Mapping::set(resume_approvals, agreement_id, 0u8);
     }
 
-    transition pause_agreement_dao(agreement_id: [u8; 32], parties_key: [u8; 32]) {
+    transition pause_agreement_dao(
+        agreement_id: [u8; 32],
+        parties_key: [u8; 32],
+        employer_name_hash: field,
+        worker_name_hash: field
+    ) {
         assert_is_dao();
         assert_agreement_exists(agreement_id);
-        assert_parties_key_matches(agreement_id, parties_key);
+        assert_parties_commitment_matches(agreement_id, parties_key, employer_name_hash, worker_name_hash);
 
         let s: u8 = Mapping::get_or_use(agreement_status, agreement_id, 255u8);
         assert_status_valid(s);
@@ -514,11 +602,12 @@ program employer_agreement.aleo {
     transition terminate_agreement_employer(
         agreement_id: [u8; 32],
         parties_key: [u8; 32],
-        employer_name_hash: field
+        employer_name_hash: field,
+        worker_name_hash: field
     ) {
         assert_is_employer(employer_name_hash);
         assert_agreement_exists(agreement_id);
-        assert_parties_key_matches(agreement_id, parties_key);
+        assert_parties_commitment_matches(agreement_id, parties_key, employer_name_hash, worker_name_hash);
 
         let s: u8 = Mapping::get_or_use(agreement_status, agreement_id, 255u8);
         assert_status_valid(s);
@@ -531,11 +620,12 @@ program employer_agreement.aleo {
     transition terminate_agreement_worker(
         agreement_id: [u8; 32],
         parties_key: [u8; 32],
+        employer_name_hash: field,
         worker_name_hash: field
     ) {
         assert_is_worker(worker_name_hash);
         assert_agreement_exists(agreement_id);
-        assert_parties_key_matches(agreement_id, parties_key);
+        assert_parties_commitment_matches(agreement_id, parties_key, employer_name_hash, worker_name_hash);
 
         let s: u8 = Mapping::get_or_use(agreement_status, agreement_id, 255u8);
         assert_status_valid(s);
@@ -545,10 +635,15 @@ program employer_agreement.aleo {
         Mapping::set(resume_approvals, agreement_id, 0u8);
     }
 
-    transition terminate_agreement_dao(agreement_id: [u8; 32], parties_key: [u8; 32]) {
+    transition terminate_agreement_dao(
+        agreement_id: [u8; 32],
+        parties_key: [u8; 32],
+        employer_name_hash: field,
+        worker_name_hash: field
+    ) {
         assert_is_dao();
         assert_agreement_exists(agreement_id);
-        assert_parties_key_matches(agreement_id, parties_key);
+        assert_parties_commitment_matches(agreement_id, parties_key, employer_name_hash, worker_name_hash);
 
         let s: u8 = Mapping::get_or_use(agreement_status, agreement_id, 255u8);
         assert_status_valid(s);
@@ -564,11 +659,12 @@ program employer_agreement.aleo {
     transition approve_resume_employer(
         agreement_id: [u8; 32],
         parties_key: [u8; 32],
-        employer_name_hash: field
+        employer_name_hash: field,
+        worker_name_hash: field
     ) {
         assert_is_employer(employer_name_hash);
         assert_agreement_exists(agreement_id);
-        assert_parties_key_matches(agreement_id, parties_key);
+        assert_parties_commitment_matches(agreement_id, parties_key, employer_name_hash, worker_name_hash);
 
         let s: u8 = Mapping::get_or_use(agreement_status, agreement_id, 255u8);
         assert_status_valid(s);
@@ -581,11 +677,12 @@ program employer_agreement.aleo {
     transition approve_resume_worker(
         agreement_id: [u8; 32],
         parties_key: [u8; 32],
+        employer_name_hash: field,
         worker_name_hash: field
     ) {
         assert_is_worker(worker_name_hash);
         assert_agreement_exists(agreement_id);
-        assert_parties_key_matches(agreement_id, parties_key);
+        assert_parties_commitment_matches(agreement_id, parties_key, employer_name_hash, worker_name_hash);
 
         let s: u8 = Mapping::get_or_use(agreement_status, agreement_id, 255u8);
         assert_status_valid(s);
@@ -595,10 +692,15 @@ program employer_agreement.aleo {
         Mapping::set(resume_approvals, agreement_id, m | RESUME_WORKER_BIT);
     }
 
-    transition approve_resume_dao(agreement_id: [u8; 32], parties_key: [u8; 32]) {
+    transition approve_resume_dao(
+        agreement_id: [u8; 32],
+        parties_key: [u8; 32],
+        employer_name_hash: field,
+        worker_name_hash: field
+    ) {
         assert_is_dao();
         assert_agreement_exists(agreement_id);
-        assert_parties_key_matches(agreement_id, parties_key);
+        assert_parties_commitment_matches(agreement_id, parties_key, employer_name_hash, worker_name_hash);
 
         let s: u8 = Mapping::get_or_use(agreement_status, agreement_id, 255u8);
         assert_status_valid(s);
@@ -608,10 +710,15 @@ program employer_agreement.aleo {
         Mapping::set(resume_approvals, agreement_id, m | RESUME_DAO_BIT);
     }
 
-    // resume_agreement: alias for finalize_resume (requires all 3 approvals)
-    transition resume_agreement(agreement_id: [u8; 32], parties_key: [u8; 32]) {
+    // resume_agreement: requires all 3 approvals set before executing
+    transition resume_agreement(
+        agreement_id: [u8; 32],
+        parties_key: [u8; 32],
+        employer_name_hash: field,
+        worker_name_hash: field
+    ) {
         assert_agreement_exists(agreement_id);
-        assert_parties_key_matches(agreement_id, parties_key);
+        assert_parties_commitment_matches(agreement_id, parties_key, employer_name_hash, worker_name_hash);
 
         let s: u8 = Mapping::get_or_use(agreement_status, agreement_id, 255u8);
         assert_status_valid(s);
