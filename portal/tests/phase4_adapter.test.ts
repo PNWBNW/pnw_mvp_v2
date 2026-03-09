@@ -159,7 +159,10 @@ async function testAllStepKindsBuildCommands(): Promise<void> {
 
   assert(report.steps.length === plan.length, "expected one trace per plan step");
   for (const step of report.steps) {
-    assert(step.command.includes("aleo execute"), `expected command prefix for ${step.kind}`);
+    assert(step.command.includes("snarkos developer execute"), `expected command prefix for ${step.kind}`);
+    assert(step.command.includes(" --endpoint "), `expected endpoint flag for ${step.kind}`);
+    assert(step.command.includes(" --broadcast"), `expected broadcast flag for ${step.kind}`);
+    assert(!step.command.includes("--query"), `query flag must not be present for ${step.kind}`);
     assert(step.endpoint.program.endsWith(".aleo"), `expected aleo program for ${step.kind}`);
     assert(step.endpoint.transition.length > 0, `expected transition for ${step.kind}`);
   }
