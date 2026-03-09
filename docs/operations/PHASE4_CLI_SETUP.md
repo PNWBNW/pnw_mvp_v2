@@ -12,12 +12,12 @@ Pin and verify CLI tooling before wiring execution adapters:
 
 Use these pins for Phase 4:
 
-- `LEO_VERSION=3.4.0`
-- `SNARKOS_VERSION=v4.4.0`
+- `LEO_VERSION=3.5.0`
+- `SNARKOS_VERSION=v4.5.0`
 
 Reference artifacts:
-- Leo: `https://github.com/ProvableHQ/leo/releases/download/v3.4.0/leo-v3.4.0-x86_64-unknown-linux-gnu.zip`
-- snarkOS: `https://github.com/ProvableHQ/snarkOS/releases/download/v4.4.0/aleo-v4.4.0-x86_64-unknown-linux-gnu.zip`
+- Leo: `https://github.com/ProvableHQ/leo/releases/download/v3.5.0/leo-release-3.5-x86_64-unknown-linux-gnu.zip`
+- snarkOS: `https://github.com/ProvableHQ/snarkOS/releases/download/v4.5.0/aleo-v4.5.0-x86_64-unknown-linux-gnu.zip`
 
 ## CI workflow bootstrap (GitHub Actions)
 
@@ -153,8 +153,8 @@ This attempts to read latest release tags from:
 ## 3) Export version pins in your shell
 
 ```bash
-export LEO_VERSION="3.4.0"
-export SNARKOS_VERSION="v4.4.0"
+export LEO_VERSION="3.5.0"
+export SNARKOS_VERSION="v4.5.0"
 ```
 
 Keep these pins consistent across contributors for deterministic behavior.
@@ -162,17 +162,14 @@ Keep these pins consistent across contributors for deterministic behavior.
 Optional hardening (recommended in CI):
 
 ```bash
-export LEO_SHA256="<sha256-of-leo-zip>"
-export SNARKOS_SHA256="<sha256-of-snarkos-zip>"
+export LEO_SHA256="a0a8bdc3bfd4508f954a887f761131aa731dcbc76e9185b1c92cd105d314cd5e"
+export SNARKOS_SHA256="29c7bedc5c348190716c4556adc2095085f5481952bbb42c960fb2ba9d128504"
 ```
 
 If set, CI validates downloaded artifacts with `sha256sum -c` before install.
 
-Recommended GitHub setup:
-- Add repository variables (Settings -> Secrets and variables -> Actions -> Variables):
-  - `LEO_SHA256`
-  - `SNARKOS_SHA256`
-- Run `.github/workflows/generate_sha256.yml` via `workflow_dispatch` to compute current hash values for pinned URLs and copy values from logs.
+The workflows are pinned to known-good SHA256 values for the current Leo/snarkOS URLs.
+If you rotate versions/URLs, update the two SHA values in workflow env first, then optionally refresh repo variables/docs.
 
 
 ## 4) Install CLI tools (owner/operator machine)
