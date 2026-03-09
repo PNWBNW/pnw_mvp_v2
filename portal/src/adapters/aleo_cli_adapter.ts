@@ -5,7 +5,6 @@
 // - Typed adapter error taxonomy.
 // - Structured execution traces for plan-only and execute modes.
 
-import type { Network } from "../config/env";
 import { assertU16, assertU32 } from "../types/aleo_types";
 import type { Layer2CallPlanResult, Layer2CallPlanStep } from "../router/layer2_router";
 import { resolveLayer2Endpoint, type Layer2Adapter, type Layer2TxMeta } from "./layer2_adapter";
@@ -370,11 +369,6 @@ const STEP_CODEC_MAP: Record<Layer2CallPlanStep["kind"], StepCodec> = {
   },
 };
 
-const SNARKOS_NETWORK_FLAG: Record<Network, string> = {
-  testnet: "testnet",
-  mainnet: "mainnet",
-};
-
 function buildCliCommand(
   meta: Layer2TxMeta,
   step: Layer2CallPlanStep,
@@ -383,11 +377,8 @@ function buildCliCommand(
 ): string {
   const codec = STEP_CODEC_MAP[step.kind];
   const encoded_args = codec(step).map(shellQuote);
-  const network = SNARKOS_NETWORK_FLAG[meta.network];
-  const broadcast_url = `${node_url}/${network}/transaction/broadcast`;
-
   // snarkos developer execute <program_id> <function_name> <inputs...>
-  //   --private-key <KEY> --query <NODE_URL> --broadcast <BROADCAST_URL>
+  //   --private-key <KEY> --endpoint <NODE_URL> --broadcast
   return [
     "snarkos",
     "developer",
@@ -397,10 +388,9 @@ function buildCliCommand(
     ...encoded_args,
     "--private-key",
     shellQuote(private_key),
-    "--query",
+    "--endpoint",
     shellQuote(node_url),
     "--broadcast",
-    shellQuote(broadcast_url),
   ].join(" ");
 }
 
