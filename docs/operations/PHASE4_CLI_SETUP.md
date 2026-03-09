@@ -162,17 +162,14 @@ Keep these pins consistent across contributors for deterministic behavior.
 Optional hardening (recommended in CI):
 
 ```bash
-export LEO_SHA256="<sha256-of-leo-zip>"
-export SNARKOS_SHA256="<sha256-of-snarkos-zip>"
+export LEO_SHA256="a0a8bdc3bfd4508f954a887f761131aa731dcbc76e9185b1c92cd105d314cd5e"
+export SNARKOS_SHA256="29c7bedc5c348190716c4556adc2095085f5481952bbb42c960fb2ba9d128504"
 ```
 
 If set, CI validates downloaded artifacts with `sha256sum -c` before install.
 
-Recommended GitHub setup:
-- Add repository variables (Settings -> Secrets and variables -> Actions -> Variables):
-  - `LEO_SHA256`
-  - `SNARKOS_SHA256`
-- Run `.github/workflows/generate_sha256.yml` via `workflow_dispatch` to compute current hash values for pinned URLs and copy values from logs.
+The workflows are pinned to known-good SHA256 values for the current Leo/snarkOS URLs.
+If you rotate versions/URLs, update the two SHA values in workflow env first, then optionally refresh repo variables/docs.
 
 
 ## 4) Install CLI tools (owner/operator machine)
