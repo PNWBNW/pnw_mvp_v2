@@ -12,12 +12,12 @@ Pin and verify CLI tooling before wiring execution adapters:
 
 Use these pins for Phase 4:
 
-- `LEO_VERSION=3.4.0`
-- `SNARKOS_VERSION=v4.4.0`
+- `LEO_VERSION=3.5.0`
+- `SNARKOS_VERSION=v4.5.0`
 
 Reference artifacts:
-- Leo: `https://github.com/ProvableHQ/leo/releases/download/v3.4.0/leo-v3.4.0-x86_64-unknown-linux-gnu.zip`
-- snarkOS: `https://github.com/ProvableHQ/snarkOS/releases/download/v4.4.0/aleo-v4.4.0-x86_64-unknown-linux-gnu.zip`
+- Leo: `https://github.com/ProvableHQ/leo/releases/download/v3.5.0/leo-release-3.5-x86_64-unknown-linux-gnu.zip`
+- snarkOS: `https://github.com/ProvableHQ/snarkOS/releases/download/v4.5.0/aleo-v4.5.0-x86_64-unknown-linux-gnu.zip`
 
 ## CI workflow bootstrap (GitHub Actions)
 
@@ -153,8 +153,8 @@ This attempts to read latest release tags from:
 ## 3) Export version pins in your shell
 
 ```bash
-export LEO_VERSION="3.4.0"
-export SNARKOS_VERSION="v4.4.0"
+export LEO_VERSION="3.5.0"
+export SNARKOS_VERSION="v4.5.0"
 ```
 
 Keep these pins consistent across contributors for deterministic behavior.
