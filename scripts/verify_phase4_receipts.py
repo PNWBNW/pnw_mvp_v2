@@ -49,13 +49,13 @@ def get_url(url: str, timeout_s: float = 8.0) -> tuple[bool, str]:
 def verify_with_retries(rpc_url: str, tx_id: str, attempts: int = 4) -> tuple[bool, str, str | None]:
     last_detail = ""
     for attempt in range(1, attempts + 1):
-        ok, detail = post_json(rpc_url, {"jsonrpc": "2.0", "id": attempt, "method": "getTransaction", "params": {"id": tx_id}})
+        ok, detail = get_url(f"{rpc_url.rstrip('/')}/transaction/{tx_id}")
         if ok:
-            return True, detail, "rpc:getTransaction"
+            return True, detail, "http:/transaction/{id}"
 
-        ok2, detail2 = get_url(f"{rpc_url.rstrip('/')}/transaction/{tx_id}")
+        ok2, detail2 = post_json(rpc_url, {"jsonrpc": "2.0", "id": attempt, "method": "getTransaction", "params": {"id": tx_id}})
         if ok2:
-            return True, detail2, "http:/transaction/{id}"
+            return True, detail2, "rpc:getTransaction"
 
         last_detail = f"attempt {attempt}/{attempts}: {detail}; {detail2}"
         if attempt < attempts:
