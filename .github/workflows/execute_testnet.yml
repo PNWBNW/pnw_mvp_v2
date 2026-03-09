@@ -4,7 +4,6 @@ on:
   push:
     branches:
       - work
-      - main
   workflow_dispatch:
     inputs:
       scenario:
@@ -29,12 +28,12 @@ jobs:
       actions: read
 
     env:
-      LEO_VERSION: 3.4.0
-      SNARKOS_VERSION: v4.4.0
-      LEO_URL: https://github.com/ProvableHQ/leo/releases/download/v3.4.0/leo-v3.4.0-x86_64-unknown-linux-gnu.zip
-      SNARKOS_URL: https://github.com/ProvableHQ/snarkOS/releases/download/v4.4.0/aleo-v4.4.0-x86_64-unknown-linux-gnu.zip
-      LEO_SHA256: ${{ vars.LEO_SHA256 }}
-      SNARKOS_SHA256: ${{ vars.SNARKOS_SHA256 }}
+      LEO_VERSION: 3.5.0
+      SNARKOS_VERSION: v4.5.0
+      LEO_URL: https://github.com/ProvableHQ/leo/releases/download/v3.5.0/leo-release-3.5-x86_64-unknown-linux-gnu.zip
+      SNARKOS_URL: https://github.com/ProvableHQ/snarkOS/releases/download/v4.5.0/aleo-v4.5.0-x86_64-unknown-linux-gnu.zip
+      LEO_SHA256: a0a8bdc3bfd4508f954a887f761131aa731dcbc76e9185b1c92cd105d314cd5e
+      SNARKOS_SHA256: 29c7bedc5c348190716c4556adc2095085f5481952bbb42c960fb2ba9d128504
       STRICT_VERSION_CHECK: "false"
       PNW_NETWORK: testnet
       MANIFEST_PATH: config/testnet.manifest.json
@@ -42,7 +41,6 @@ jobs:
       ALEO_VIEW_KEY: ${{ secrets.ALEO_VIEW_KEY }}
       ALEO_ADDRESS: ${{ secrets.ALEO_ADDRESS }}
       RPC_URL: ${{ secrets.RPC_URL }}
-      SNARKOS_ENDPOINT: ${{ secrets.SNARKOS_ENDPOINT }}
       USDCX_PROGRAM_ID: ${{ secrets.USDCX_PROGRAM_ID }}
       PHASE4_SCENARIO: ${{ github.event.inputs.scenario || 'onboarding_smoke' }}
       EXECUTE_BROADCAST: "true"
