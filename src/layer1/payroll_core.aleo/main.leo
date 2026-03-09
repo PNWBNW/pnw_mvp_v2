@@ -75,11 +75,7 @@ program payroll_core.aleo {
         // -----------------------------------------------------
         // Validate agreement is active
         // -----------------------------------------------------
-        employer_agreement.assert_agreement_active(
-            agreement_id,
-            employer_name_hash,
-            worker_name_hash
-        );
+        employer_agreement.aleo/assert_agreement_active(agreement_id);
 
         // -----------------------------------------------------
         // Execute USDCx transfer (employer -> worker)
