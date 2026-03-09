@@ -459,8 +459,179 @@ program employer_agreement.aleo {
     }
 
     // -----------------------------
+    // 6) Role-specific pause (identity-verified)
+    // -----------------------------
+    transition pause_agreement_employer(
+        agreement_id: [u8; 32],
+        parties_key: [u8; 32],
+        employer_name_hash: field
+    ) {
+        assert_is_employer(employer_name_hash);
+        assert_agreement_exists(agreement_id);
+        assert_parties_key_matches(agreement_id, parties_key);
+
+        let s: u8 = Mapping::get_or_use(agreement_status, agreement_id, 255u8);
+        assert_status_valid(s);
+        assert(s == STATUS_ACTIVE);
+
+        Mapping::set(agreement_status, agreement_id, STATUS_PAUSED);
+        Mapping::set(resume_approvals, agreement_id, 0u8);
+    }
+
+    transition pause_agreement_worker(
+        agreement_id: [u8; 32],
+        parties_key: [u8; 32],
+        worker_name_hash: field
+    ) {
+        assert_is_worker(worker_name_hash);
+        assert_agreement_exists(agreement_id);
+        assert_parties_key_matches(agreement_id, parties_key);
+
+        let s: u8 = Mapping::get_or_use(agreement_status, agreement_id, 255u8);
+        assert_status_valid(s);
+        assert(s == STATUS_ACTIVE);
+
+        Mapping::set(agreement_status, agreement_id, STATUS_PAUSED);
+        Mapping::set(resume_approvals, agreement_id, 0u8);
+    }
+
+    transition pause_agreement_dao(agreement_id: [u8; 32], parties_key: [u8; 32]) {
+        assert_is_dao();
+        assert_agreement_exists(agreement_id);
+        assert_parties_key_matches(agreement_id, parties_key);
+
+        let s: u8 = Mapping::get_or_use(agreement_status, agreement_id, 255u8);
+        assert_status_valid(s);
+        assert(s == STATUS_ACTIVE);
+
+        Mapping::set(agreement_status, agreement_id, STATUS_PAUSED);
+        Mapping::set(resume_approvals, agreement_id, 0u8);
+    }
+
+    // -----------------------------
+    // 7) Role-specific terminate (identity-verified)
+    // -----------------------------
+    transition terminate_agreement_employer(
+        agreement_id: [u8; 32],
+        parties_key: [u8; 32],
+        employer_name_hash: field
+    ) {
+        assert_is_employer(employer_name_hash);
+        assert_agreement_exists(agreement_id);
+        assert_parties_key_matches(agreement_id, parties_key);
+
+        let s: u8 = Mapping::get_or_use(agreement_status, agreement_id, 255u8);
+        assert_status_valid(s);
+        assert(s != STATUS_TERMINATED);
+
+        Mapping::set(agreement_status, agreement_id, STATUS_TERMINATED);
+        Mapping::set(resume_approvals, agreement_id, 0u8);
+    }
+
+    transition terminate_agreement_worker(
+        agreement_id: [u8; 32],
+        parties_key: [u8; 32],
+        worker_name_hash: field
+    ) {
+        assert_is_worker(worker_name_hash);
+        assert_agreement_exists(agreement_id);
+        assert_parties_key_matches(agreement_id, parties_key);
+
+        let s: u8 = Mapping::get_or_use(agreement_status, agreement_id, 255u8);
+        assert_status_valid(s);
+        assert(s != STATUS_TERMINATED);
+
+        Mapping::set(agreement_status, agreement_id, STATUS_TERMINATED);
+        Mapping::set(resume_approvals, agreement_id, 0u8);
+    }
+
+    transition terminate_agreement_dao(agreement_id: [u8; 32], parties_key: [u8; 32]) {
+        assert_is_dao();
+        assert_agreement_exists(agreement_id);
+        assert_parties_key_matches(agreement_id, parties_key);
+
+        let s: u8 = Mapping::get_or_use(agreement_status, agreement_id, 255u8);
+        assert_status_valid(s);
+        assert(s != STATUS_TERMINATED);
+
+        Mapping::set(agreement_status, agreement_id, STATUS_TERMINATED);
+        Mapping::set(resume_approvals, agreement_id, 0u8);
+    }
+
+    // -----------------------------
+    // 8) Role-specific resume approvals (identity-verified)
+    // -----------------------------
+    transition approve_resume_employer(
+        agreement_id: [u8; 32],
+        parties_key: [u8; 32],
+        employer_name_hash: field
+    ) {
+        assert_is_employer(employer_name_hash);
+        assert_agreement_exists(agreement_id);
+        assert_parties_key_matches(agreement_id, parties_key);
+
+        let s: u8 = Mapping::get_or_use(agreement_status, agreement_id, 255u8);
+        assert_status_valid(s);
+        assert(s == STATUS_PAUSED);
+
+        let m: u8 = Mapping::get_or_use(resume_approvals, agreement_id, 0u8);
+        Mapping::set(resume_approvals, agreement_id, m | RESUME_EMPLOYER_BIT);
+    }
+
+    transition approve_resume_worker(
+        agreement_id: [u8; 32],
+        parties_key: [u8; 32],
+        worker_name_hash: field
+    ) {
+        assert_is_worker(worker_name_hash);
+        assert_agreement_exists(agreement_id);
+        assert_parties_key_matches(agreement_id, parties_key);
+
+        let s: u8 = Mapping::get_or_use(agreement_status, agreement_id, 255u8);
+        assert_status_valid(s);
+        assert(s == STATUS_PAUSED);
+
+        let m: u8 = Mapping::get_or_use(resume_approvals, agreement_id, 0u8);
+        Mapping::set(resume_approvals, agreement_id, m | RESUME_WORKER_BIT);
+    }
+
+    transition approve_resume_dao(agreement_id: [u8; 32], parties_key: [u8; 32]) {
+        assert_is_dao();
+        assert_agreement_exists(agreement_id);
+        assert_parties_key_matches(agreement_id, parties_key);
+
+        let s: u8 = Mapping::get_or_use(agreement_status, agreement_id, 255u8);
+        assert_status_valid(s);
+        assert(s == STATUS_PAUSED);
+
+        let m: u8 = Mapping::get_or_use(resume_approvals, agreement_id, 0u8);
+        Mapping::set(resume_approvals, agreement_id, m | RESUME_DAO_BIT);
+    }
+
+    // resume_agreement: alias for finalize_resume (requires all 3 approvals)
+    transition resume_agreement(agreement_id: [u8; 32], parties_key: [u8; 32]) {
+        assert_agreement_exists(agreement_id);
+        assert_parties_key_matches(agreement_id, parties_key);
+
+        let s: u8 = Mapping::get_or_use(agreement_status, agreement_id, 255u8);
+        assert_status_valid(s);
+        assert(s == STATUS_PAUSED);
+
+        let m: u8 = Mapping::get_or_use(resume_approvals, agreement_id, 0u8);
+        assert(m == RESUME_ALL_BITS);
+
+        Mapping::set(agreement_status, agreement_id, STATUS_ACTIVE);
+        Mapping::set(resume_approvals, agreement_id, 0u8);
+    }
+
+    // -----------------------------
     // Read utilities
     // -----------------------------
+    transition assert_agreement_anchored(agreement_id: [u8; 32]) {
+        let h: u32 = Mapping::get_or_use(agreement_anchor_height, agreement_id, 0u32);
+        assert(h != 0u32);
+    }
+
     transition assert_agreement_active(agreement_id: [u8; 32]) {
         let s: u8 = Mapping::get_or_use(agreement_status, agreement_id, 255u8);
         assert(s == STATUS_ACTIVE);
