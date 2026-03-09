@@ -119,6 +119,8 @@ export type Layer2CliRetryPolicy = {
 
 export type Layer2CliAdapterOptions = {
   retry_policy?: Partial<Layer2CliRetryPolicy>;
+  private_key?: string;
+  node_url?: string;
 };
 
 const DEFAULT_RETRY_POLICY: Layer2CliRetryPolicy = {
@@ -133,8 +135,8 @@ function encodeBytes32(value: Uint8Array, label: string): string {
     throw new Error(`${label} must be 32 bytes, got ${value.length}`);
   }
 
-  const hex = Array.from(value, (byte) => byte.toString(16).padStart(2, "0")).join("");
-  return `0x${hex}`;
+  const parts = Array.from(value, (byte) => `${byte}u8`).join(", ");
+  return `[ ${parts} ]`;
 }
 
 function encodeU16(value: number, label: string): string {
@@ -368,18 +370,37 @@ const STEP_CODEC_MAP: Record<Layer2CallPlanStep["kind"], StepCodec> = {
   },
 };
 
-function buildCliCommand(meta: Layer2TxMeta, step: Layer2CallPlanStep): string {
+const SNARKOS_NETWORK_FLAG: Record<Network, string> = {
+  testnet: "testnet",
+  mainnet: "mainnet",
+};
+
+function buildCliCommand(
+  meta: Layer2TxMeta,
+  step: Layer2CallPlanStep,
+  private_key: string,
+  node_url: string,
+): string {
   const codec = STEP_CODEC_MAP[step.kind];
   const encoded_args = codec(step).map(shellQuote);
+  const network = SNARKOS_NETWORK_FLAG[meta.network];
+  const broadcast_url = `${node_url}/${network}/transaction/broadcast`;
 
-  // Deterministic command assembly: aleo execute <program>/<transition> <args...> --network <network>
+  // snarkos developer execute <program_id> <function_name> <inputs...>
+  //   --private-key <KEY> --query <NODE_URL> --broadcast <BROADCAST_URL>
   return [
-    "aleo",
+    "snarkos",
+    "developer",
     "execute",
-    `${meta.program}/${meta.transition}`,
+    shellQuote(meta.program),
+    shellQuote(meta.transition),
     ...encoded_args,
-    "--network",
-    meta.network,
+    "--private-key",
+    shellQuote(private_key),
+    "--query",
+    shellQuote(node_url),
+    "--broadcast",
+    shellQuote(broadcast_url),
   ].join(" ");
 }
 
@@ -430,6 +451,8 @@ export class Layer2CliAdapter implements Layer2Adapter {
   private readonly mode: CliExecutionMode;
   private readonly executor: CliCommandExecutor;
   private readonly retry_policy: Layer2CliRetryPolicy;
+  private readonly private_key: string;
+  private readonly node_url: string;
 
   constructor(
     mode: CliExecutionMode = "plan_only",
@@ -442,6 +465,8 @@ export class Layer2CliAdapter implements Layer2Adapter {
       max_attempts: options.retry_policy?.max_attempts ?? DEFAULT_RETRY_POLICY.max_attempts,
       retry_delay_ms: options.retry_policy?.retry_delay_ms ?? DEFAULT_RETRY_POLICY.retry_delay_ms,
     };
+    this.private_key = options.private_key ?? "";
+    this.node_url = options.node_url ?? "";
   }
 
   async executePlan(network: Network, plan: Layer2CallPlanStep[]): Promise<Layer2CallPlanResult> {
@@ -455,7 +480,7 @@ export class Layer2CliAdapter implements Layer2Adapter {
       let attempts_for_trace = 0;
 
       try {
-        command = buildCliCommand(endpoint, step);
+        command = buildCliCommand(endpoint, step, this.private_key, this.node_url);
 
         if (this.mode === "execute") {
           let attempt = 0;
