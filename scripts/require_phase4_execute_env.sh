@@ -33,6 +33,23 @@ if [[ "$RPC_URL" != http://* && "$RPC_URL" != https://* ]]; then
   exit 1
 fi
 
+SNARKOS_ENDPOINT_EFFECTIVE="${SNARKOS_ENDPOINT:-}"
+if [[ -z "$SNARKOS_ENDPOINT_EFFECTIVE" ]]; then
+  SNARKOS_ENDPOINT_EFFECTIVE="$RPC_URL"
+  echo "execute env check: WARN - SNARKOS_ENDPOINT not set; defaulting to RPC_URL for endpoint-compatible tooling" >&2
+fi
+
+if [[ "$SNARKOS_ENDPOINT_EFFECTIVE" != http://* && "$SNARKOS_ENDPOINT_EFFECTIVE" != https://* ]]; then
+  echo "execute env check: FAIL - SNARKOS_ENDPOINT (effective) must start with http:// or https://" >&2
+  exit 1
+fi
+
+if [[ "$PNW_NETWORK" == "testnet" && "$SNARKOS_ENDPOINT_EFFECTIVE" != *"/testnet"* ]]; then
+  echo "execute env check: WARN - SNARKOS_ENDPOINT does not include '/testnet'; some snarkOS builds expect a network-qualified path while others expect base /v2. If broadcast fails with JSON parse errors, try '/v2/testnet'." >&2
+fi
+
+export SNARKOS_ENDPOINT="$SNARKOS_ENDPOINT_EFFECTIVE"
+
 if ! python3 - <<'PY'
 import json
 import os
