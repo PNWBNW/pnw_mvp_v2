@@ -13,21 +13,27 @@ Pin and verify CLI tooling before wiring execution adapters:
 Use these pins for Phase 4:
 
 - `LEO_VERSION=3.4.0`
-- `SNARKOS_VERSION=v4.4.0`
+- `SNARKOS_VERSION=v4.5.0`
 
 Reference artifacts:
 - Leo: `https://github.com/ProvableHQ/leo/releases/download/v3.4.0/leo-v3.4.0-x86_64-unknown-linux-gnu.zip`
-- snarkOS: `https://github.com/ProvableHQ/snarkOS/releases/download/v4.4.0/aleo-v4.4.0-x86_64-unknown-linux-gnu.zip`
+- snarkOS: `https://github.com/ProvableHQ/snarkOS/releases/download/v4.5.0/aleo-v4.5.0-x86_64-unknown-linux-gnu.zip`
 
 ## CI workflow bootstrap (GitHub Actions)
 
-This repo also includes a pinned workflow bootstrap:
-- `.github/workflows/deploy.yml`
+This repo now uses split workflows:
+- `.github/workflows/deploy.yml` for plan/test gates only
+- `.github/workflows/execute_testnet.yml` for testnet execute gate
 
-It installs pinned Leo/snarkOS binaries, verifies versions, and runs both planner typecheck gates.
-Use `workflow_dispatch` with:
-- `run_mode=plan_only` (default), or
-- `run_mode=execute` (runs a selected Phase 4 scenario via `scripts/run_phase4_execute_scenario.sh`).
+`deploy.yml` installs pinned Leo/snarkOS binaries, verifies versions, and runs planner/typecheck/test guards (triggered on pull requests and pushes to `main`).
+`execute_testnet.yml` runs execute-mode scenarios on `work` pushes or manual `workflow_dispatch`.
+
+Optional local workflow YAML validation (no PyYAML required):
+
+```bash
+scripts/validate_workflow_yaml.sh .github/workflows/deploy.yml
+scripts/validate_workflow_yaml.sh .github/workflows/execute_testnet.yml
+```
 
 
 ### Dispatch execute runs from an app/backend
@@ -44,7 +50,46 @@ GH_TOKEN="<github-token>" \
   --scenario "payroll_smoke"
 ```
 
-This sends `run_mode=execute` and the selected `scenario` into `.github/workflows/deploy.yml`.
+This sends the selected `scenario` into `.github/workflows/execute_testnet.yml`.
+
+`execute_gate` runs automatically on pushes to the `work` and `main` branches (testnet-staging environment), or by manual workflow dispatch.
+
+You can preview the exact dispatch payload without calling GitHub using `--dry-run`.
+
+The workflow is streamlined to a single operator choice (`scenario`). Scenario payload path is resolved automatically by workflow mapping.
+
+Broadcast mode is hardcoded ON in this lane (`EXECUTE_BROADCAST=true`) with strict receipt verification (`RECEIPT_VERIFICATION_MODE=required`) for testnet-ready execution evidence.
+
+
+> **Important:** execute runs in this workflow are configured for broadcast + strict receipts.
+>
+> You can provide broadcast inputs in either mode:
+> 1. `PHASE4_BROADCAST_COMMANDS_JSON` (full command payload secret), or
+> 2. for `onboarding_smoke`, `PHASE4_ONBOARDING_MINT_ARGS_JSON` (typed args JSON) and the workflow will generate broadcast commands on the fly.
+> Optional override: set `PHASE4_SUBMIT_ENDPOINT` if your submit endpoint differs from `RPC_URL`.
+>
+> Keep `RPC_URL` explicitly set to your intended node endpoint (for testnet, e.g. `https://api.provable.com/v2/testnet`) so endpoint intent is captured in execute verification metadata.
+> Set `SNARKOS_ENDPOINT` for tooling that requires it. Onboarding submit generation in `execute_testnet.yml` defaults to `RPC_URL` for `snarkos developer execute --endpoint ...` (override with `PHASE4_SUBMIT_ENDPOINT` when needed).
+
+
+For `onboarding_smoke`, generate this secret payload from deterministic codec inputs:
+
+```bash
+python3 scripts/build_onboarding_broadcast_commands.py \
+  --args-file config/scenarios/testnet/onboarding_mint_args.sample.json \
+  --submit-prefix 'snarkos developer execute --endpoint "https://api.explorer.provable.com/v2/testnet" --broadcast --private-key "$ALEO_PRIVATE_KEY" credential_nft.aleo mint_credential_nft' \
+  --out artifacts/phase4_broadcast_commands.required.json
+```
+
+Then copy the JSON file contents into the protected `PHASE4_BROADCAST_COMMANDS_JSON` secret.
+
+Alternative (recommended for onboarding): store the args JSON itself in `PHASE4_ONBOARDING_MINT_ARGS_JSON` and let the workflow generate `artifacts/phase4_broadcast_commands.required.json` during execute.
+
+> **Broadcast flag gotcha (important):** for `snarkos developer execute`, use `--broadcast` as a flag.
+> Do **not** pass a URL argument like `--broadcast "$SNARKOS_ENDPOINT/testnet/transaction/broadcast"`.
+> Keep the target URI in `--endpoint` only.
+> Avoid forcing `--network` in onboarding submit-prefix unless you have validated the provider-specific mapping; network/endpoint mismatches can produce opaque JSON error-shape failures.
+
 
 ## 1) Scaffold status in this repo
 
@@ -76,7 +121,7 @@ This attempts to read latest release tags from:
 
 ```bash
 export LEO_VERSION="3.4.0"
-export SNARKOS_VERSION="v4.4.0"
+export SNARKOS_VERSION="v4.5.0"
 ```
 
 Keep these pins consistent across contributors for deterministic behavior.
@@ -85,7 +130,7 @@ Optional hardening (recommended in CI):
 
 ```bash
 export LEO_SHA256="<sha256-of-leo-zip>"
-export SNARKOS_SHA256="<sha256-of-snarkos-zip>"
+export SNARKOS_SHA256="29c7bedc5c348190716c4556adc2095085f5481952bbb42c960fb2ba9d128504"
 ```
 
 If set, CI validates downloaded artifacts with `sha256sum -c` before install.
@@ -113,6 +158,27 @@ This validates command availability, prints detected versions, and checks agains
 
 By default, version-token checks are non-strict (`STRICT_VERSION_CHECK=false`) because some Provable binaries print branch/commit metadata instead of release tags. Set `STRICT_VERSION_CHECK=true` to hard-fail on pin token mismatch in `--version` output.
 
+
+## 5.1) Aleo Stack v4.5.0 feature usage guidance
+
+To take advantage of the v4.5.0 release in operator and developer workflows:
+
+- **Prefer v2 endpoints for execute/broadcast paths.**
+  - Keep `RPC_URL`/`SNARKOS_ENDPOINT` on explicit v2 URLs for testnet (for example `https://api.provable.com/v2/testnet` or `https://api.explorer.provable.com/v2/testnet` depending on your provider policy).
+  - Avoid mixing endpoint generations across scripts in the same run.
+
+- **Use `--json-output` for machine-readable Leo command evidence.**
+  - v4.5.0 adds `--json-output` to `deploy`, `upgrade`, `run`, `execute`, `test`, `query`, and `synthesize`.
+  - For reproducible automation, prefer `leo <command> ... --json-output=<path>` and attach the JSON alongside existing Phase 4 artifacts.
+
+- **Use `leo devnode` for local E2E iteration before protected testnet runs.**
+  - Start local dev client: `leo devnode start`
+  - Advance local blocks manually when needed: `leo devnode advance [n]`
+  - For high-throughput local loops, combine with `leo execute ... --skip-execution-proof` where proof generation is not required.
+
+- **Validator/operator note from v4.5.0:**
+  - Validators should upgrade before network fork heights and pass explicit peers (`--peers`) where applicable to avoid connectivity surprises with stricter peer trust behavior.
+
 ## 6) Phase 4 readiness gate
 
 Before adapter PRs, ensure:
@@ -137,3 +203,27 @@ Execute-mode workflows also require env/secrets presence checks via:
 ```bash
 scripts/require_phase4_execute_env.sh
 ```
+
+
+## 8) Reproducible happy-path execute wrapper
+
+Run the end-to-end testnet happy-path wrapper:
+
+```bash
+MANIFEST_PATH=config/testnet.manifest.json \
+PNW_NETWORK=testnet \
+RPC_URL="https://api.provable.com/v2/testnet" \
+USDCX_PROGRAM_ID="test_usdcx_stablecoin.aleo" \
+ALEO_PRIVATE_KEY="<private-key>" \
+ALEO_VIEW_KEY="<view-key>" \
+ALEO_ADDRESS="<address>" \
+scripts/run_phase4_testnet_happy_path.sh \
+  --scenario payroll_smoke \
+  --scenario-file config/scenarios/testnet/min_spend.payroll.json \
+  --execute-broadcast false
+```
+
+This wraps manifest validation, execute env checks, scenario execution, and emits a compact artifact summary.
+
+`execute_testnet.yml` now also verifies execute evidence bundle integrity before artifact upload via `scripts/verify_phase4_execute_artifacts.py`.
+`execute_testnet.yml` now also performs best-effort receipt verification via `scripts/verify_phase4_receipts.py` (writes `artifacts/phase4_execute_bundle/receipt_verification.json`).
