@@ -30,7 +30,7 @@
 
 ---
 
-### #1b — BUG INTRODUCED IN FIX #1: Wrong snarkos flags
+### #1b — FIXED: snarkos flags corrected
 **File:** `portal/src/adapters/aleo_cli_adapter.ts` — `buildCliCommand`, lines ~389–404
 **Problem:** Fix #1 used `--query <url>` and `--broadcast <url>` (with URL argument).
 Per project docs (`docs/operations/PHASE4_CLI_SETUP.md` line 82 and line 121–124):
@@ -225,7 +225,7 @@ async function finalize_mint_cycle_nft(f1: Future, f2: Future, nft_id: [u8; 32])
 
 ---
 
-### #7 — Execute gate fires on every push to `main`
+### #7 — FIXED: execute gate no longer runs on `main` pushes
 **File:** `.github/workflows/execute_testnet.yml`
 **Problem:** The `on.push.branches` trigger includes `main` (and `work`). This means every merge to main triggers a real testnet execution with real secrets and potential real transaction broadcast. This is dangerous and unintentional — the execute gate should only run on `work` pushes (staging) and explicit manual dispatch.
 
@@ -245,7 +245,7 @@ on:
 
 ---
 
-### #8 — Receipt verification tries JSON-RPC before REST
+### #8 — FIXED: receipt verification tries REST before JSON-RPC
 **File:** `scripts/verify_phase4_receipts.py` — `verify_with_retries` function
 **Problem:** First attempt is `post_json(rpc_url, {"jsonrpc": "2.0", "method": "getTransaction", ...})` — but Aleo does not expose a JSON-RPC interface. This call will always fail. The REST fallback `get_url(f"{rpc_url}/transaction/{tx_id}")` is the correct protocol and should be tried first.
 
