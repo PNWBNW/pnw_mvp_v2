@@ -38,7 +38,6 @@ program audit_nft.aleo {
         issued_height: u32.private,
 
         owner: address.private,
-        _nonce: group.public
     }
 
     // ---------------------------------------------------------
@@ -100,7 +99,6 @@ program audit_nft.aleo {
             policy_v: policy_v,
             issued_height: 0u32,
             owner: caller,
-            _nonce: group::GEN
         };
 
         return (nft, finalize_mint_authorization_nft(f, auth_id, expires_epoch));
