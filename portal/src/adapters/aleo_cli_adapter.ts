@@ -8,6 +8,7 @@
 import { assertU16, assertU32 } from "../types/aleo_types";
 import type { Layer2CallPlanResult, Layer2CallPlanStep } from "../router/layer2_router";
 import { resolveLayer2Endpoint, type Layer2Adapter, type Layer2TxMeta } from "./layer2_adapter";
+import type { Network } from "../config/env";
 
 export type CliExecutionMode = "plan_only" | "execute";
 
