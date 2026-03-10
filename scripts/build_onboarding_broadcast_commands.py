@@ -120,7 +120,7 @@ def main() -> None:
             "echo \"broadcast submit command failed with exit $rc\" >&2; "
             "exit \"$rc\"; "
             "fi; "
-            "tx=$(printf '%s\\n' \"$out\" | sed -nE 's/.*([a-fA-F0-9]{64}).*/\\1/p' | head -n1); "
+            "tx=$(printf '%s\\n' \"$out\" | sed -nE 's/.*[Tt]ransaction[[:space:]]+[Ii][Dd][[:space:]]*[:=][[:space:]]*([A-Za-z0-9_.:-]+).*/\\1/p; s/.*\\b([a-fA-F0-9]{64})\\b.*/\\1/p' | head -n1); "
             "test -n \"$tx\"; "
             "echo \"transaction id: $tx\""
         )
