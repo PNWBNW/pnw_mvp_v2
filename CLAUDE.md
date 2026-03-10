@@ -21,13 +21,14 @@ Full technical spec: `ARCHITECTURE.md`
 
 ## Toolchain Pins
 
-| Tool | Version | Binary name |
-|------|---------|-------------|
-| Leo  | 3.5.0 | `leo` |
-| snarkOS | v4.5.1 | `snarkos` |
-| Node | 20 | `node` |
+| Tool | Version | Binary name | SHA256 |
+|------|---------|-------------|--------|
+| Leo  | 3.5.0 | `leo` | set via `vars.LEO_SHA256` repo var |
+| snarkOS | v4.5.1 | `snarkos` | `f32830e828a3e6ecb403bbc3ad6969b05f1b47e5de687f03f09d7662a6fbcd3c` |
+| Node | 20 | `node` | managed by `actions/setup-node` |
 
 Download URLs are in `.github/workflows/deploy.yml` and `.github/workflows/execute_testnet.yml`.
+The snarkOS SHA256 is hardcoded in `deploy.yml` and should also be set as the `SNARKOS_SHA256` GitHub repo variable for `execute_testnet.yml`.
 
 ---
 
