@@ -39,7 +39,6 @@ program credential_nft.aleo {
 
         // Ownership
         owner: address.private,
-        _nonce: group.public
     }
 
     // ---------------------------------------------------------
@@ -88,7 +87,6 @@ program credential_nft.aleo {
             policy_v: policy_v,
             minted_height: 0u32,
             owner: caller,
-            _nonce: group::GEN
         };
 
         return (nft, finalize_mint_credential_nft(credential_id, scope_hash));
