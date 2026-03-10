@@ -24,7 +24,7 @@ Full technical spec: `ARCHITECTURE.md`
 | Tool | Version | Binary name |
 |------|---------|-------------|
 | Leo  | 3.4.0 | `leo` |
-| snarkOS | v4.4.0 | `snarkos` |
+| snarkOS | v4.5.1 | `snarkos` |
 | Node | 20 | `node` |
 
 Download URLs are in `.github/workflows/deploy.yml` and `.github/workflows/execute_testnet.yml`.
@@ -83,7 +83,7 @@ See `NOTES.md` for full details and fix priority. Summary:
 | # | Bug | File | Status |
 |---|-----|------|--------|
 | 5 | Programs not deployed — manifest IDs are file names, not verified testnet IDs | `testnet.manifest.json` | ⚠️ Pre-deploy |
-| 6 | `SNARKOS_ENDPOINT` required by env script but actual commands use `RPC_URL`/`PHASE4_SUBMIT_ENDPOINT` | `require_phase4_execute_env.sh` | ❌ Needs fix |
+| 6 | `SNARKOS_ENDPOINT` required by env script but actual commands use `RPC_URL`/`PHASE4_SUBMIT_ENDPOINT` | `require_phase4_execute_env.sh` | ✅ Fixed — consolidated to single `ENDPOINT` var |
 | 7 | Execute gate fires on every push to `main` (not just manual dispatch) | `execute_testnet.yml` | ❌ Needs fix |
 | 8 | Receipt verification tries JSON-RPC first; Aleo uses REST — should try REST first | `verify_phase4_receipts.py` | ❌ Needs fix |
 | 9 | Step traces are hardcoded placeholders, not real execution output | `run_phase4_execute_scenario.sh` | ⚠️ Scaffold |
@@ -177,7 +177,14 @@ python3 scripts/validate_phaseA_scenario.py config/scenarios/testnet/min_spend.o
 
 # CLI version check
 scripts/verify_provable_cli.sh
+
+# Execute env check (requires ENDPOINT set):
+# ENDPOINT=https://api.explorer.provable.com/v1/testnet ... scripts/require_phase4_execute_env.sh
 ```
+
+> **Canonical endpoint** (Provable Explorer v1, network-qualified):
+> `ENDPOINT=https://api.explorer.provable.com/v1/testnet`
+> Copy `.env.example` to `.env` and fill in credentials. Never commit `.env`.
 
 ---
 
