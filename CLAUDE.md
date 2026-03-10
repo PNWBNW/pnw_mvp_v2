@@ -23,7 +23,7 @@ Full technical spec: `ARCHITECTURE.md`
 
 | Tool | Version | Binary name |
 |------|---------|-------------|
-| Leo  | 3.4.0 | `leo` |
+| Leo  | 3.5.0 | `leo` |
 | snarkOS | v4.5.1 | `snarkos` |
 | Node | 20 | `node` |
 
