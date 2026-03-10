@@ -5,8 +5,7 @@ required=(
   ALEO_PRIVATE_KEY
   ALEO_VIEW_KEY
   ALEO_ADDRESS
-  RPC_URL
-  SNARKOS_ENDPOINT
+  ENDPOINT
   USDCX_PROGRAM_ID
   MANIFEST_PATH
   PNW_NETWORK
@@ -29,18 +28,13 @@ if [[ ! -f "$MANIFEST_PATH" ]]; then
   exit 1
 fi
 
-if [[ "$RPC_URL" != http://* && "$RPC_URL" != https://* ]]; then
-  echo "execute env check: FAIL - RPC_URL must start with http:// or https://" >&2
+if [[ "$ENDPOINT" != http://* && "$ENDPOINT" != https://* ]]; then
+  echo "execute env check: FAIL - ENDPOINT must start with http:// or https://" >&2
   exit 1
 fi
 
-if [[ "$SNARKOS_ENDPOINT" != http://* && "$SNARKOS_ENDPOINT" != https://* ]]; then
-  echo "execute env check: FAIL - SNARKOS_ENDPOINT must start with http:// or https://" >&2
-  exit 1
-fi
-
-if [[ "$PNW_NETWORK" == "testnet" && "$SNARKOS_ENDPOINT" != *"/testnet"* ]]; then
-  echo "execute env check: WARN - SNARKOS_ENDPOINT does not include '/testnet'; some snarkOS builds expect a network-qualified path while others expect base /v2. If broadcast fails with JSON parse errors, try '/v2/testnet'." >&2
+if [[ "$PNW_NETWORK" == "testnet" && "$ENDPOINT" != *"/testnet"* ]]; then
+  echo "execute env check: WARN - ENDPOINT does not include '/testnet'. Expected form: https://api.explorer.provable.com/v1/testnet" >&2
 fi
 
 if ! python3 - <<'PY'
