@@ -252,7 +252,7 @@ if execute_broadcast == "true":
             {
                 "index": i,
                 "name": name,
-                "command": command,
+                "command_redacted": True,
                 "tx_id": tx_id,
                 "stdout": proc.stdout.strip(),
                 "stderr": proc.stderr.strip(),
