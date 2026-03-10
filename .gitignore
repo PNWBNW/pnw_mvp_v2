@@ -1,0 +1,6 @@
+.env
+node_modules/
+artifacts/
+*.zip
+leo-bin/
+snarkos-bin/

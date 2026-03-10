@@ -61,7 +61,7 @@ esac
 ARTIFACT_DIR="artifacts/phase4_execute_bundle"
 MANIFEST_PATH="${MANIFEST_PATH:-config/testnet.manifest.json}"
 NETWORK="${PNW_NETWORK:-testnet}"
-RPC_URL="${RPC_URL:-}"
+ENDPOINT="${ENDPOINT:-}"
 EXECUTE_BROADCAST="${EXECUTE_BROADCAST:-false}"
 BROADCAST_COMMANDS_FILE="${BROADCAST_COMMANDS_FILE_ARG:-${PHASE4_BROADCAST_COMMANDS_FILE:-}}"
 
@@ -123,7 +123,7 @@ PY
   SCENARIO_PAYLOAD_KIND="${SCENARIO_META[2]:-}"
 fi
 
-python3 - "$SCENARIO" "$NETWORK" "$MANIFEST_PATH" "$ARTIFACT_DIR" "$SCENARIO_FILE" "$SCENARIO_PAYLOAD_ID" "$SCENARIO_PAYLOAD_MODE" "$SCENARIO_PAYLOAD_KIND" "$RPC_URL" "$EXECUTE_BROADCAST" "$BROADCAST_COMMANDS_FILE" <<'PY'
+python3 - "$SCENARIO" "$NETWORK" "$MANIFEST_PATH" "$ARTIFACT_DIR" "$SCENARIO_FILE" "$SCENARIO_PAYLOAD_ID" "$SCENARIO_PAYLOAD_MODE" "$SCENARIO_PAYLOAD_KIND" "$ENDPOINT" "$EXECUTE_BROADCAST" "$BROADCAST_COMMANDS_FILE" <<'PY'
 import json
 import sys
 import time
@@ -132,7 +132,7 @@ import subprocess
 import shlex
 from pathlib import Path
 
-scenario, network, manifest_path, artifact_dir, scenario_file, scenario_payload_id, scenario_payload_mode, scenario_payload_kind, rpc_url, execute_broadcast, broadcast_commands_file = sys.argv[1:12]
+scenario, network, manifest_path, artifact_dir, scenario_file, scenario_payload_id, scenario_payload_mode, scenario_payload_kind, endpoint, execute_broadcast, broadcast_commands_file = sys.argv[1:12]
 base = Path(artifact_dir)
 base.mkdir(parents=True, exist_ok=True)
 
@@ -232,8 +232,8 @@ if execute_broadcast == "true":
             merged_err = f"{stdout_text}\n{stderr_text}".lower()
             if "failed to parse json error response" in merged_err or "line 1 column 1" in merged_err:
                 hint = (
-                    " hint=submit endpoint likely returned non-JSON; verify --endpoint uses explicit testnet URI "
-                    "(e.g. https://api.explorer.provable.com/v2/testnet)"
+                    " hint=submit endpoint likely returned non-JSON; verify ENDPOINT uses explicit testnet URI "
+                    "(e.g. https://api.explorer.provable.com/v1/testnet)"
                 )
             raise SystemExit(
                 f"ERROR: broadcast command failed ({name}) exit={proc.returncode} "
@@ -284,9 +284,9 @@ verification_summary = {
         {"name": "execute_env_valid", "status": "pass"},
         {"name": "scenario_selected", "status": "pass", "value": scenario},
         {
-            "name": "rpc_url",
-            "status": "pass" if rpc_url else "skip",
-            "value": rpc_url or None,
+            "name": "endpoint",
+            "status": "pass" if endpoint else "skip",
+            "value": endpoint or None,
         },
         {
             "name": "execute_broadcast",
