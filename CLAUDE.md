@@ -56,8 +56,8 @@ The snarkOS SHA256 is hardcoded in `deploy.yml` and should also be set as the `S
 | 6 | ⏳ Pending | Hardening and release |
 
 ### Phase 4 Exit Criteria
-- [ ] Adapter generates correct `snarkos developer execute` commands per `step.kind`
-- [ ] Leo programs compile (all 3 Layer 2 programs)
+- [x] Adapter generates correct `snarkos developer execute` commands per `step.kind`
+- [ ] Leo programs compile (all 3 Layer 2 programs) — bugs fixed, needs `leo build` verification in Codespace
 - [ ] One reproducible end-to-end testnet happy path runs
 - [x] CI split: `plan_gate` (PR-safe) + `execute_gate` (protected, manual dispatch only)
 - [x] Manifest validation wired before execute mode
@@ -74,19 +74,19 @@ See `NOTES.md` for full details and fix priority. Summary:
 | 1 | Wrong CLI tool: `aleo execute` → `snarkos developer execute` | `aleo_cli_adapter.ts` | ✅ Fixed |
 | 2 | Wrong arg encoding: `0xhex` → `[ 1u8, 2u8, ... ]` array literal | `aleo_cli_adapter.ts` | ✅ Fixed |
 | 1b | Fixed flags to `--endpoint` + `--broadcast` (no URL arg) | `aleo_cli_adapter.ts` | ✅ Fixed |
-| 3 | All mapping ops in `function` bodies — must be `async function` (finalize) | All Layer 2 Leo programs | ❌ Needs fix |
-| 4 | `caller.private` in assertions — should be just `caller` | `payroll_nfts`, `credential_nft`, `audit_nft` | ❌ Needs fix |
-| 4b | `block.height` used in transition circuit — only valid in finalize | `payroll_nfts.aleo` L171, L190 | ❌ Needs fix |
-| 4c | `consume nft;` — not valid Leo v3.x syntax | `payroll_nfts`, `credential_nft`, `audit_nft` | ❌ Needs fix |
-| 4d | `_nonce: group.public` explicitly declared + `group::rand().public` set — VM-managed, not user-set in Leo | All Layer 2 records | ❌ Needs verify |
+| 3 | All mapping ops in `function` bodies — must be `async function` (finalize) | All Layer 2 Leo programs | ✅ Fixed |
+| 4 | `caller.private` in assertions — should be just `caller` | `payroll_nfts`, `credential_nft`, `audit_nft` | ✅ Fixed |
+| 4b | `block.height` used in transition circuit — only valid in finalize | `payroll_nfts.aleo` L171, L190 | ✅ Fixed |
+| 4c | `consume nft;` — not valid Leo v3.x syntax | `payroll_nfts`, `credential_nft`, `audit_nft` | ✅ Fixed |
+| 4d | `_nonce: group.public` explicitly declared + `group::GEN` set — VM-managed, not user-set in Leo | All Layer 2 records | ✅ Fixed |
 
 ### HIGH
 | # | Bug | File | Status |
 |---|-----|------|--------|
 | 5 | Programs not deployed — manifest IDs are file names, not verified testnet IDs | `testnet.manifest.json` | ⚠️ Pre-deploy |
 | 6 | `SNARKOS_ENDPOINT` required by env script but actual commands use `RPC_URL`/`PHASE4_SUBMIT_ENDPOINT` | `require_phase4_execute_env.sh` | ✅ Fixed — consolidated to single `ENDPOINT` var |
-| 7 | Execute gate fires on every push to `main` (not just manual dispatch) | `execute_testnet.yml` | ❌ Needs fix |
-| 8 | Receipt verification tries JSON-RPC first; Aleo uses REST — should try REST first | `verify_phase4_receipts.py` | ❌ Needs fix |
+| 7 | Execute gate fires on every push to `main` (not just manual dispatch) | `execute_testnet.yml` | ✅ Fixed |
+| 8 | Receipt verification tries JSON-RPC first; Aleo uses REST — should try REST first | `verify_phase4_receipts.py` | ✅ Fixed |
 | 9 | Step traces are hardcoded placeholders, not real execution output | `run_phase4_execute_scenario.sh` | ⚠️ Scaffold |
 
 ### MEDIUM

@@ -86,7 +86,6 @@ program payroll_nfts.aleo {
 
         // Ownership
         owner: address.private,
-        _nonce: group.public
     }
 
     // ---------------------------------------------------------
@@ -162,7 +161,6 @@ program payroll_nfts.aleo {
             policy_v: policy_v,
             minted_height: 0u32,
             owner: caller,
-            _nonce: group::GEN
         };
 
         return (nft, finalize_mint_nft(f1, f2, nft_id));
@@ -209,7 +207,6 @@ program payroll_nfts.aleo {
             policy_v: policy_v,
             minted_height: 0u32,
             owner: caller,
-            _nonce: group::GEN
         };
 
         return (nft, finalize_mint_nft(f1, f2, nft_id));
@@ -256,7 +253,6 @@ program payroll_nfts.aleo {
             policy_v: policy_v,
             minted_height: 0u32,
             owner: caller,
-            _nonce: group::GEN
         };
 
         return (nft, finalize_mint_nft(f1, f2, nft_id));
@@ -303,7 +299,6 @@ program payroll_nfts.aleo {
             policy_v: policy_v,
             minted_height: 0u32,
             owner: caller,
-            _nonce: group::GEN
         };
 
         return (nft, finalize_mint_nft(f1, f2, nft_id));
