@@ -72,7 +72,7 @@ See `NOTES.md` for full details and fix priority. Summary:
 |---|-----|------|--------|
 | 1 | Wrong CLI tool: `aleo execute` → `snarkos developer execute` | `aleo_cli_adapter.ts` | ✅ Fixed |
 | 2 | Wrong arg encoding: `0xhex` → `[ 1u8, 2u8, ... ]` array literal | `aleo_cli_adapter.ts` | ✅ Fixed |
-| 1b | NEW: Fixed #1 used wrong flags: `--query`/`--broadcast <url>` should be `--endpoint`/`--broadcast` (flag only) | `aleo_cli_adapter.ts` | ❌ Needs fix |
+| 1b | Fixed flags to `--endpoint` + `--broadcast` (no URL arg) | `aleo_cli_adapter.ts` | ✅ Fixed |
 | 3 | All mapping ops in `function` bodies — must be `async function` (finalize) | All Layer 2 Leo programs | ❌ Needs fix |
 | 4 | `caller.private` in assertions — should be just `caller` | `payroll_nfts`, `credential_nft`, `audit_nft` | ❌ Needs fix |
 | 4b | `block.height` used in transition circuit — only valid in finalize | `payroll_nfts.aleo` L171, L190 | ❌ Needs fix |
@@ -91,7 +91,7 @@ See `NOTES.md` for full details and fix priority. Summary:
 ### MEDIUM
 | # | Bug | File | Status |
 |---|-----|------|--------|
-| 10 | Invalid Aleo address (42 chars, needs 63): employer address in onboarding scenario | `min_spend.onboarding.json` | ❌ Needs fix |
+| 10 | Valid-length Aleo employer addresses in onboarding/payroll testnet scenarios | `min_spend.onboarding.json`, `min_spend.payroll.json` | ✅ Fixed |
 | 11 | All-placeholder hashes (`0x1111...`) in sample mint args | `onboarding_mint_args.sample.json` | ⚠️ Sample file |
 | 12 | Layer 2 `program.json` files may be incomplete (missing `program.toml` for Leo build) | `src/layer2/*/` | ❌ Needs verify |
 | 13 | Bundle SHA check fails if artifacts re-generated in same run (SHA changes) | `verify_phase4_execute_artifacts.py` | ⚠️ Minor |
