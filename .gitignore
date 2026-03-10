@@ -4,3 +4,4 @@ artifacts/
 *.zip
 leo-bin/
 snarkos-bin/
+.tmp_phase4_tests/
