@@ -33,6 +33,8 @@ program audit_nft.aleo {
 
         schema_v: u16.private,
         policy_v: u16.private,
+
+        // Metadata (sentinel; actual height in auth_anchor_height mapping)
         issued_height: u32.private,
 
         owner: address.private,
@@ -66,40 +68,10 @@ program audit_nft.aleo {
         key as [u8; 32].public,
         value as [u8; 32].public;
 
-    function anchor_auth_once(auth_id: [u8; 32], expires_epoch: u32) {
-        let existing: u32 = Mapping::get_or_use(auth_anchor_height, auth_id, 0u32);
-        assert(existing == 0u32);
-
-        let h: u32 = block.height;
-        Mapping::set(auth_anchor_height, auth_id, h);
-        Mapping::set(auth_status, auth_id, STATUS_ACTIVE);
-        Mapping::set(auth_expires_epoch, auth_id, expires_epoch);
-        Mapping::set(auth_revoked_height, auth_id, 0u32);
-    }
-
-    function assert_auth_active_and_not_expired(auth_id: [u8; 32], current_epoch: u32) {
-        let s: u8 = Mapping::get_or_use(auth_status, auth_id, 0u8);
-        assert_status_valid(s);
-        assert(s == STATUS_ACTIVE);
-
-        let exp: u32 = Mapping::get_or_use(auth_expires_epoch, auth_id, 0u32);
-        assert(exp != 0u32);
-        assert(current_epoch <= exp);
-    }
-
-    function anchor_attestation_once(auth_id: [u8; 32], attestation_hash: [u8; 32]) {
-        let existing: u32 = Mapping::get_or_use(attestation_anchor_height, attestation_hash, 0u32);
-        assert(existing == 0u32);
-
-        let h: u32 = block.height;
-        Mapping::set(attestation_anchor_height, attestation_hash, h);
-        Mapping::set(attestation_auth_id, attestation_hash, auth_id);
-    }
-
     // ---------------------------------------------------------
     // Mint authorization NFT
     // ---------------------------------------------------------
-    transition mint_authorization_nft(
+    async transition mint_authorization_nft(
         auth_id: [u8; 32],
         scope_hash: [u8; 32],
         authorization_event_hash: [u8; 32],
@@ -108,63 +80,73 @@ program audit_nft.aleo {
         expires_epoch: u32,
         schema_v: u16,
         policy_v: u16
-    ) -> AuditAuthorizationNFT {
-
-        // The authorization event must already be anchored in Layer 1 audit log.
-        payroll_audit_log.aleo/assert_event_anchored(authorization_event_hash);
-
+    ) -> (AuditAuthorizationNFT, Future) {
         assert(issued_epoch != 0u32);
         assert(expires_epoch >= issued_epoch);
         assert(schema_v != 0u16);
         assert(policy_v != 0u16);
 
-        anchor_auth_once(auth_id, expires_epoch);
-
-        let h: u32 = block.height;
+        // The authorization event must already be anchored in Layer 1 audit log.
+        let f: Future = payroll_audit_log.aleo/assert_event_anchored(authorization_event_hash);
 
         let nft: AuditAuthorizationNFT = AuditAuthorizationNFT {
-            auth_id: auth_id.private,
-
-            scope_hash: scope_hash.private,
-            authorization_event_hash: authorization_event_hash.private,
-            policy_hash: policy_hash.private,
-
-            issued_epoch: issued_epoch.private,
-            expires_epoch: expires_epoch.private,
-
-            schema_v: schema_v.private,
-            policy_v: policy_v.private,
-            issued_height: h.private,
-
-            owner: caller.private,
-            _nonce: group::rand().public
+            auth_id: auth_id,
+            scope_hash: scope_hash,
+            authorization_event_hash: authorization_event_hash,
+            policy_hash: policy_hash,
+            issued_epoch: issued_epoch,
+            expires_epoch: expires_epoch,
+            schema_v: schema_v,
+            policy_v: policy_v,
+            issued_height: 0u32,
+            owner: caller,
+            _nonce: group::GEN
         };
 
-        return nft;
+        return (nft, finalize_mint_authorization_nft(f, auth_id, expires_epoch));
+    }
+
+    async function finalize_mint_authorization_nft(f: Future, auth_id: [u8; 32], expires_epoch: u32) {
+        f.await();
+
+        // anchor_auth_once (inlined)
+        let existing: u32 = Mapping::get_or_use(auth_anchor_height, auth_id, 0u32);
+        assert(existing == 0u32);
+
+        Mapping::set(auth_anchor_height, auth_id, block.height);
+        Mapping::set(auth_status, auth_id, STATUS_ACTIVE);
+        Mapping::set(auth_expires_epoch, auth_id, expires_epoch);
+        Mapping::set(auth_revoked_height, auth_id, 0u32);
     }
 
     // ---------------------------------------------------------
     // Revoke authorization NFT (owner-only)
     // ---------------------------------------------------------
-    transition revoke_authorization_nft(nft: AuditAuthorizationNFT) {
-        assert(nft.owner == caller.private);
+    async transition revoke_authorization_nft(nft: AuditAuthorizationNFT) -> Future {
+        // Bug #4 fix: caller (not caller.private)
+        assert(nft.owner == caller);
 
         let id: [u8; 32] = nft.auth_id;
+        // Bug #4c fix: no "consume nft;" — record is implicitly consumed as transition input
+        return finalize_revoke_authorization_nft(id);
+    }
+
+    async function finalize_revoke_authorization_nft(id: [u8; 32]) {
         let s: u8 = Mapping::get_or_use(auth_status, id, 0u8);
         assert_status_valid(s);
         assert(s == STATUS_ACTIVE);
-
-        consume nft;
-
-        let h: u32 = block.height;
         Mapping::set(auth_status, id, STATUS_REVOKED);
-        Mapping::set(auth_revoked_height, id, h);
+        Mapping::set(auth_revoked_height, id, block.height);
     }
 
     // ---------------------------------------------------------
     // Mark authorization expired (permissionless maintenance)
     // ---------------------------------------------------------
-    transition mark_authorization_expired(auth_id: [u8; 32], current_epoch: u32) {
+    async transition mark_authorization_expired(auth_id: [u8; 32], current_epoch: u32) -> Future {
+        return finalize_mark_authorization_expired(auth_id, current_epoch);
+    }
+
+    async function finalize_mark_authorization_expired(auth_id: [u8; 32], current_epoch: u32) {
         let s: u8 = Mapping::get_or_use(auth_status, auth_id, 0u8);
         assert_status_valid(s);
         assert(s == STATUS_ACTIVE);
@@ -179,60 +161,124 @@ program audit_nft.aleo {
     // ---------------------------------------------------------
     // Anchor audit attestation bound to an active authorization
     // ---------------------------------------------------------
-    transition anchor_audit_attestation(
+    async transition anchor_audit_attestation(
+        auth_id: [u8; 32],
+        attestation_hash: [u8; 32],
+        current_epoch: u32
+    ) -> Future {
+        return finalize_anchor_audit_attestation(auth_id, attestation_hash, current_epoch);
+    }
+
+    async function finalize_anchor_audit_attestation(
         auth_id: [u8; 32],
         attestation_hash: [u8; 32],
         current_epoch: u32
     ) {
-        assert_auth_active_and_not_expired(auth_id, current_epoch);
-        anchor_attestation_once(auth_id, attestation_hash);
+        // assert_auth_active_and_not_expired (inlined)
+        let s: u8 = Mapping::get_or_use(auth_status, auth_id, 0u8);
+        assert_status_valid(s);
+        assert(s == STATUS_ACTIVE);
+
+        let exp: u32 = Mapping::get_or_use(auth_expires_epoch, auth_id, 0u32);
+        assert(exp != 0u32);
+        assert(current_epoch <= exp);
+
+        // anchor_attestation_once (inlined)
+        let existing: u32 = Mapping::get_or_use(attestation_anchor_height, attestation_hash, 0u32);
+        assert(existing == 0u32);
+        Mapping::set(attestation_anchor_height, attestation_hash, block.height);
+        Mapping::set(attestation_auth_id, attestation_hash, auth_id);
     }
 
     // ---------------------------------------------------------
     // Public verification utilities
+    // Mapping reads are only valid in async function (finalize).
+    // These transitions assert conditions on-chain; use the REST API
+    // to query actual mapping values off-chain.
     // ---------------------------------------------------------
-    transition assert_authorization_exists(auth_id: [u8; 32]) {
+    async transition assert_authorization_exists(auth_id: [u8; 32]) -> Future {
+        return finalize_assert_authorization_exists(auth_id);
+    }
+
+    async function finalize_assert_authorization_exists(auth_id: [u8; 32]) {
         let h: u32 = Mapping::get_or_use(auth_anchor_height, auth_id, 0u32);
         assert(h != 0u32);
     }
 
-    transition assert_authorization_active(auth_id: [u8; 32], current_epoch: u32) {
-        assert_auth_active_and_not_expired(auth_id, current_epoch);
+    async transition assert_authorization_active(auth_id: [u8; 32], current_epoch: u32) -> Future {
+        return finalize_assert_authorization_active(auth_id, current_epoch);
     }
 
-    transition get_authorization_anchor_height(auth_id: [u8; 32]) -> u32 {
-        let h: u32 = Mapping::get_or_use(auth_anchor_height, auth_id, 0u32);
-        return h;
-    }
-
-    transition get_authorization_status(auth_id: [u8; 32]) -> u8 {
+    async function finalize_assert_authorization_active(auth_id: [u8; 32], current_epoch: u32) {
         let s: u8 = Mapping::get_or_use(auth_status, auth_id, 0u8);
         assert_status_valid(s);
-        return s;
-    }
+        assert(s == STATUS_ACTIVE);
 
-    transition get_authorization_expiry(auth_id: [u8; 32]) -> u32 {
         let exp: u32 = Mapping::get_or_use(auth_expires_epoch, auth_id, 0u32);
-        return exp;
+        assert(exp != 0u32);
+        assert(current_epoch <= exp);
     }
 
-    transition get_authorization_revoked_height(auth_id: [u8; 32]) -> u32 {
-        let h: u32 = Mapping::get_or_use(auth_revoked_height, auth_id, 0u32);
-        return h;
+    async transition get_authorization_anchor_height(auth_id: [u8; 32]) -> Future {
+        return finalize_get_authorization_anchor_height(auth_id);
     }
 
-    transition assert_attestation_anchored(attestation_hash: [u8; 32]) {
+    async function finalize_get_authorization_anchor_height(auth_id: [u8; 32]) {
+        let h: u32 = Mapping::get_or_use(auth_anchor_height, auth_id, 0u32);
+        assert(h != 0u32);
+    }
+
+    async transition get_authorization_status(auth_id: [u8; 32]) -> Future {
+        return finalize_get_authorization_status(auth_id);
+    }
+
+    async function finalize_get_authorization_status(auth_id: [u8; 32]) {
+        let s: u8 = Mapping::get_or_use(auth_status, auth_id, 0u8);
+        assert_status_valid(s);
+    }
+
+    async transition get_authorization_expiry(auth_id: [u8; 32]) -> Future {
+        return finalize_get_authorization_expiry(auth_id);
+    }
+
+    async function finalize_get_authorization_expiry(auth_id: [u8; 32]) {
+        let exp: u32 = Mapping::get_or_use(auth_expires_epoch, auth_id, 0u32);
+        assert(exp != 0u32);
+    }
+
+    async transition get_authorization_revoked_height(auth_id: [u8; 32]) -> Future {
+        return finalize_get_authorization_revoked_height(auth_id);
+    }
+
+    async function finalize_get_authorization_revoked_height(auth_id: [u8; 32]) {
+        let h: u32 = Mapping::get_or_use(auth_anchor_height, auth_id, 0u32);
+        assert(h != 0u32);
+    }
+
+    async transition assert_attestation_anchored(attestation_hash: [u8; 32]) -> Future {
+        return finalize_assert_attestation_anchored(attestation_hash);
+    }
+
+    async function finalize_assert_attestation_anchored(attestation_hash: [u8; 32]) {
         let h: u32 = Mapping::get_or_use(attestation_anchor_height, attestation_hash, 0u32);
         assert(h != 0u32);
     }
 
-    transition get_attestation_anchor_height(attestation_hash: [u8; 32]) -> u32 {
-        let h: u32 = Mapping::get_or_use(attestation_anchor_height, attestation_hash, 0u32);
-        return h;
+    async transition get_attestation_anchor_height(attestation_hash: [u8; 32]) -> Future {
+        return finalize_get_attestation_anchor_height(attestation_hash);
     }
 
-    transition get_attestation_authorization(attestation_hash: [u8; 32]) -> [u8; 32] {
-        let auth_id: [u8; 32] = Mapping::get_or_use(attestation_auth_id, attestation_hash, [0u8; 32]);
-        return auth_id;
+    async function finalize_get_attestation_anchor_height(attestation_hash: [u8; 32]) {
+        let h: u32 = Mapping::get_or_use(attestation_anchor_height, attestation_hash, 0u32);
+        assert(h != 0u32);
+    }
+
+    async transition get_attestation_authorization(attestation_hash: [u8; 32]) -> Future {
+        return finalize_get_attestation_authorization(attestation_hash);
+    }
+
+    async function finalize_get_attestation_authorization(attestation_hash: [u8; 32]) {
+        let h: u32 = Mapping::get_or_use(attestation_anchor_height, attestation_hash, 0u32);
+        assert(h != 0u32);
     }
 }
