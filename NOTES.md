@@ -187,19 +187,10 @@ async function finalize_mint_cycle_nft(f1: Future, f2: Future, nft_id: [u8; 32])
 
 ---
 
-### #4d — `_nonce: group.public` in record definitions
-**All 3 Layer 2 programs** — each record struct has `_nonce: group.public` and each record literal sets `_nonce: group::rand().public`.
+### #4d — FIXED: `_nonce: group.public` in record definitions
+**All 3 Layer 2 programs** — removed `_nonce: group.public` from record struct definitions and `_nonce: group::GEN` from all record literal constructions.
 
-**Problem:** In current Leo, `_nonce` is a VM-level concept automatically managed by the Aleo runtime. It should NOT be declared in the Leo record struct and should NOT be set in record literals. Explicitly including it likely causes a compilation error in Leo v3.4.0.
-
-**Fix:** Remove `_nonce: group.public` from all record struct definitions. Remove `_nonce: group::rand().public` from all record literal constructions.
-
-**Records affected:**
-- `PayrollNFT` in `payroll_nfts.aleo`
-- `CredentialNFT` in `credential_nft.aleo`
-- `AuditAuthorizationNFT` in `audit_nft.aleo`
-
-**Acceptance check:** `leo build` passes with no `_nonce` in user-facing Leo code.
+**Acceptance check:** Run `leo build` in Codespace for each of the 3 Layer 2 programs to confirm no `_nonce` errors.
 
 ---
 
@@ -303,7 +294,9 @@ The correct Aleo zero address (all zeros) would be `aleo1qqqqqqqqqqqqqqqqqqqqqqq
 
 ### #12 — Layer 2 `program.json` / `program.toml` completeness
 **Files:** `src/layer2/*/program.json`
-**Problem:** The Leo build system may require `program.toml` (not just `program.json`) depending on the Leo version. Verify that `leo build` runs correctly with the existing `program.json` files for Leo v3.4.0.
+**Problem:** The Leo build system may require `program.toml` (not just `program.json`) depending on the Leo version. Verify that `leo build` runs correctly with the existing `program.json` files for Leo v3.5.0.
+
+**Also fixed:** `payroll_nfts.aleo/program.json` listed `paystub_receipts.aleo` as a dependency (wrong) — corrected to `employer_agreement.aleo` to match the actual `import` in `main.leo`.
 
 **Check:** Run `leo build` in each `src/layer2/*.aleo/` directory after fixing compilation bugs (#3/#4/#4b/#4c/#4d).
 
