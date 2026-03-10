@@ -369,29 +369,42 @@ const STEP_CODEC_MAP: Record<Layer2CallPlanStep["kind"], StepCodec> = {
   },
 };
 
+type CliCommandPair = {
+  /** Full command passed to the executor (contains real private key). Never log this. */
+  exec: string;
+  /** Redacted command stored in traces and errors (private key replaced with ***). */
+  display: string;
+};
+
 function buildCliCommand(
   meta: Layer2TxMeta,
   step: Layer2CallPlanStep,
   private_key: string,
   node_url: string,
-): string {
+): CliCommandPair {
   const codec = STEP_CODEC_MAP[step.kind];
   const encoded_args = codec(step).map(shellQuote);
-  // snarkos developer execute <program_id> <function_name> <inputs...>
-  //   --private-key <KEY> --endpoint <NODE_URL> --broadcast
-  return [
+
+  // Base args: program, transition, encoded inputs
+  const positional = [
     "snarkos",
     "developer",
     "execute",
     shellQuote(meta.program),
     shellQuote(meta.transition),
     ...encoded_args,
-    "--private-key",
-    shellQuote(private_key),
-    "--endpoint",
-    shellQuote(node_url),
-    "--broadcast",
-  ].join(" ");
+  ];
+
+  // Flags after inputs.
+  // --endpoint: the node URL (including network path, e.g. https://api.provable.com/v2/testnet)
+  // --broadcast: standalone flag — snarkOS routes broadcast through --endpoint automatically.
+  //              Do NOT pass a URL argument; validate_phase4_broadcast_commands.py rejects it.
+  const flags = ["--endpoint", shellQuote(node_url), "--broadcast"];
+
+  return {
+    exec: [...positional, "--private-key", shellQuote(private_key), ...flags].join(" "),
+    display: [...positional, "--private-key", "'***REDACTED***'", ...flags].join(" "),
+  };
 }
 
 
@@ -455,6 +468,14 @@ export class Layer2CliAdapter implements Layer2Adapter {
       max_attempts: options.retry_policy?.max_attempts ?? DEFAULT_RETRY_POLICY.max_attempts,
       retry_delay_ms: options.retry_policy?.retry_delay_ms ?? DEFAULT_RETRY_POLICY.retry_delay_ms,
     };
+    if (mode === "execute") {
+      if (!options.private_key) {
+        throw new Error("Layer2CliAdapter: private_key is required when mode is 'execute'");
+      }
+      if (!options.node_url) {
+        throw new Error("Layer2CliAdapter: node_url is required when mode is 'execute'");
+      }
+    }
     this.private_key = options.private_key ?? "";
     this.node_url = options.node_url ?? "";
   }
@@ -466,11 +487,14 @@ export class Layer2CliAdapter implements Layer2Adapter {
       const started_at_ms = Date.now();
       const endpoint = resolveLayer2Endpoint(network, step);
 
-      let command = "";
+      let command = ""; // display-safe (key redacted) — stored in traces and errors
+      let exec_command = ""; // full command passed to executor — never stored in traces
       let attempts_for_trace = 0;
 
       try {
-        command = buildCliCommand(endpoint, step, this.private_key, this.node_url);
+        const built = buildCliCommand(endpoint, step, this.private_key, this.node_url);
+        command = built.display;
+        exec_command = built.exec;
 
         if (this.mode === "execute") {
           let attempt = 0;
@@ -482,7 +506,7 @@ export class Layer2CliAdapter implements Layer2Adapter {
             attempts_for_trace = attempt;
 
             try {
-              const current = await this.executor.run(command);
+              const current = await this.executor.run(exec_command);
 
               if (current.exit_code === 0) {
                 result = current;

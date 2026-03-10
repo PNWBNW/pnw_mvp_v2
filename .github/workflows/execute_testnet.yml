@@ -28,26 +28,25 @@ jobs:
       actions: read
 
     env:
-      LEO_VERSION: 3.5.0
-      SNARKOS_VERSION: v4.5.0
-      LEO_URL: https://github.com/ProvableHQ/leo/releases/download/v3.5.0/leo-release-3.5-x86_64-unknown-linux-gnu.zip
-      SNARKOS_URL: https://github.com/ProvableHQ/snarkOS/releases/download/v4.5.0/aleo-v4.5.0-x86_64-unknown-linux-gnu.zip
-      LEO_SHA256: a0a8bdc3bfd4508f954a887f761131aa731dcbc76e9185b1c92cd105d314cd5e
-      SNARKOS_SHA256: 29c7bedc5c348190716c4556adc2095085f5481952bbb42c960fb2ba9d128504
+      LEO_VERSION: 3.4.0
+      SNARKOS_VERSION: v4.5.1
+      LEO_URL: https://github.com/ProvableHQ/leo/releases/download/v3.4.0/leo-v3.4.0-x86_64-unknown-linux-gnu.zip
+      SNARKOS_URL: https://github.com/ProvableHQ/snarkOS/releases/download/v4.5.1/aleo-v4.5.1-x86_64-unknown-linux-gnu.zip
+      LEO_SHA256: ${{ vars.LEO_SHA256 }}
+      SNARKOS_SHA256: ${{ vars.SNARKOS_SHA256 }}
       STRICT_VERSION_CHECK: "false"
       PNW_NETWORK: testnet
       MANIFEST_PATH: config/testnet.manifest.json
       ALEO_PRIVATE_KEY: ${{ secrets.ALEO_PRIVATE_KEY }}
       ALEO_VIEW_KEY: ${{ secrets.ALEO_VIEW_KEY }}
       ALEO_ADDRESS: ${{ secrets.ALEO_ADDRESS }}
-      RPC_URL: ${{ secrets.RPC_URL }}
+      ENDPOINT: ${{ secrets.ENDPOINT }}
       USDCX_PROGRAM_ID: ${{ secrets.USDCX_PROGRAM_ID }}
       PHASE4_SCENARIO: ${{ github.event.inputs.scenario || 'onboarding_smoke' }}
       EXECUTE_BROADCAST: "true"
       RECEIPT_VERIFICATION_MODE: "required"
       PHASE4_BROADCAST_COMMANDS_JSON: ${{ secrets.PHASE4_BROADCAST_COMMANDS_JSON }}
       PHASE4_ONBOARDING_MINT_ARGS_JSON: ${{ secrets.PHASE4_ONBOARDING_MINT_ARGS_JSON }}
-      PHASE4_SUBMIT_ENDPOINT: ${{ secrets.PHASE4_SUBMIT_ENDPOINT }}
 
     steps:
       - name: Checkout
@@ -114,13 +113,11 @@ jobs:
           if [[ "$PHASE4_SCENARIO" == "onboarding_smoke" && -n "$PHASE4_ONBOARDING_MINT_ARGS_JSON" ]]; then
             ARGS_SOURCE="artifacts/onboarding_mint_args.secret.json"
             printf '%s\n' "$PHASE4_ONBOARDING_MINT_ARGS_JSON" > "$ARGS_SOURCE"
-            SUBMIT_ENDPOINT="${PHASE4_SUBMIT_ENDPOINT:-$RPC_URL}"
-            if [[ -z "$SUBMIT_ENDPOINT" ]]; then
-              echo "ERROR: submit endpoint is empty (set RPC_URL or PHASE4_SUBMIT_ENDPOINT)" >&2
+            if [[ -z "$ENDPOINT" ]]; then
+              echo "ERROR: ENDPOINT is empty (set ENDPOINT secret to e.g. https://api.explorer.provable.com/v1/testnet)" >&2
               exit 1
             fi
-            echo "Using submit endpoint source: ${PHASE4_SUBMIT_ENDPOINT:+PHASE4_SUBMIT_ENDPOINT}${PHASE4_SUBMIT_ENDPOINT:-RPC_URL}" >&2
-            SUBMIT_PREFIX="snarkos developer execute --endpoint \"${SUBMIT_ENDPOINT}\" --broadcast --private-key \"\$ALEO_PRIVATE_KEY\" credential_nft.aleo mint_credential_nft"
+            SUBMIT_PREFIX="snarkos developer execute --endpoint \"${ENDPOINT}\" --broadcast --private-key \"\$ALEO_PRIVATE_KEY\" credential_nft.aleo mint_credential_nft"
             python3 scripts/build_onboarding_broadcast_commands.py \
               --args-file "$ARGS_SOURCE" \
               --submit-prefix "$SUBMIT_PREFIX" \
@@ -154,7 +151,7 @@ jobs:
         run: python3 scripts/verify_phase4_execute_artifacts.py artifacts/phase4_execute_bundle
 
       - name: Verify broadcast receipts (required)
-        run: python3 scripts/verify_phase4_receipts.py artifacts/phase4_execute_bundle "$RPC_URL" "$RECEIPT_VERIFICATION_MODE"
+        run: python3 scripts/verify_phase4_receipts.py artifacts/phase4_execute_bundle "$ENDPOINT" "$RECEIPT_VERIFICATION_MODE"
 
       - name: Emit execute gate metadata
         run: |
@@ -164,7 +161,7 @@ jobs:
             "network": "${PNW_NETWORK}",
             "manifest_path": "${MANIFEST_PATH}",
             "aleo_address": "${ALEO_ADDRESS}",
-            "rpc_url_present": true,
+            "endpoint_present": true,
             "run_mode": "execute",
             "scenario": "${PHASE4_SCENARIO}",
             "scenario_file": "${PHASE4_SCENARIO_FILE}",

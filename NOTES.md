@@ -9,8 +9,13 @@
 
 ```
 1. Leo programs: async transition + caller fix + consume fix (Issues #3, #4, #4b, #4c, #4d)
-2. Deploy programs, update manifest with real IDs (Issue #5)
-3. Step traces real execution wiring (Issue #9)
+2. Adapter CLI flags fix (Issue #1b)
+3. Onboarding scenario invalid address (Issue #10)
+4. Execute gate on-push trigger removed (Issue #7)
+5. SNARKOS_ENDPOINT alignment (Issue #6) ✅ FIXED
+6. Receipt verification order (Issue #8)
+7. Deploy programs, update manifest with real IDs (Issue #5)
+8. Step traces real execution wiring (Issue #9)
 ```
 
 ---
@@ -213,17 +218,10 @@ async function finalize_mint_cycle_nft(f1: Future, f2: Future, nft_id: [u8; 32])
 
 ---
 
-### #6 — FIXED: env contract aligned to actual endpoint vars
-**File:** `scripts/require_phase4_execute_env.sh`
-**Problem:** The env validation script requires `SNARKOS_ENDPOINT` to be set and validates it starts with `http://` or `https://`. However, the actual command generation in `execute_testnet.yml` uses `PHASE4_SUBMIT_ENDPOINT` (falling back to `RPC_URL`) for the `--endpoint` flag in `snarkos developer execute`. `SNARKOS_ENDPOINT` is checked but never actually passed to the snarkos command.
+### #6 — SNARKOS_ENDPOINT required but commands use different env var ✅ FIXED
+**Fix applied:** Consolidated three endpoint vars (`RPC_URL`, `SNARKOS_ENDPOINT`, `PHASE4_SUBMIT_ENDPOINT`) into a single canonical `ENDPOINT` var. Updated `require_phase4_execute_env.sh`, `execute_testnet.yml`, `run_phase4_execute_scenario.sh`, and `check_phase4_negative_path_guards.sh`. Also bumped snarkOS from v4.4.0 to v4.5.1 and added `.env.example` with canonical endpoint value.
 
-**Fix options:**
-1. Use `SNARKOS_ENDPOINT` as the `--endpoint` value in adapter command generation (rename `node_url` injection to use this)
-2. Remove `SNARKOS_ENDPOINT` from the required list in `require_phase4_execute_env.sh` and just use `RPC_URL`
-
-**Recommendation:** Option 2 — consolidate to `RPC_URL` (already present, already validated). Aliases create confusion.
-
-**Acceptance check:** No required env var is validated but unused; env contract in `require_phase4_execute_env.sh` matches what the adapter and workflow actually consume.
+**Set secret:** Replace old `RPC_URL`/`SNARKOS_ENDPOINT` GitHub secrets with a single `ENDPOINT` secret: `https://api.explorer.provable.com/v1/testnet`
 
 ---
 
