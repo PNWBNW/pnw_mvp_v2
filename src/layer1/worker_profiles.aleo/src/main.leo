@@ -8,11 +8,6 @@ program worker_profiles.aleo {
     // Privacy-first, PNW-native identity system.
     // - All sensitive identity fields are PRIVATE inside records.
     // - Only hash anchors are published on-chain (anchor -> first-seen height).
-    //
-    // Notes:
-    // - The portal supplies encoded u128 fields and profile_anchor deterministically.
-    // - Name ownership is asserted via pnw_name_registry.
-    // ---------------------------------------------------------
 
     // -----------------------------
     // Gender codes (strict enum)
@@ -52,7 +47,7 @@ program worker_profiles.aleo {
         // Classification
         industry_code: u8.private,
 
-        // Optional policy flags (reserved; portal-defined enum)
+        // Optional policy flags
         citizenship_flag: u8.private,
 
         // Versioning
@@ -63,36 +58,22 @@ program worker_profiles.aleo {
         // Commitment anchor
         profile_anchor: [u8; 32].private,
 
-        // Metadata
+        // Metadata (sentinel 0u32; actual height in profile_anchor_height mapping)
         issued_height: u32.private,
 
         // Ownership
         owner: address.private,
-        _nonce: group.public
     }
 
     // ---------------------------------------------------------
     // Public anchor index (hash-only)
     // ---------------------------------------------------------
-    mapping profile_anchor_height:
-        key as [u8; 32].public,
-        value as u32.public;
-
-    // ---------------------------------------------------------
-    // Internal: anchor once
-    // ---------------------------------------------------------
-    function anchor_once(profile_anchor: [u8; 32]) {
-        let h: u32 = block.height;
-        let existing: u32 = Mapping::get_or_use(profile_anchor_height, profile_anchor, 0u32);
-        if existing == 0u32 {
-            Mapping::set(profile_anchor_height, profile_anchor, h);
-        }
-    }
+    mapping profile_anchor_height: [u8; 32] => u32;
 
     // ---------------------------------------------------------
     // Create worker profile
     // ---------------------------------------------------------
-    transition create_worker_profile(
+    async transition create_worker_profile(
         worker_name_hash: field,
 
         first_name_u128: u128,
@@ -114,63 +95,58 @@ program worker_profiles.aleo {
         profile_rev: u16,
 
         profile_anchor: [u8; 32]
-    ) -> WorkerProfile {
+    ) -> (WorkerProfile, Future) {
 
-        // Must own the name hash claimed for this profile.
-        // (If you want strict "worker-kind" enforcement at the registry level,
-        // we can re-add assert_worker_owner in pnw_name_registry later.)
-        pnw_name_registry.aleo/assert_is_owner(worker_name_hash, caller);
-
-        // Guards
+        // Guards (circuit-time)
         assert_gender(gender);
         assert(age <= 120u8);
         assert(residency_state_code != 0u16);
         assert(country_code != 0u16);
         assert(industry_code != 0u8);
-
         assert(schema_v != 0u16);
         assert(policy_v != 0u16);
         assert(profile_rev != 0u16);
 
-        anchor_once(profile_anchor);
-
-        let h: u32 = block.height;
+        // Must own the name hash claimed for this profile
+        let f_owner: Future = pnw_name_registry.aleo/assert_is_owner(worker_name_hash, caller);
 
         let rec: WorkerProfile = WorkerProfile {
-            worker_name_hash: worker_name_hash.private,
-
-            first_name_u128: first_name_u128.private,
-            middle_name_u128: middle_name_u128.private,
-            last_name_u128: last_name_u128.private,
-
-            age: age.private,
-            gender: gender.private,
-
-            residency_state_code: residency_state_code.private,
-            country_code: country_code.private,
-            state_issue_id_u128: state_issue_id_u128.private,
-
-            industry_code: industry_code.private,
-            citizenship_flag: citizenship_flag.private,
-
-            schema_v: schema_v.private,
-            policy_v: policy_v.private,
-            profile_rev: profile_rev.private,
-
-            profile_anchor: profile_anchor.private,
-            issued_height: h.private,
-
-            owner: caller.private,
-            _nonce: group::rand().public
+            worker_name_hash: worker_name_hash,
+            first_name_u128: first_name_u128,
+            middle_name_u128: middle_name_u128,
+            last_name_u128: last_name_u128,
+            age: age,
+            gender: gender,
+            residency_state_code: residency_state_code,
+            country_code: country_code,
+            state_issue_id_u128: state_issue_id_u128,
+            industry_code: industry_code,
+            citizenship_flag: citizenship_flag,
+            schema_v: schema_v,
+            policy_v: policy_v,
+            profile_rev: profile_rev,
+            profile_anchor: profile_anchor,
+            issued_height: 0u32,
+            owner: caller,
         };
 
-        return rec;
+        return (rec, finalize_create_worker_profile(f_owner, profile_anchor));
+    }
+
+    async function finalize_create_worker_profile(f_owner: Future, profile_anchor: [u8; 32]) {
+        f_owner.await();
+
+        // anchor_once (inlined): write first-seen height
+        let existing: u32 = profile_anchor_height.get_or_use(profile_anchor, 0u32);
+        if existing == 0u32 {
+            profile_anchor_height.set(profile_anchor, block.height);
+        }
     }
 
     // ---------------------------------------------------------
     // Update worker profile (consume + re-mint)
     // ---------------------------------------------------------
-    transition update_worker_profile(
+    async transition update_worker_profile(
         old_profile: WorkerProfile,
 
         first_name_u128: u128,
@@ -192,13 +168,10 @@ program worker_profiles.aleo {
         new_profile_rev: u16,
 
         new_profile_anchor: [u8; 32]
-    ) -> WorkerProfile {
+    ) -> (WorkerProfile, Future) {
 
-        // Record owner must be caller.
-        assert(old_profile.owner == caller.private);
-
-        // Must still own the name hash.
-        pnw_name_registry.aleo/assert_is_owner(old_profile.worker_name_hash, caller);
+        // Record owner must be caller
+        assert(old_profile.owner == caller);
 
         // Guards
         assert_gender(gender);
@@ -206,61 +179,62 @@ program worker_profiles.aleo {
         assert(residency_state_code != 0u16);
         assert(country_code != 0u16);
         assert(industry_code != 0u8);
-
         assert(schema_v != 0u16);
         assert(policy_v != 0u16);
         assert(new_profile_rev > old_profile.profile_rev);
 
-        consume old_profile;
-
-        anchor_once(new_profile_anchor);
-
-        let h: u32 = block.height;
+        // Must still own the name hash
+        let f_owner: Future = pnw_name_registry.aleo/assert_is_owner(old_profile.worker_name_hash, caller);
 
         let rec: WorkerProfile = WorkerProfile {
             worker_name_hash: old_profile.worker_name_hash,
-
-            first_name_u128: first_name_u128.private,
-            middle_name_u128: middle_name_u128.private,
-            last_name_u128: last_name_u128.private,
-
-            age: age.private,
-            gender: gender.private,
-
-            residency_state_code: residency_state_code.private,
-            country_code: country_code.private,
-            state_issue_id_u128: state_issue_id_u128.private,
-
-            industry_code: industry_code.private,
-            citizenship_flag: citizenship_flag.private,
-
-            schema_v: schema_v.private,
-            policy_v: policy_v.private,
-            profile_rev: new_profile_rev.private,
-
-            profile_anchor: new_profile_anchor.private,
-            issued_height: h.private,
-
-            owner: caller.private,
-            _nonce: group::rand().public
+            first_name_u128: first_name_u128,
+            middle_name_u128: middle_name_u128,
+            last_name_u128: last_name_u128,
+            age: age,
+            gender: gender,
+            residency_state_code: residency_state_code,
+            country_code: country_code,
+            state_issue_id_u128: state_issue_id_u128,
+            industry_code: industry_code,
+            citizenship_flag: citizenship_flag,
+            schema_v: schema_v,
+            policy_v: policy_v,
+            profile_rev: new_profile_rev,
+            profile_anchor: new_profile_anchor,
+            issued_height: 0u32,
+            owner: caller,
         };
 
-        return rec;
+        return (rec, finalize_update_worker_profile(f_owner, new_profile_anchor));
+    }
+
+    async function finalize_update_worker_profile(f_owner: Future, new_profile_anchor: [u8; 32]) {
+        f_owner.await();
+
+        // anchor_once (inlined)
+        let existing: u32 = profile_anchor_height.get_or_use(new_profile_anchor, 0u32);
+        if existing == 0u32 {
+            profile_anchor_height.set(new_profile_anchor, block.height);
+        }
     }
 
     // ---------------------------------------------------------
     // Public assertion: anchor exists
     // ---------------------------------------------------------
-    transition assert_profile_anchored(profile_anchor: [u8; 32]) {
-        let h: u32 = Mapping::get_or_use(profile_anchor_height, profile_anchor, 0u32);
+    async transition assert_profile_anchored(profile_anchor: [u8; 32]) -> Future {
+        return finalize_assert_profile_anchored(profile_anchor);
+    }
+
+    async function finalize_assert_profile_anchored(profile_anchor: [u8; 32]) {
+        let h: u32 = profile_anchor_height.get_or_use(profile_anchor, 0u32);
         assert(h != 0u32);
     }
 
     // ---------------------------------------------------------
-    // Public utility: read anchor height
+    // Cross-program assertion: profile anchor for worker name exists
     // ---------------------------------------------------------
-    transition get_anchor_height(profile_anchor: [u8; 32]) -> u32 {
-        let h: u32 = Mapping::get_or_use(profile_anchor_height, profile_anchor, 0u32);
-        return h;
+    async transition assert_worker_exists(profile_anchor: [u8; 32]) -> Future {
+        return finalize_assert_profile_anchored(profile_anchor);
     }
 }

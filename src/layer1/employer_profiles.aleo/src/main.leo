@@ -9,12 +9,6 @@ program employer_profiles.aleo {
     // Privacy-first employer identity/profile system.
     // All sensitive fields are PRIVATE inside records.
     // Only commitment anchors are indexed publicly (hash-only).
-    //
-    // Requirements enforced:
-    // - Caller must be verified (employer_license_registry)
-    // - Caller must own the employer name hash (pnw_name_registry)
-    // - industry_code must equal suffix_code (profile taxonomy matches name taxonomy)
-    // ---------------------------------------------------------
 
     record EmployerProfile {
         employer_name_hash: field.private,
@@ -37,26 +31,20 @@ program employer_profiles.aleo {
         profile_rev: u16.private,
 
         profile_anchor: [u8; 32].private,
+
+        // sentinel 0u32; actual height in profile_anchor_height mapping
         issued_height: u32.private,
 
         owner: address.private,
-        _nonce: group.public
     }
 
     // Public, hash-only anchor index: first-seen block height for a given anchor.
-    mapping profile_anchor_height:
-        key as [u8; 32].public,
-        value as u32.public;
+    mapping profile_anchor_height: [u8; 32] => u32;
 
-    function anchor_once(profile_anchor: [u8; 32]) {
-        let h: u32 = block.height;
-        let existing: u32 = Mapping::get_or_use(profile_anchor_height, profile_anchor, 0u32);
-        if existing == 0u32 {
-            Mapping::set(profile_anchor_height, profile_anchor, h);
-        }
-    }
-
-    transition create_employer_profile(
+    // ---------------------------------------------------------
+    // Create employer profile
+    // ---------------------------------------------------------
+    async transition create_employer_profile(
         employer_name_hash: field,
         suffix_code: u8,
 
@@ -77,63 +65,63 @@ program employer_profiles.aleo {
         profile_rev: u16,
 
         profile_anchor: [u8; 32]
-    ) -> EmployerProfile {
+    ) -> (EmployerProfile, Future) {
 
-        // Must be verified to create/maintain employer profiles.
-        employer_license_registry.aleo/assert_verified(caller);
-
-        // Must own the employer name hash + suffix must match the owned registration.
-        pnw_name_registry.aleo/assert_employer_owner(employer_name_hash, caller, suffix_code);
-
-        // Naming taxonomy must match profile taxonomy.
+        // Naming taxonomy must match profile taxonomy (circuit-time)
         assert(industry_code == suffix_code);
-
-        // Basic sanity
         assert(suffix_code != 0u8);
         assert(industry_code != 0u8);
         assert(registration_state_code != 0u16);
         assert(country_code != 0u16);
         assert(formation_year != 0u16);
-
         assert(schema_v != 0u16);
         assert(policy_v != 0u16);
         assert(profile_rev != 0u16);
 
-        anchor_once(profile_anchor);
+        // Must be verified to create employer profiles
+        let f1: Future = employer_license_registry.aleo/assert_verified(caller);
 
-        let h: u32 = block.height;
+        // Must own the employer name hash + suffix must match
+        let f2: Future = pnw_name_registry.aleo/assert_employer_owner(employer_name_hash, caller, suffix_code);
 
         let rec: EmployerProfile = EmployerProfile {
-            employer_name_hash: employer_name_hash.private,
-            suffix_code: suffix_code.private,
-
-            legal_name_u128: legal_name_u128.private,
-            registration_id_u128: registration_id_u128.private,
-            registration_state_code: registration_state_code.private,
-            country_code: country_code.private,
-
-            formation_year: formation_year.private,
-            entity_type_code: entity_type_code.private,
-
-            industry_code: industry_code.private,
-            employer_size_code: employer_size_code.private,
-            operating_region_code: operating_region_code.private,
-
-            schema_v: schema_v.private,
-            policy_v: policy_v.private,
-            profile_rev: profile_rev.private,
-
-            profile_anchor: profile_anchor.private,
-            issued_height: h.private,
-
-            owner: caller.private,
-            _nonce: group::rand().public
+            employer_name_hash: employer_name_hash,
+            suffix_code: suffix_code,
+            legal_name_u128: legal_name_u128,
+            registration_id_u128: registration_id_u128,
+            registration_state_code: registration_state_code,
+            country_code: country_code,
+            formation_year: formation_year,
+            entity_type_code: entity_type_code,
+            industry_code: industry_code,
+            employer_size_code: employer_size_code,
+            operating_region_code: operating_region_code,
+            schema_v: schema_v,
+            policy_v: policy_v,
+            profile_rev: profile_rev,
+            profile_anchor: profile_anchor,
+            issued_height: 0u32,
+            owner: caller,
         };
 
-        return rec;
+        return (rec, finalize_create_employer_profile(f1, f2, profile_anchor));
     }
 
-    transition update_employer_profile(
+    async function finalize_create_employer_profile(f1: Future, f2: Future, profile_anchor: [u8; 32]) {
+        f1.await();
+        f2.await();
+
+        // anchor_once (inlined)
+        let existing: u32 = profile_anchor_height.get_or_use(profile_anchor, 0u32);
+        if existing == 0u32 {
+            profile_anchor_height.set(profile_anchor, block.height);
+        }
+    }
+
+    // ---------------------------------------------------------
+    // Update employer profile (consume + re-mint)
+    // ---------------------------------------------------------
+    async transition update_employer_profile(
         old_profile: EmployerProfile,
 
         legal_name_u128: u128,
@@ -153,72 +141,78 @@ program employer_profiles.aleo {
         new_profile_rev: u16,
 
         new_profile_anchor: [u8; 32]
-    ) -> EmployerProfile {
+    ) -> (EmployerProfile, Future) {
 
-        // Only owner can update.
-        assert(old_profile.owner == caller.private);
+        // Only owner can update
+        assert(old_profile.owner == caller);
 
-        // Must remain verified.
-        employer_license_registry.aleo/assert_verified(caller);
-
-        // Must still own the employer name hash + suffix.
-        pnw_name_registry.aleo/assert_employer_owner(old_profile.employer_name_hash, caller, old_profile.suffix_code);
-
-        // Naming taxonomy must still match.
+        // Naming taxonomy must still match
         assert(industry_code == old_profile.suffix_code);
-
-        // Basic sanity
         assert(registration_state_code != 0u16);
         assert(country_code != 0u16);
         assert(formation_year != 0u16);
-
         assert(schema_v != 0u16);
         assert(policy_v != 0u16);
         assert(new_profile_rev > old_profile.profile_rev);
 
-        consume old_profile;
+        // Must remain verified
+        let f1: Future = employer_license_registry.aleo/assert_verified(caller);
 
-        anchor_once(new_profile_anchor);
-
-        let h: u32 = block.height;
+        // Must still own the employer name hash + suffix
+        let f2: Future = pnw_name_registry.aleo/assert_employer_owner(
+            old_profile.employer_name_hash, caller, old_profile.suffix_code
+        );
 
         let rec: EmployerProfile = EmployerProfile {
             employer_name_hash: old_profile.employer_name_hash,
             suffix_code: old_profile.suffix_code,
-
-            legal_name_u128: legal_name_u128.private,
-            registration_id_u128: registration_id_u128.private,
-            registration_state_code: registration_state_code.private,
-            country_code: country_code.private,
-
-            formation_year: formation_year.private,
-            entity_type_code: entity_type_code.private,
-
-            industry_code: industry_code.private,
-            employer_size_code: employer_size_code.private,
-            operating_region_code: operating_region_code.private,
-
-            schema_v: schema_v.private,
-            policy_v: policy_v.private,
-            profile_rev: new_profile_rev.private,
-
-            profile_anchor: new_profile_anchor.private,
-            issued_height: h.private,
-
-            owner: caller.private,
-            _nonce: group::rand().public
+            legal_name_u128: legal_name_u128,
+            registration_id_u128: registration_id_u128,
+            registration_state_code: registration_state_code,
+            country_code: country_code,
+            formation_year: formation_year,
+            entity_type_code: entity_type_code,
+            industry_code: industry_code,
+            employer_size_code: employer_size_code,
+            operating_region_code: operating_region_code,
+            schema_v: schema_v,
+            policy_v: policy_v,
+            profile_rev: new_profile_rev,
+            profile_anchor: new_profile_anchor,
+            issued_height: 0u32,
+            owner: caller,
         };
 
-        return rec;
+        return (rec, finalize_update_employer_profile(f1, f2, new_profile_anchor));
     }
 
-    transition assert_profile_anchored(profile_anchor: [u8; 32]) {
-        let h: u32 = Mapping::get_or_use(profile_anchor_height, profile_anchor, 0u32);
+    async function finalize_update_employer_profile(f1: Future, f2: Future, new_profile_anchor: [u8; 32]) {
+        f1.await();
+        f2.await();
+
+        // anchor_once (inlined)
+        let existing: u32 = profile_anchor_height.get_or_use(new_profile_anchor, 0u32);
+        if existing == 0u32 {
+            profile_anchor_height.set(new_profile_anchor, block.height);
+        }
+    }
+
+    // ---------------------------------------------------------
+    // Public assertion: anchor exists
+    // ---------------------------------------------------------
+    async transition assert_profile_anchored(profile_anchor: [u8; 32]) -> Future {
+        return finalize_assert_profile_anchored(profile_anchor);
+    }
+
+    async function finalize_assert_profile_anchored(profile_anchor: [u8; 32]) {
+        let h: u32 = profile_anchor_height.get_or_use(profile_anchor, 0u32);
         assert(h != 0u32);
     }
 
-    transition get_anchor_height(profile_anchor: [u8; 32]) -> u32 {
-        let h: u32 = Mapping::get_or_use(profile_anchor_height, profile_anchor, 0u32);
-        return h;
+    // ---------------------------------------------------------
+    // Cross-program assertion: profile anchor for employer exists
+    // ---------------------------------------------------------
+    async transition assert_employer_exists(profile_anchor: [u8; 32]) -> Future {
+        return finalize_assert_profile_anchored(profile_anchor);
     }
 }

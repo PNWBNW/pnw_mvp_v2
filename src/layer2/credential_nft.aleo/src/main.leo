@@ -44,21 +44,10 @@ program credential_nft.aleo {
     // ---------------------------------------------------------
     // Public anchor/status mappings
     // ---------------------------------------------------------
-    mapping credential_anchor_height:
-        key as [u8; 32].public,
-        value as u32.public;
-
-    mapping credential_status:
-        key as [u8; 32].public,
-        value as u8.public;
-
-    mapping credential_revoked_height:
-        key as [u8; 32].public,
-        value as u32.public;
-
-    mapping scope_anchor_height:
-        key as [u8; 32].public,
-        value as u32.public;
+    mapping credential_anchor_height: [u8; 32] => u32;
+    mapping credential_status: [u8; 32] => u8;
+    mapping credential_revoked_height: [u8; 32] => u32;
+    mapping scope_anchor_height: [u8; 32] => u32;
 
     // ---------------------------------------------------------
     // Mint credential NFT
@@ -93,18 +82,16 @@ program credential_nft.aleo {
     }
 
     async function finalize_mint_credential_nft(credential_id: [u8; 32], scope_hash: [u8; 32]) {
-        // anchor_credential_once (inlined)
-        let existing: u32 = Mapping::get_or_use(credential_anchor_height, credential_id, 0u32);
+        let existing: u32 = credential_anchor_height.get_or_use(credential_id, 0u32);
         assert(existing == 0u32);
 
-        Mapping::set(credential_anchor_height, credential_id, block.height);
-        Mapping::set(credential_status, credential_id, STATUS_ACTIVE);
-        Mapping::set(credential_revoked_height, credential_id, 0u32);
+        credential_anchor_height.set(credential_id, block.height);
+        credential_status.set(credential_id, STATUS_ACTIVE);
+        credential_revoked_height.set(credential_id, 0u32);
 
-        // anchor_scope_if_first (inlined)
-        let scope_existing: u32 = Mapping::get_or_use(scope_anchor_height, scope_hash, 0u32);
+        let scope_existing: u32 = scope_anchor_height.get_or_use(scope_hash, 0u32);
         if scope_existing == 0u32 {
-            Mapping::set(scope_anchor_height, scope_hash, block.height);
+            scope_anchor_height.set(scope_hash, block.height);
         }
     }
 
@@ -112,61 +99,29 @@ program credential_nft.aleo {
     // Revoke credential NFT (owner-only)
     // ---------------------------------------------------------
     async transition revoke_credential_nft(nft: CredentialNFT) -> Future {
-        // Bug #4 fix: caller (not caller.private)
         assert(nft.owner == caller);
 
         let id: [u8; 32] = nft.credential_id;
-        // Bug #4c fix: no "consume nft;" — record is implicitly consumed as transition input
         return finalize_revoke_credential_nft(id);
     }
 
     async function finalize_revoke_credential_nft(id: [u8; 32]) {
-        let s: u8 = Mapping::get_or_use(credential_status, id, 0u8);
+        let s: u8 = credential_status.get_or_use(id, 0u8);
         assert_status_valid(s);
         assert(s == STATUS_ACTIVE);
-        Mapping::set(credential_status, id, STATUS_REVOKED);
-        Mapping::set(credential_revoked_height, id, block.height);
+        credential_status.set(id, STATUS_REVOKED);
+        credential_revoked_height.set(id, block.height);
     }
 
     // ---------------------------------------------------------
-    // Public verification utilities
-    // Mapping reads are only valid in async function (finalize).
-    // These transitions assert conditions on-chain; use the REST API
-    // to query actual mapping values off-chain.
+    // Public verification utilities (async; read via REST API off-chain)
     // ---------------------------------------------------------
     async transition assert_credential_exists(credential_id: [u8; 32]) -> Future {
         return finalize_assert_credential_exists(credential_id);
     }
 
     async function finalize_assert_credential_exists(credential_id: [u8; 32]) {
-        let h: u32 = Mapping::get_or_use(credential_anchor_height, credential_id, 0u32);
-        assert(h != 0u32);
-    }
-
-    async transition get_credential_anchor_height(credential_id: [u8; 32]) -> Future {
-        return finalize_get_credential_anchor_height(credential_id);
-    }
-
-    async function finalize_get_credential_anchor_height(credential_id: [u8; 32]) {
-        let h: u32 = Mapping::get_or_use(credential_anchor_height, credential_id, 0u32);
-        assert(h != 0u32);
-    }
-
-    async transition get_credential_status(credential_id: [u8; 32]) -> Future {
-        return finalize_get_credential_status(credential_id);
-    }
-
-    async function finalize_get_credential_status(credential_id: [u8; 32]) {
-        let s: u8 = Mapping::get_or_use(credential_status, credential_id, 0u8);
-        assert_status_valid(s);
-    }
-
-    async transition get_credential_revoked_height(credential_id: [u8; 32]) -> Future {
-        return finalize_get_credential_revoked_height(credential_id);
-    }
-
-    async function finalize_get_credential_revoked_height(credential_id: [u8; 32]) {
-        let h: u32 = Mapping::get_or_use(credential_anchor_height, credential_id, 0u32);
+        let h: u32 = credential_anchor_height.get_or_use(credential_id, 0u32);
         assert(h != 0u32);
     }
 
@@ -175,16 +130,7 @@ program credential_nft.aleo {
     }
 
     async function finalize_assert_scope_anchored(scope_hash: [u8; 32]) {
-        let h: u32 = Mapping::get_or_use(scope_anchor_height, scope_hash, 0u32);
-        assert(h != 0u32);
-    }
-
-    async transition get_scope_anchor_height(scope_hash: [u8; 32]) -> Future {
-        return finalize_get_scope_anchor_height(scope_hash);
-    }
-
-    async function finalize_get_scope_anchor_height(scope_hash: [u8; 32]) {
-        let h: u32 = Mapping::get_or_use(scope_anchor_height, scope_hash, 0u32);
+        let h: u32 = scope_anchor_height.get_or_use(scope_hash, 0u32);
         assert(h != 0u32);
     }
 }
