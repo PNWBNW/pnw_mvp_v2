@@ -223,10 +223,10 @@ program worker_profiles.aleo {
     // Public assertion: anchor exists
     // ---------------------------------------------------------
     async transition assert_profile_anchored(profile_anchor: [u8; 32]) -> Future {
-        return finalize_assert_profile_anchored(profile_anchor);
+        return finalize_assert_prof_anchored(profile_anchor);
     }
 
-    async function finalize_assert_profile_anchored(profile_anchor: [u8; 32]) {
+    async function finalize_assert_prof_anchored(profile_anchor: [u8; 32]) {
         let h: u32 = profile_anchor_height.get_or_use(profile_anchor, 0u32);
         assert(h != 0u32);
     }
@@ -235,6 +235,6 @@ program worker_profiles.aleo {
     // Cross-program assertion: profile anchor for worker name exists
     // ---------------------------------------------------------
     async transition assert_worker_exists(profile_anchor: [u8; 32]) -> Future {
-        return finalize_assert_profile_anchored(profile_anchor);
+        return finalize_assert_prof_anchored(profile_anchor);
     }
 }
