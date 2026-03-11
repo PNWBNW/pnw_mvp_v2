@@ -58,10 +58,10 @@ export function resolveLayer1Endpoint(network: Network, step: CallPlanStep): TxM
       return { program: "pnw_name_registry.aleo", transition: "release_worker_name", network };
     case "register_employer_name":
       return { program: "pnw_name_registry.aleo", transition: "register_employer_name", network };
-    case "request_employer_sellback":
-      return { program: "pnw_name_registry.aleo", transition: "request_employer_sellback", network };
-    case "fulfill_employer_sellback":
-      return { program: "pnw_name_registry.aleo", transition: "fulfill_employer_sellback", network };
+    case "request_empl_sellback":
+      return { program: "pnw_name_registry.aleo", transition: "request_empl_sellback", network };
+    case "fulfill_empl_sellback":
+      return { program: "pnw_name_registry.aleo", transition: "fulfill_empl_sellback", network };
     case "assert_name_owner":
       return { program: "pnw_name_registry.aleo", transition: "assert_is_owner", network };
 

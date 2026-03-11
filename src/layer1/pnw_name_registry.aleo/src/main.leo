@@ -208,11 +208,11 @@ program pnw_name_registry.aleo {
         employer_name_count.set(owner, count + 1u8);
     }
 
-    async transition request_employer_sellback(name_hash: field) -> Future {
-        return finalize_request_employer_sellback(self.caller, name_hash);
+    async transition request_empl_sellback(name_hash: field) -> Future {
+        return finalize_request_empl_sellback(self.caller, name_hash);
     }
 
-    async function finalize_request_employer_sellback(owner: address, name_hash: field) {
+    async function finalize_request_empl_sellback(owner: address, name_hash: field) {
         assert(name_owner.get_or_use(name_hash, aleo1qqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqq3ljyzc) == owner);
         assert(name_kind.get_or_use(name_hash, 0u8) == KIND_EMPLOYER);
 
@@ -231,7 +231,7 @@ program pnw_name_registry.aleo {
     }
 
     // Portal supplies seller + refund; finalize verifies they match stored values.
-    async transition fulfill_employer_sellback(
+    async transition fulfill_empl_sellback(
         name_hash: field,
         seller: address,
         refund: u128
@@ -241,10 +241,10 @@ program pnw_name_registry.aleo {
         let pay_f: Future =
             test_usdcx_stablecoin.aleo/transfer_public(seller, refund);
 
-        return finalize_fulfill_employer_sellback(pay_f, name_hash, seller, refund);
+        return finalize_fulfill_empl_sellback(pay_f, name_hash, seller, refund);
     }
 
-    async function finalize_fulfill_employer_sellback(
+    async function finalize_fulfill_empl_sellback(
         pay_f: Future,
         name_hash: field,
         seller: address,
