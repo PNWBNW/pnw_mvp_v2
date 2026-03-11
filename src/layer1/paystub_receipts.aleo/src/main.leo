@@ -199,10 +199,10 @@ program paystub_receipts.aleo {
     // Public assertion: anchor exists
     // ---------------------------------------------------------
     async transition assert_receipt_anchored(receipt_anchor: [u8; 32]) -> Future {
-        return finalize_assert_receipt_anchored(receipt_anchor);
+        return finalize_assert_receipt_anchor(receipt_anchor);
     }
 
-    async function finalize_assert_receipt_anchored(receipt_anchor: [u8; 32]) {
+    async function finalize_assert_receipt_anchor(receipt_anchor: [u8; 32]) {
         let h: u32 = receipt_anchor_height.get_or_use(receipt_anchor, 0u32);
         assert(h != 0u32);
     }
