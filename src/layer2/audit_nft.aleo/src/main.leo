@@ -81,7 +81,7 @@ program audit_nft.aleo {
             schema_v: schema_v,
             policy_v: policy_v,
             issued_height: 0u32,
-            owner: caller,
+            owner: self.caller,
         };
 
         return (nft, finalize_mint_authorization_nft(f, auth_id, expires_epoch));
@@ -104,7 +104,7 @@ program audit_nft.aleo {
     // Revoke authorization NFT (owner-only)
     // ---------------------------------------------------------
     async transition revoke_authorization_nft(nft: AuditAuthorizationNFT) -> Future {
-        assert(nft.owner == caller);
+        assert(nft.owner == self.caller);
 
         let id: [u8; 32] = nft.auth_id;
         return finalize_revoke_authorization_nft(id);

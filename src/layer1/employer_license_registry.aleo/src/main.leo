@@ -24,7 +24,7 @@ program employer_license_registry.aleo {
     // Admin: set / update verification status
     // ---------------------------------------------------------
     async transition set_verified(wallet: address, license_hash: field, verified: bool) -> Future {
-        assert(caller == AUTHORITY);
+        assert(self.caller == AUTHORITY);
         return finalize_set_verified(wallet, license_hash, verified);
     }
 
