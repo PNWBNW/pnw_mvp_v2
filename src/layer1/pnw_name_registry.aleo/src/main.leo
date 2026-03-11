@@ -111,7 +111,7 @@ program pnw_name_registry.aleo {
         return 0u128;
     }
 
-    function calc_refund(base_paid: u128) -> u128 {
+    inline calc_refund(base_paid: u128) -> u128 {
         return (base_paid * REFUND_NUM) / REFUND_DEN;
     }
 
