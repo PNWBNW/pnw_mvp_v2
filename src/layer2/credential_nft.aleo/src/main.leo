@@ -75,7 +75,7 @@ program credential_nft.aleo {
             schema_v: schema_v,
             policy_v: policy_v,
             minted_height: 0u32,
-            owner: caller,
+            owner: self.caller,
         };
 
         return (nft, finalize_mint_credential_nft(credential_id, scope_hash));
@@ -99,7 +99,7 @@ program credential_nft.aleo {
     // Revoke credential NFT (owner-only)
     // ---------------------------------------------------------
     async transition revoke_credential_nft(nft: CredentialNFT) -> Future {
-        assert(nft.owner == caller);
+        assert(nft.owner == self.caller);
 
         let id: [u8; 32] = nft.credential_id;
         return finalize_revoke_credential_nft(id);

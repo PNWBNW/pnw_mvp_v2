@@ -126,7 +126,7 @@ program pnw_name_registry.aleo {
         let pay_f: Future =
             test_usdcx_stablecoin.aleo/transfer_public(PRESIDING_DAO_TREASURY, total);
 
-        return finalize_register_worker(pay_f, caller, name_hash);
+        return finalize_register_worker(pay_f, self.caller, name_hash);
     }
 
     async function finalize_register_worker(pay_f: Future, owner: address, name_hash: field) {
@@ -143,7 +143,7 @@ program pnw_name_registry.aleo {
     }
 
     async transition release_worker_name() -> Future {
-        return finalize_release_worker_name(caller);
+        return finalize_release_worker_name(self.caller);
     }
 
     async function finalize_release_worker_name(owner: address) {
@@ -175,11 +175,11 @@ program pnw_name_registry.aleo {
         let base_price: u128 = calc_employer_base_price(count);
         let total: u128 = base_price + fee_amount;
 
-        let verified_f: Future = employer_license_registry.aleo/assert_verified(caller);
+        let verified_f: Future = employer_license_registry.aleo/assert_verified(self.caller);
         let pay_f: Future =
             test_usdcx_stablecoin.aleo/transfer_public(PRESIDING_DAO_TREASURY, total);
 
-        return finalize_register_employer(verified_f, pay_f, caller, name_hash, suffix_code, base_price, count);
+        return finalize_register_employer(verified_f, pay_f, self.caller, name_hash, suffix_code, base_price, count);
     }
 
     async function finalize_register_employer(
@@ -209,7 +209,7 @@ program pnw_name_registry.aleo {
     }
 
     async transition request_employer_sellback(name_hash: field) -> Future {
-        return finalize_request_employer_sellback(caller, name_hash);
+        return finalize_request_employer_sellback(self.caller, name_hash);
     }
 
     async function finalize_request_employer_sellback(owner: address, name_hash: field) {
@@ -236,7 +236,7 @@ program pnw_name_registry.aleo {
         seller: address,
         refund: u128
     ) -> Future {
-        assert(caller == PRESIDING_DAO_TREASURY);
+        assert(self.caller == PRESIDING_DAO_TREASURY);
 
         let pay_f: Future =
             test_usdcx_stablecoin.aleo/transfer_public(seller, refund);
