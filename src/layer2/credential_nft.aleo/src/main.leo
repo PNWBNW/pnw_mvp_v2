@@ -20,25 +20,25 @@ program credential_nft.aleo {
     }
 
     record CredentialNFT {
-        credential_id: [u8; 32].private,
+        credential_id: [u8; 32],
 
         // Identity/scope bindings (commitment-only)
-        subject_hash: [u8; 32].private,
-        issuer_hash: [u8; 32].private,
-        scope_hash: [u8; 32].private,
+        subject_hash: [u8; 32],
+        issuer_hash: [u8; 32],
+        scope_hash: [u8; 32],
 
         // Document commitments
-        doc_hash: [u8; 32].private,
-        root: [u8; 32].private,
+        doc_hash: [u8; 32],
+        root: [u8; 32],
 
-        schema_v: u16.private,
-        policy_v: u16.private,
+        schema_v: u16,
+        policy_v: u16,
 
         // Metadata (sentinel; actual height in credential_anchor_height mapping)
-        minted_height: u32.private,
+        minted_height: u32,
 
         // Ownership
-        owner: address.private,
+        owner: address,
     }
 
     // ---------------------------------------------------------
