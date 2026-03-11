@@ -134,7 +134,7 @@ program pnw_name_registry.aleo {
 
         // Uniqueness enforced in finalize
         assert(worker_primary_name_of.get_or_use(owner, 0field) == 0field);
-        assert(name_owner.get_or_use(name_hash, 0address) == 0address);
+        assert(name_owner.get_or_use(name_hash, aleo1qqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqq3ljyzc) == aleo1qqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqq3ljyzc);
 
         name_owner.set(name_hash, owner);
         name_kind.set(name_hash, KIND_WORKER);
@@ -149,9 +149,9 @@ program pnw_name_registry.aleo {
     async function finalize_release_worker_name(owner: address) {
         let name_hash: field = worker_primary_name_of.get_or_use(owner, 0field);
         assert(name_hash != 0field);
-        assert(name_owner.get_or_use(name_hash, 0address) == owner);
+        assert(name_owner.get_or_use(name_hash, aleo1qqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqq3ljyzc) == owner);
 
-        name_owner.set(name_hash, 0address);
+        name_owner.set(name_hash, aleo1qqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqq3ljyzc);
         name_kind.set(name_hash, 0u8);
         employer_suffix_code.set(name_hash, 0u8);
         worker_primary_name_of.set(owner, 0field);
@@ -199,7 +199,7 @@ program pnw_name_registry.aleo {
         assert(actual_count == count);
 
         // Verify name not already taken
-        assert(name_owner.get_or_use(name_hash, 0address) == 0address);
+        assert(name_owner.get_or_use(name_hash, aleo1qqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqq3ljyzc) == aleo1qqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqq3ljyzc);
 
         name_owner.set(name_hash, owner);
         name_kind.set(name_hash, KIND_EMPLOYER);
@@ -213,13 +213,13 @@ program pnw_name_registry.aleo {
     }
 
     async function finalize_request_employer_sellback(owner: address, name_hash: field) {
-        assert(name_owner.get_or_use(name_hash, 0address) == owner);
+        assert(name_owner.get_or_use(name_hash, aleo1qqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqq3ljyzc) == owner);
         assert(name_kind.get_or_use(name_hash, 0u8) == KIND_EMPLOYER);
 
         let base_paid: u128 = employer_base_paid.get_or_use(name_hash, 0u128);
         let refund: u128 = calc_refund(base_paid);
 
-        name_owner.set(name_hash, 0address);
+        name_owner.set(name_hash, aleo1qqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqq3ljyzc);
         name_kind.set(name_hash, 0u8);
         employer_suffix_code.set(name_hash, 0u8);
 
@@ -251,12 +251,12 @@ program pnw_name_registry.aleo {
         refund: u128
     ) {
         // Verify portal-supplied values match stored state
-        assert(sellback_seller.get_or_use(name_hash, 0address) == seller);
+        assert(sellback_seller.get_or_use(name_hash, aleo1qqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqq3ljyzc) == seller);
         assert(sellback_refund_amount.get_or_use(name_hash, 0u128) == refund);
 
         pay_f.await();
 
-        sellback_seller.set(name_hash, 0address);
+        sellback_seller.set(name_hash, aleo1qqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqq3ljyzc);
         sellback_refund_amount.set(name_hash, 0u128);
     }
 
@@ -270,7 +270,7 @@ program pnw_name_registry.aleo {
     }
 
     async function finalize_assert_is_owner(name_hash: field, owner: address) {
-        assert(name_owner.get_or_use(name_hash, 0address) == owner);
+        assert(name_owner.get_or_use(name_hash, aleo1qqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqq3ljyzc) == owner);
     }
 
     // Assert that `owner` owns `name_hash` as an employer with matching suffix.
@@ -279,7 +279,7 @@ program pnw_name_registry.aleo {
     }
 
     async function finalize_assert_employer_owner(name_hash: field, owner: address, suffix_code: u8) {
-        assert(name_owner.get_or_use(name_hash, 0address) == owner);
+        assert(name_owner.get_or_use(name_hash, aleo1qqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqq3ljyzc) == owner);
         assert(employer_suffix_code.get_or_use(name_hash, 0u8) == suffix_code);
     }
 }
