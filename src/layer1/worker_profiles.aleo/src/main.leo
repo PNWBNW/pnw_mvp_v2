@@ -108,7 +108,7 @@ program worker_profiles.aleo {
         assert(profile_rev != 0u16);
 
         // Must own the name hash claimed for this profile
-        let f_owner: Future = pnw_name_registry.aleo/assert_is_owner(worker_name_hash, caller);
+        let f_owner: Future = pnw_name_registry.aleo/assert_is_owner(worker_name_hash, self.caller);
 
         let rec: WorkerProfile = WorkerProfile {
             worker_name_hash: worker_name_hash,
@@ -127,7 +127,7 @@ program worker_profiles.aleo {
             profile_rev: profile_rev,
             profile_anchor: profile_anchor,
             issued_height: 0u32,
-            owner: caller,
+            owner: self.caller,
         };
 
         return (rec, finalize_create_worker_profile(f_owner, profile_anchor));
@@ -170,8 +170,8 @@ program worker_profiles.aleo {
         new_profile_anchor: [u8; 32]
     ) -> (WorkerProfile, Future) {
 
-        // Record owner must be caller
-        assert(old_profile.owner == caller);
+        // Record owner must be self.caller
+        assert(old_profile.owner == self.caller);
 
         // Guards
         assert_gender(gender);
@@ -184,7 +184,7 @@ program worker_profiles.aleo {
         assert(new_profile_rev > old_profile.profile_rev);
 
         // Must still own the name hash
-        let f_owner: Future = pnw_name_registry.aleo/assert_is_owner(old_profile.worker_name_hash, caller);
+        let f_owner: Future = pnw_name_registry.aleo/assert_is_owner(old_profile.worker_name_hash, self.caller);
 
         let rec: WorkerProfile = WorkerProfile {
             worker_name_hash: old_profile.worker_name_hash,
@@ -203,7 +203,7 @@ program worker_profiles.aleo {
             profile_rev: new_profile_rev,
             profile_anchor: new_profile_anchor,
             issued_height: 0u32,
-            owner: caller,
+            owner: self.caller,
         };
 
         return (rec, finalize_update_worker_profile(f_owner, new_profile_anchor));

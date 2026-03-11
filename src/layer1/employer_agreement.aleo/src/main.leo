@@ -184,8 +184,8 @@ program employer_agreement.aleo {
         assert(review_epoch >= start_epoch);
 
         // Employer must be verified AND own the employer name hash
-        let f1: Future = employer_license_registry.aleo/assert_verified(caller);
-        let f2: Future = pnw_name_registry.aleo/assert_is_owner(employer_name_hash, caller);
+        let f1: Future = employer_license_registry.aleo/assert_verified(self.caller);
+        let f2: Future = pnw_name_registry.aleo/assert_is_owner(employer_name_hash, self.caller);
 
         // Compute parties commitment in circuit
         let commitment: field = compute_parties_commitment(parties_key, employer_name_hash, worker_name_hash);
@@ -207,7 +207,7 @@ program employer_agreement.aleo {
             terms_root: terms_root,
             offer_height: 0u32,
             offer_time_hash: offer_time_hash,
-            employer_address: caller,
+            employer_address: self.caller,
             worker_address: worker_address,
             owner: worker_address,
         };
@@ -242,12 +242,12 @@ program employer_agreement.aleo {
         accept_time_hash: [u8; 32]
     ) -> (FinalAgreement, Future) {
 
-        assert(offer.worker_address == caller);
+        assert(offer.worker_address == self.caller);
 
         let agreement_id: [u8; 32] = offer.agreement_id;
 
         // Worker must own the worker name hash
-        let f1: Future = pnw_name_registry.aleo/assert_is_owner(offer.worker_name_hash, caller);
+        let f1: Future = pnw_name_registry.aleo/assert_is_owner(offer.worker_name_hash, self.caller);
 
         // Compute parties commitment in circuit for finalize verification
         let commitment: field = compute_parties_commitment(
@@ -314,8 +314,8 @@ program employer_agreement.aleo {
         employer_name_hash: field,
         worker_name_hash: field
     ) -> Future {
-        let f1: Future = employer_license_registry.aleo/assert_verified(caller);
-        let f2: Future = pnw_name_registry.aleo/assert_is_owner(employer_name_hash, caller);
+        let f1: Future = employer_license_registry.aleo/assert_verified(self.caller);
+        let f2: Future = pnw_name_registry.aleo/assert_is_owner(employer_name_hash, self.caller);
         let commitment: field = compute_parties_commitment(parties_key, employer_name_hash, worker_name_hash);
         return finalize_pause_agreement(f1, f2, agreement_id, commitment);
     }
@@ -326,7 +326,7 @@ program employer_agreement.aleo {
         employer_name_hash: field,
         worker_name_hash: field
     ) -> Future {
-        let f1: Future = pnw_name_registry.aleo/assert_is_owner(worker_name_hash, caller);
+        let f1: Future = pnw_name_registry.aleo/assert_is_owner(worker_name_hash, self.caller);
         let commitment: field = compute_parties_commitment(parties_key, employer_name_hash, worker_name_hash);
         return finalize_pause_agreement_single(f1, agreement_id, commitment);
     }
@@ -337,7 +337,7 @@ program employer_agreement.aleo {
         employer_name_hash: field,
         worker_name_hash: field
     ) -> Future {
-        assert(caller == DAO_ADDRESS);
+        assert(self.caller == DAO_ADDRESS);
         let commitment: field = compute_parties_commitment(parties_key, employer_name_hash, worker_name_hash);
         return finalize_pause_agreement_dao(agreement_id, commitment);
     }
@@ -410,8 +410,8 @@ program employer_agreement.aleo {
         employer_name_hash: field,
         worker_name_hash: field
     ) -> Future {
-        let f1: Future = employer_license_registry.aleo/assert_verified(caller);
-        let f2: Future = pnw_name_registry.aleo/assert_is_owner(employer_name_hash, caller);
+        let f1: Future = employer_license_registry.aleo/assert_verified(self.caller);
+        let f2: Future = pnw_name_registry.aleo/assert_is_owner(employer_name_hash, self.caller);
         let commitment: field = compute_parties_commitment(parties_key, employer_name_hash, worker_name_hash);
         return finalize_terminate_agreement(f1, f2, agreement_id, commitment);
     }
@@ -422,7 +422,7 @@ program employer_agreement.aleo {
         employer_name_hash: field,
         worker_name_hash: field
     ) -> Future {
-        let f1: Future = pnw_name_registry.aleo/assert_is_owner(worker_name_hash, caller);
+        let f1: Future = pnw_name_registry.aleo/assert_is_owner(worker_name_hash, self.caller);
         let commitment: field = compute_parties_commitment(parties_key, employer_name_hash, worker_name_hash);
         return finalize_terminate_agreement_single(f1, agreement_id, commitment);
     }
@@ -433,7 +433,7 @@ program employer_agreement.aleo {
         employer_name_hash: field,
         worker_name_hash: field
     ) -> Future {
-        assert(caller == DAO_ADDRESS);
+        assert(self.caller == DAO_ADDRESS);
         let commitment: field = compute_parties_commitment(parties_key, employer_name_hash, worker_name_hash);
         return finalize_terminate_agreement_dao(agreement_id, commitment);
     }
@@ -506,8 +506,8 @@ program employer_agreement.aleo {
         employer_name_hash: field,
         worker_name_hash: field
     ) -> Future {
-        let f1: Future = employer_license_registry.aleo/assert_verified(caller);
-        let f2: Future = pnw_name_registry.aleo/assert_is_owner(employer_name_hash, caller);
+        let f1: Future = employer_license_registry.aleo/assert_verified(self.caller);
+        let f2: Future = pnw_name_registry.aleo/assert_is_owner(employer_name_hash, self.caller);
         let commitment: field = compute_parties_commitment(parties_key, employer_name_hash, worker_name_hash);
         return finalize_approve_resume(f1, f2, agreement_id, commitment, RESUME_EMPLOYER_BIT);
     }
@@ -518,7 +518,7 @@ program employer_agreement.aleo {
         employer_name_hash: field,
         worker_name_hash: field
     ) -> Future {
-        let f1: Future = pnw_name_registry.aleo/assert_is_owner(worker_name_hash, caller);
+        let f1: Future = pnw_name_registry.aleo/assert_is_owner(worker_name_hash, self.caller);
         let commitment: field = compute_parties_commitment(parties_key, employer_name_hash, worker_name_hash);
         return finalize_approve_resume_single(f1, agreement_id, commitment, RESUME_WORKER_BIT);
     }
@@ -529,7 +529,7 @@ program employer_agreement.aleo {
         employer_name_hash: field,
         worker_name_hash: field
     ) -> Future {
-        assert(caller == DAO_ADDRESS);
+        assert(self.caller == DAO_ADDRESS);
         let commitment: field = compute_parties_commitment(parties_key, employer_name_hash, worker_name_hash);
         return finalize_approve_resume_dao(agreement_id, commitment);
     }
