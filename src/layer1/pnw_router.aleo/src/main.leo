@@ -201,7 +201,7 @@ program pnw_router.aleo {
         return worker_profiles.aleo/assert_profile_anchored(profile_anchor);
     }
 
-    async transition assert_employer_profile_anchored(profile_anchor: [u8; 32]) -> Future {
+    async transition assert_employer_profile_anchor(profile_anchor: [u8; 32]) -> Future {
         return employer_profiles.aleo/assert_profile_anchored(profile_anchor);
     }
 

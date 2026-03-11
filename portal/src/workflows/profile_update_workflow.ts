@@ -47,7 +47,7 @@ export function buildEmployerProfileUpdateWorkflow(input: EmployerProfileUpdateI
 
   if (input.include_anchor_assertion === true) {
     plan.push({
-      kind: "assert_employer_profile_anchored",
+      kind: "assert_employer_profile_anchor",
       profile_anchor: input.update_profile.args.new_profile_anchor,
     });
   }
