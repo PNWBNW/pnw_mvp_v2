@@ -11,8 +11,8 @@
     },
     {
       "name": "test_usdcx_stablecoin.aleo",
-      "location": "network",
-      "network": "testnet"
+      "location": "local",
+      "path": "../../stubs/test_usdcx_stablecoin.aleo"
     }
   ]
 }
