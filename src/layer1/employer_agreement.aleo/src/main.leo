@@ -31,7 +31,7 @@ program employer_agreement.aleo {
     const STATUS_TERMINATED: u8 = 3u8;
     const STATUS_SUPERSEDED: u8 = 4u8;
 
-    function assert_status_valid(s: u8) {
+    inline assert_status_valid(s: u8) {
         assert(
             s == STATUS_PENDING ||
             s == STATUS_ACTIVE ||
