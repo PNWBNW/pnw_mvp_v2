@@ -2,5 +2,27 @@
   "program": "payroll_core.aleo",
   "version": "0.1.0",
   "description": "Layer 1 payroll execution engine for PNW MVP v2. Executes employer-funded USDCx payroll, validates worker/employer profiles and active agreements, prevents double payment per epoch, mints private paystub receipts, and anchors immutable payroll audit events. Designed to be DAO-agnostic, pool-free, and batch-friendly via orchestration.",
-  "license": "PROPRIETARY"
+  "license": "PROPRIETARY",
+  "dependencies": [
+    {
+      "name": "test_usdcx_stablecoin.aleo",
+      "location": "local",
+      "path": "../../stubs/test_usdcx_stablecoin.aleo"
+    },
+    {
+      "name": "employer_agreement.aleo",
+      "location": "local",
+      "path": "../employer_agreement.aleo"
+    },
+    {
+      "name": "paystub_receipts.aleo",
+      "location": "local",
+      "path": "../paystub_receipts.aleo"
+    },
+    {
+      "name": "payroll_audit_log.aleo",
+      "location": "local",
+      "path": "../payroll_audit_log.aleo"
+    }
+  ]
 }

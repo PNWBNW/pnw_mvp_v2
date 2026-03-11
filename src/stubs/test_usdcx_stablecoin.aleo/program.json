@@ -1,0 +1,7 @@
+{
+  "program": "test_usdcx_stablecoin.aleo",
+  "version": "0.1.0",
+  "description": "Local stub for test_usdcx_stablecoin.aleo. Provides the minimal interface (Token record, transfer_public, transfer_private) needed for leo build without a live testnet fetch. Matches the deployed program's interface.",
+  "license": "PROPRIETARY",
+  "dependencies": []
+}

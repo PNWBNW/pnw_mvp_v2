@@ -1,6 +1,4 @@
 import test_usdcx_stablecoin.aleo;
-import worker_profiles.aleo;
-import employer_profiles.aleo;
 import employer_agreement.aleo;
 import paystub_receipts.aleo;
 import payroll_audit_log.aleo;
@@ -29,7 +27,7 @@ program payroll_core.aleo {
     // ---------------------------------------------------------
     async transition execute_payroll(
         // Funding
-        employer_usdcx: test_usdcx_stablecoin.aleo/Record,
+        employer_usdcx: test_usdcx_stablecoin.aleo/Token,
 
         // Parties
         employer_addr: address,
@@ -56,7 +54,7 @@ program payroll_core.aleo {
         utc_time_hash: [u8; 32],
         audit_event_hash: [u8; 32]
     ) -> (
-        test_usdcx_stablecoin.aleo/Record,
+        test_usdcx_stablecoin.aleo/Token,
         paystub_receipts.aleo/WorkerPaystubReceipt,
         paystub_receipts.aleo/EmployerPaystubReceipt,
         Future
@@ -72,8 +70,8 @@ program payroll_core.aleo {
 
         // Execute USDCx private transfer (employer -> worker)
         let (worker_usdcx, remaining_usdcx): (
-            test_usdcx_stablecoin.aleo/Record,
-            test_usdcx_stablecoin.aleo/Record
+            test_usdcx_stablecoin.aleo/Token,
+            test_usdcx_stablecoin.aleo/Token
         ) = test_usdcx_stablecoin.aleo/transfer_private(employer_usdcx, worker_addr, net_amount);
 
         // Mint paystub receipts (worker + employer) — async, returns Future
