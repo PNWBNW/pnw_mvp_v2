@@ -104,10 +104,10 @@ program employer_profiles.aleo {
             owner: self.caller,
         };
 
-        return (rec, finalize_create_employer_profile(f1, f2, profile_anchor));
+        return (rec, fin_create_employer_profile(f1, f2, profile_anchor));
     }
 
-    async function finalize_create_employer_profile(f1: Future, f2: Future, profile_anchor: [u8; 32]) {
+    async function fin_create_employer_profile(f1: Future, f2: Future, profile_anchor: [u8; 32]) {
         f1.await();
         f2.await();
 
@@ -183,10 +183,10 @@ program employer_profiles.aleo {
             owner: self.caller,
         };
 
-        return (rec, finalize_update_employer_profile(f1, f2, new_profile_anchor));
+        return (rec, fin_update_employer_profile(f1, f2, new_profile_anchor));
     }
 
-    async function finalize_update_employer_profile(f1: Future, f2: Future, new_profile_anchor: [u8; 32]) {
+    async function fin_update_employer_profile(f1: Future, f2: Future, new_profile_anchor: [u8; 32]) {
         f1.await();
         f2.await();
 
@@ -201,10 +201,10 @@ program employer_profiles.aleo {
     // Public assertion: anchor exists
     // ---------------------------------------------------------
     async transition assert_profile_anchored(profile_anchor: [u8; 32]) -> Future {
-        return finalize_assert_profile_anchored(profile_anchor);
+        return fin_assert_profile_anchored(profile_anchor);
     }
 
-    async function finalize_assert_profile_anchored(profile_anchor: [u8; 32]) {
+    async function fin_assert_profile_anchored(profile_anchor: [u8; 32]) {
         let h: u32 = profile_anchor_height.get_or_use(profile_anchor, 0u32);
         assert(h != 0u32);
     }
@@ -213,6 +213,6 @@ program employer_profiles.aleo {
     // Cross-program assertion: profile anchor for employer exists
     // ---------------------------------------------------------
     async transition assert_employer_exists(profile_anchor: [u8; 32]) -> Future {
-        return finalize_assert_profile_anchored(profile_anchor);
+        return fin_assert_profile_anchored(profile_anchor);
     }
 }
