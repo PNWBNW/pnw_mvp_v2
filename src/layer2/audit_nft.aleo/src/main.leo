@@ -20,24 +20,24 @@ program audit_nft.aleo {
     }
 
     record AuditAuthorizationNFT {
-        auth_id: [u8; 32].private,
+        auth_id: [u8; 32],
 
         // Commitments
-        scope_hash: [u8; 32].private,
-        authorization_event_hash: [u8; 32].private,
-        policy_hash: [u8; 32].private,
+        scope_hash: [u8; 32],
+        authorization_event_hash: [u8; 32],
+        policy_hash: [u8; 32],
 
         // Expiry semantics (epoch-style value chosen by portal policy)
-        issued_epoch: u32.private,
-        expires_epoch: u32.private,
+        issued_epoch: u32,
+        expires_epoch: u32,
 
-        schema_v: u16.private,
-        policy_v: u16.private,
+        schema_v: u16,
+        policy_v: u16,
 
         // Metadata (sentinel; actual height in auth_anchor_height mapping)
-        issued_height: u32.private,
+        issued_height: u32,
 
-        owner: address.private,
+        owner: address,
     }
 
     // ---------------------------------------------------------

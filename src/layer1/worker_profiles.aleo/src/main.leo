@@ -29,40 +29,40 @@ program worker_profiles.aleo {
     // -----------------------------
     record WorkerProfile {
         // Binding
-        worker_name_hash: field.private,
+        worker_name_hash: field,
 
         // Identity fields (private)
-        first_name_u128: u128.private,
-        middle_name_u128: u128.private,
-        last_name_u128: u128.private,
+        first_name_u128: u128,
+        middle_name_u128: u128,
+        last_name_u128: u128,
 
-        age: u8.private,
-        gender: u8.private,
+        age: u8,
+        gender: u8,
 
         // Geography / government (private)
-        residency_state_code: u16.private,
-        country_code: u16.private,
-        state_issue_id_u128: u128.private,
+        residency_state_code: u16,
+        country_code: u16,
+        state_issue_id_u128: u128,
 
         // Classification
-        industry_code: u8.private,
+        industry_code: u8,
 
         // Optional policy flags
-        citizenship_flag: u8.private,
+        citizenship_flag: u8,
 
         // Versioning
-        schema_v: u16.private,
-        policy_v: u16.private,
-        profile_rev: u16.private,
+        schema_v: u16,
+        policy_v: u16,
+        profile_rev: u16,
 
         // Commitment anchor
-        profile_anchor: [u8; 32].private,
+        profile_anchor: [u8; 32],
 
         // Metadata (sentinel 0u32; actual height in profile_anchor_height mapping)
-        issued_height: u32.private,
+        issued_height: u32,
 
         // Ownership
-        owner: address.private,
+        owner: address,
     }
 
     // ---------------------------------------------------------

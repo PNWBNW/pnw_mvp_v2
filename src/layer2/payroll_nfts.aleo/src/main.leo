@@ -26,20 +26,20 @@ program payroll_nfts.aleo {
     }
 
     record PayrollNFT {
-        nft_id: [u8; 32].private,
-        agreement_id: [u8; 32].private,
-        period_type: u8.private,
-        period_start: u32.private,
-        period_end: u32.private,
-        doc_hash: [u8; 32].private,
-        root: [u8; 32].private,
-        inputs_hash: [u8; 32].private,
-        schema_v: u16.private,
-        calc_v: u16.private,
-        policy_v: u16.private,
+        nft_id: [u8; 32],
+        agreement_id: [u8; 32],
+        period_type: u8,
+        period_start: u32,
+        period_end: u32,
+        doc_hash: [u8; 32],
+        root: [u8; 32],
+        inputs_hash: [u8; 32],
+        schema_v: u16,
+        calc_v: u16,
+        policy_v: u16,
         // sentinel; actual height in nft_anchor_height mapping
-        minted_height: u32.private,
-        owner: address.private,
+        minted_height: u32,
+        owner: address,
     }
 
     // ---------------------------------------------------------
