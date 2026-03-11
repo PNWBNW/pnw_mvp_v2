@@ -40,31 +40,35 @@ program pnw_router.aleo {
         terms_root: [u8; 32],
         offer_time_hash: [u8; 32]
     ) -> (employer_agreement.aleo/PendingAgreement, Future) {
-        return employer_agreement.aleo/create_job_offer(
-            agreement_id,
-            parties_key,
-            employer_name_hash,
-            worker_name_hash,
-            worker_address,
-            industry_code,
-            pay_frequency_code,
-            start_epoch,
-            end_epoch,
-            review_epoch,
-            agreement_rev,
-            schema_v,
-            policy_v,
-            terms_doc_hash,
-            terms_root,
-            offer_time_hash
-        );
+        let (rec, f): (employer_agreement.aleo/PendingAgreement, Future) =
+            employer_agreement.aleo/create_job_offer(
+                agreement_id,
+                parties_key,
+                employer_name_hash,
+                worker_name_hash,
+                worker_address,
+                industry_code,
+                pay_frequency_code,
+                start_epoch,
+                end_epoch,
+                review_epoch,
+                agreement_rev,
+                schema_v,
+                policy_v,
+                terms_doc_hash,
+                terms_root,
+                offer_time_hash
+            );
+        return (rec, async { f.await(); });
     }
 
     async transition accept_job_offer(
         pending: employer_agreement.aleo/PendingAgreement,
         accept_time_hash: [u8; 32]
     ) -> (employer_agreement.aleo/FinalAgreement, Future) {
-        return employer_agreement.aleo/accept_job_offer(pending, accept_time_hash);
+        let (rec, f): (employer_agreement.aleo/FinalAgreement, Future) =
+            employer_agreement.aleo/accept_job_offer(pending, accept_time_hash);
+        return (rec, async { f.await(); });
     }
 
     // ---------------------------------------------------------
@@ -77,9 +81,10 @@ program pnw_router.aleo {
         employer_name_hash: field,
         worker_name_hash: field
     ) -> Future {
-        return employer_agreement.aleo/pause_agreement_employer(
+        let f: Future = employer_agreement.aleo/pause_agreement_employer(
             agreement_id, parties_key, employer_name_hash, worker_name_hash
         );
+        return async { f.await(); };
     }
 
     async transition pause_agreement_worker(
@@ -88,9 +93,10 @@ program pnw_router.aleo {
         employer_name_hash: field,
         worker_name_hash: field
     ) -> Future {
-        return employer_agreement.aleo/pause_agreement_worker(
+        let f: Future = employer_agreement.aleo/pause_agreement_worker(
             agreement_id, parties_key, employer_name_hash, worker_name_hash
         );
+        return async { f.await(); };
     }
 
     async transition pause_agreement_dao(
@@ -99,9 +105,10 @@ program pnw_router.aleo {
         employer_name_hash: field,
         worker_name_hash: field
     ) -> Future {
-        return employer_agreement.aleo/pause_agreement_dao(
+        let f: Future = employer_agreement.aleo/pause_agreement_dao(
             agreement_id, parties_key, employer_name_hash, worker_name_hash
         );
+        return async { f.await(); };
     }
 
     async transition terminate_agreement_employer(
@@ -110,9 +117,10 @@ program pnw_router.aleo {
         employer_name_hash: field,
         worker_name_hash: field
     ) -> Future {
-        return employer_agreement.aleo/terminate_agreement_employer(
+        let f: Future = employer_agreement.aleo/terminate_agreement_employer(
             agreement_id, parties_key, employer_name_hash, worker_name_hash
         );
+        return async { f.await(); };
     }
 
     async transition terminate_agreement_worker(
@@ -121,9 +129,10 @@ program pnw_router.aleo {
         employer_name_hash: field,
         worker_name_hash: field
     ) -> Future {
-        return employer_agreement.aleo/terminate_agreement_worker(
+        let f: Future = employer_agreement.aleo/terminate_agreement_worker(
             agreement_id, parties_key, employer_name_hash, worker_name_hash
         );
+        return async { f.await(); };
     }
 
     async transition terminate_agreement_dao(
@@ -132,9 +141,10 @@ program pnw_router.aleo {
         employer_name_hash: field,
         worker_name_hash: field
     ) -> Future {
-        return employer_agreement.aleo/terminate_agreement_dao(
+        let f: Future = employer_agreement.aleo/terminate_agreement_dao(
             agreement_id, parties_key, employer_name_hash, worker_name_hash
         );
+        return async { f.await(); };
     }
 
     // ---------------------------------------------------------
@@ -147,9 +157,10 @@ program pnw_router.aleo {
         employer_name_hash: field,
         worker_name_hash: field
     ) -> Future {
-        return employer_agreement.aleo/approve_resume_employer(
+        let f: Future = employer_agreement.aleo/approve_resume_employer(
             agreement_id, parties_key, employer_name_hash, worker_name_hash
         );
+        return async { f.await(); };
     }
 
     async transition approve_resume_worker(
@@ -158,9 +169,10 @@ program pnw_router.aleo {
         employer_name_hash: field,
         worker_name_hash: field
     ) -> Future {
-        return employer_agreement.aleo/approve_resume_worker(
+        let f: Future = employer_agreement.aleo/approve_resume_worker(
             agreement_id, parties_key, employer_name_hash, worker_name_hash
         );
+        return async { f.await(); };
     }
 
     async transition approve_resume_dao(
@@ -169,9 +181,10 @@ program pnw_router.aleo {
         employer_name_hash: field,
         worker_name_hash: field
     ) -> Future {
-        return employer_agreement.aleo/approve_resume_dao(
+        let f: Future = employer_agreement.aleo/approve_resume_dao(
             agreement_id, parties_key, employer_name_hash, worker_name_hash
         );
+        return async { f.await(); };
     }
 
     async transition resume_agreement(
@@ -180,9 +193,10 @@ program pnw_router.aleo {
         employer_name_hash: field,
         worker_name_hash: field
     ) -> Future {
-        return employer_agreement.aleo/resume_agreement(
+        let f: Future = employer_agreement.aleo/resume_agreement(
             agreement_id, parties_key, employer_name_hash, worker_name_hash
         );
+        return async { f.await(); };
     }
 
     // ---------------------------------------------------------
@@ -190,22 +204,27 @@ program pnw_router.aleo {
     // ---------------------------------------------------------
 
     async transition assert_agreement_active(agreement_id: [u8; 32]) -> Future {
-        return employer_agreement.aleo/assert_agreement_active(agreement_id);
+        let f: Future = employer_agreement.aleo/assert_agreement_active(agreement_id);
+        return async { f.await(); };
     }
 
     async transition assert_agreement_exists(agreement_id: [u8; 32]) -> Future {
-        return employer_agreement.aleo/assert_agreement_anchored(agreement_id);
+        let f: Future = employer_agreement.aleo/assert_agreement_anchored(agreement_id);
+        return async { f.await(); };
     }
 
     async transition assert_worker_profile_anchored(profile_anchor: [u8; 32]) -> Future {
-        return worker_profiles.aleo/assert_profile_anchored(profile_anchor);
+        let f: Future = worker_profiles.aleo/assert_profile_anchored(profile_anchor);
+        return async { f.await(); };
     }
 
     async transition assert_employer_profile_anchor(profile_anchor: [u8; 32]) -> Future {
-        return employer_profiles.aleo/assert_profile_anchored(profile_anchor);
+        let f: Future = employer_profiles.aleo/assert_profile_anchored(profile_anchor);
+        return async { f.await(); };
     }
 
     async transition assert_name_owner(name_hash: field, owner: address) -> Future {
-        return pnw_name_registry.aleo/assert_is_owner(name_hash, owner);
+        let f: Future = pnw_name_registry.aleo/assert_is_owner(name_hash, owner);
+        return async { f.await(); };
     }
 }
