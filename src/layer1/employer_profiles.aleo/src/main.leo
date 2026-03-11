@@ -79,10 +79,10 @@ program employer_profiles.aleo {
         assert(profile_rev != 0u16);
 
         // Must be verified to create employer profiles
-        let f1: Future = employer_license_registry.aleo/assert_verified(caller);
+        let f1: Future = employer_license_registry.aleo/assert_verified(self.caller);
 
         // Must own the employer name hash + suffix must match
-        let f2: Future = pnw_name_registry.aleo/assert_employer_owner(employer_name_hash, caller, suffix_code);
+        let f2: Future = pnw_name_registry.aleo/assert_employer_owner(employer_name_hash, self.caller, suffix_code);
 
         let rec: EmployerProfile = EmployerProfile {
             employer_name_hash: employer_name_hash,
@@ -101,7 +101,7 @@ program employer_profiles.aleo {
             profile_rev: profile_rev,
             profile_anchor: profile_anchor,
             issued_height: 0u32,
-            owner: caller,
+            owner: self.caller,
         };
 
         return (rec, finalize_create_employer_profile(f1, f2, profile_anchor));
@@ -144,7 +144,7 @@ program employer_profiles.aleo {
     ) -> (EmployerProfile, Future) {
 
         // Only owner can update
-        assert(old_profile.owner == caller);
+        assert(old_profile.owner == self.caller);
 
         // Naming taxonomy must still match
         assert(industry_code == old_profile.suffix_code);
@@ -156,11 +156,11 @@ program employer_profiles.aleo {
         assert(new_profile_rev > old_profile.profile_rev);
 
         // Must remain verified
-        let f1: Future = employer_license_registry.aleo/assert_verified(caller);
+        let f1: Future = employer_license_registry.aleo/assert_verified(self.caller);
 
         // Must still own the employer name hash + suffix
         let f2: Future = pnw_name_registry.aleo/assert_employer_owner(
-            old_profile.employer_name_hash, caller, old_profile.suffix_code
+            old_profile.employer_name_hash, self.caller, old_profile.suffix_code
         );
 
         let rec: EmployerProfile = EmployerProfile {
@@ -180,7 +180,7 @@ program employer_profiles.aleo {
             profile_rev: new_profile_rev,
             profile_anchor: new_profile_anchor,
             issued_height: 0u32,
-            owner: caller,
+            owner: self.caller,
         };
 
         return (rec, finalize_update_employer_profile(f1, f2, new_profile_anchor));

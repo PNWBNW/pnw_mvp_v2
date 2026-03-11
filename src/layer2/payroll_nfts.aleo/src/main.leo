@@ -101,7 +101,7 @@ program payroll_nfts.aleo {
             calc_v: calc_v,
             policy_v: policy_v,
             minted_height: 0u32,
-            owner: caller,
+            owner: self.caller,
         };
 
         return (nft, finalize_mint_nft(f1, f2, nft_id));
@@ -144,7 +144,7 @@ program payroll_nfts.aleo {
             calc_v: calc_v,
             policy_v: policy_v,
             minted_height: 0u32,
-            owner: caller,
+            owner: self.caller,
         };
 
         return (nft, finalize_mint_nft(f1, f2, nft_id));
@@ -187,7 +187,7 @@ program payroll_nfts.aleo {
             calc_v: calc_v,
             policy_v: policy_v,
             minted_height: 0u32,
-            owner: caller,
+            owner: self.caller,
         };
 
         return (nft, finalize_mint_nft(f1, f2, nft_id));
@@ -230,7 +230,7 @@ program payroll_nfts.aleo {
             calc_v: calc_v,
             policy_v: policy_v,
             minted_height: 0u32,
-            owner: caller,
+            owner: self.caller,
         };
 
         return (nft, finalize_mint_nft(f1, f2, nft_id));
@@ -240,7 +240,7 @@ program payroll_nfts.aleo {
     // Revoke
     // ---------------------------------------------------------
     async transition revoke_nft(nft: PayrollNFT) -> Future {
-        assert(nft.owner == caller);
+        assert(nft.owner == self.caller);
 
         let id: [u8; 32] = nft.nft_id;
         return finalize_revoke_nft(id);
@@ -257,7 +257,7 @@ program payroll_nfts.aleo {
     // Supersede
     // ---------------------------------------------------------
     async transition mark_superseded(old_nft: PayrollNFT, new_nft_id: [u8; 32]) -> Future {
-        assert(old_nft.owner == caller);
+        assert(old_nft.owner == self.caller);
 
         let old_id: [u8; 32] = old_nft.nft_id;
         return finalize_mark_superseded(old_id, new_nft_id);
