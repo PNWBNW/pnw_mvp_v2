@@ -144,7 +144,7 @@ export type CallPlanStep =
       };
     }
   | {
-      kind: "assert_employer_profile_anchored";
+      kind: "assert_employer_profile_anchor";
       profile_anchor: Bytes32;
     }
   | {
