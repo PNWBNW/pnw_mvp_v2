@@ -16,8 +16,8 @@ program test_usdcx_stablecoin.aleo {
 
     // Token record (private ownership, private balance).
     record Token {
-        owner: address.private,
-        amount: u128.private,
+        owner: address,
+        amount: u128,
     }
 
     // Public balance mapping (address -> balance in micro-USDCx).

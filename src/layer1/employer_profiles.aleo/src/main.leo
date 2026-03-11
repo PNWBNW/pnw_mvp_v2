@@ -11,31 +11,31 @@ program employer_profiles.aleo {
     // Only commitment anchors are indexed publicly (hash-only).
 
     record EmployerProfile {
-        employer_name_hash: field.private,
-        suffix_code: u8.private,
+        employer_name_hash: field,
+        suffix_code: u8,
 
-        legal_name_u128: u128.private,
-        registration_id_u128: u128.private,
-        registration_state_code: u16.private,
-        country_code: u16.private,
+        legal_name_u128: u128,
+        registration_id_u128: u128,
+        registration_state_code: u16,
+        country_code: u16,
 
-        formation_year: u16.private,
-        entity_type_code: u8.private,
+        formation_year: u16,
+        entity_type_code: u8,
 
-        industry_code: u8.private,
-        employer_size_code: u8.private,
-        operating_region_code: u16.private,
+        industry_code: u8,
+        employer_size_code: u8,
+        operating_region_code: u16,
 
-        schema_v: u16.private,
-        policy_v: u16.private,
-        profile_rev: u16.private,
+        schema_v: u16,
+        policy_v: u16,
+        profile_rev: u16,
 
-        profile_anchor: [u8; 32].private,
+        profile_anchor: [u8; 32],
 
         // sentinel 0u32; actual height in profile_anchor_height mapping
-        issued_height: u32.private,
+        issued_height: u32,
 
-        owner: address.private,
+        owner: address,
     }
 
     // Public, hash-only anchor index: first-seen block height for a given anchor.

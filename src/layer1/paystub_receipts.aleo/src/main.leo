@@ -18,44 +18,44 @@ program paystub_receipts.aleo {
     // Receipt record: Worker copy
     // -----------------------------
     record WorkerPaystubReceipt {
-        receipt_anchor: [u8; 32].private,
-        pair_hash: [u8; 32].private,
-        kind: u8.private,
-        worker_name_hash: field.private,
-        employer_name_hash: field.private,
-        agreement_id: [u8; 32].private,
-        epoch_id: u32.private,
-        gross_amount: u128.private,
-        net_amount: u128.private,
-        tax_withheld: u128.private,
-        fee_amount: u128.private,
-        payroll_inputs_hash: [u8; 32].private,
-        utc_time_hash: [u8; 32].private,
+        receipt_anchor: [u8; 32],
+        pair_hash: [u8; 32],
+        kind: u8,
+        worker_name_hash: field,
+        employer_name_hash: field,
+        agreement_id: [u8; 32],
+        epoch_id: u32,
+        gross_amount: u128,
+        net_amount: u128,
+        tax_withheld: u128,
+        fee_amount: u128,
+        payroll_inputs_hash: [u8; 32],
+        utc_time_hash: [u8; 32],
         // sentinel 0u32; actual height in receipt_anchor_height mapping
-        issued_height: u32.private,
-        owner: address.private,
+        issued_height: u32,
+        owner: address,
     }
 
     // -----------------------------
     // Receipt record: Employer copy
     // -----------------------------
     record EmployerPaystubReceipt {
-        receipt_anchor: [u8; 32].private,
-        pair_hash: [u8; 32].private,
-        kind: u8.private,
-        worker_name_hash: field.private,
-        employer_name_hash: field.private,
-        agreement_id: [u8; 32].private,
-        epoch_id: u32.private,
-        gross_amount: u128.private,
-        net_amount: u128.private,
-        tax_withheld: u128.private,
-        fee_amount: u128.private,
-        payroll_inputs_hash: [u8; 32].private,
-        utc_time_hash: [u8; 32].private,
+        receipt_anchor: [u8; 32],
+        pair_hash: [u8; 32],
+        kind: u8,
+        worker_name_hash: field,
+        employer_name_hash: field,
+        agreement_id: [u8; 32],
+        epoch_id: u32,
+        gross_amount: u128,
+        net_amount: u128,
+        tax_withheld: u128,
+        fee_amount: u128,
+        payroll_inputs_hash: [u8; 32],
+        utc_time_hash: [u8; 32],
         // sentinel 0u32; actual height in receipt_anchor_height mapping
-        issued_height: u32.private,
-        owner: address.private,
+        issued_height: u32,
+        owner: address,
     }
 
     // ---------------------------------------------------------
