@@ -44,11 +44,11 @@ export type CallPlanStep =
       fee_amount: U128; // portal-supplied
     }
   | {
-      kind: "request_employer_sellback";
+      kind: "request_empl_sellback";
       name_hash: Field;
     }
   | {
-      kind: "fulfill_employer_sellback";
+      kind: "fulfill_empl_sellback";
       name_hash: Field;
     }
   | {
