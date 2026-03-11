@@ -424,7 +424,7 @@ program employer_agreement.aleo {
     ) -> Future {
         let f1: Future = pnw_name_registry.aleo/assert_is_owner(worker_name_hash, self.caller);
         let commitment: field = compute_parties_commitment(parties_key, employer_name_hash, worker_name_hash);
-        return finalize_terminate_agreement_single(f1, agreement_id, commitment);
+        return finalize_terminate_agmt_single(f1, agreement_id, commitment);
     }
 
     async transition terminate_agreement_dao(
@@ -435,7 +435,7 @@ program employer_agreement.aleo {
     ) -> Future {
         assert(self.caller == DAO_ADDRESS);
         let commitment: field = compute_parties_commitment(parties_key, employer_name_hash, worker_name_hash);
-        return finalize_terminate_agreement_dao(agreement_id, commitment);
+        return finalize_terminate_agmt_dao(agreement_id, commitment);
     }
 
     async function finalize_terminate_agreement(
@@ -461,7 +461,7 @@ program employer_agreement.aleo {
         resume_approvals.set(agreement_id, 0u8);
     }
 
-    async function finalize_terminate_agreement_single(
+    async function finalize_terminate_agmt_single(
         f1: Future,
         agreement_id: [u8; 32],
         commitment: field
@@ -482,7 +482,7 @@ program employer_agreement.aleo {
         resume_approvals.set(agreement_id, 0u8);
     }
 
-    async function finalize_terminate_agreement_dao(agreement_id: [u8; 32], commitment: field) {
+    async function finalize_terminate_agmt_dao(agreement_id: [u8; 32], commitment: field) {
         let h: u32 = agreement_anchor_height.get_or_use(agreement_id, 0u32);
         assert(h != 0u32);
         let stored: field = agreement_parties_commitment.get_or_use(agreement_id, 0field);
@@ -661,20 +661,20 @@ program employer_agreement.aleo {
 
     // Assert agreement is anchored (exists)
     async transition assert_agreement_anchored(agreement_id: [u8; 32]) -> Future {
-        return finalize_assert_agreement_anchored(agreement_id);
+        return finalize_assert_agmt_anchored(agreement_id);
     }
 
-    async function finalize_assert_agreement_anchored(agreement_id: [u8; 32]) {
+    async function finalize_assert_agmt_anchored(agreement_id: [u8; 32]) {
         let h: u32 = agreement_anchor_height.get_or_use(agreement_id, 0u32);
         assert(h != 0u32);
     }
 
     // Assert agreement is ACTIVE — called as cross-program Future by payroll_nfts.
     async transition assert_agreement_active(agreement_id: [u8; 32]) -> Future {
-        return finalize_assert_agreement_active(agreement_id);
+        return finalize_assert_agmt_active(agreement_id);
     }
 
-    async function finalize_assert_agreement_active(agreement_id: [u8; 32]) {
+    async function finalize_assert_agmt_active(agreement_id: [u8; 32]) {
         let s: u8 = agreement_status.get_or_use(agreement_id, 255u8);
         assert(s == STATUS_ACTIVE);
     }
