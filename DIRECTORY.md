@@ -1,3 +1,6 @@
+# Repository Directory
+
+```
 pnw_mvp_v2/
 ├─ README.md                               # Project overview, architecture summary, phase status, repo navigation
 ├─ ARCHITECTURE.md                         # Deep technical architecture, trust/privacy model, and layering rationale
@@ -166,3 +169,4 @@ pnw_mvp_v2/
    ├─ dispatch_phase4_execute.sh           # Dispatch execute_testnet.yml workflow_dispatch via GitHub API
    ├─ verify_phase4_execute_artifacts.py   # Verify execute evidence bundle SHA integrity post-run
    └─ verify_phase4_receipts.py            # Verify broadcast tx IDs against Aleo REST endpoint (best-effort)
+```
