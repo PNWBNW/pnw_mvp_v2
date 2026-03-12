@@ -133,4 +133,6 @@ program credential_nft.aleo {
         let h: u32 = scope_anchor_height.get_or_use(scope_hash, 0u32);
         assert(h != 0u32);
     }
+
+    @noupgrade async constructor() {}
 }

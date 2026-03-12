@@ -215,4 +215,6 @@ program employer_profiles.aleo {
     async transition assert_employer_exists(profile_anchor: [u8; 32]) -> Future {
         return fin_assert_profile_anchored(profile_anchor);
     }
+
+    @noupgrade async constructor() {}
 }

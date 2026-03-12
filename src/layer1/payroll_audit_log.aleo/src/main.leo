@@ -40,4 +40,6 @@ program payroll_audit_log.aleo {
         let h: u32 = audit_event_height.get_or_use(event_hash, 0u32);
         assert(h != 0u32);
     }
+
+    @noupgrade async constructor() {}
 }

@@ -282,4 +282,6 @@ program payroll_nfts.aleo {
         let h: u32 = nft_anchor_height.get_or_use(nft_id, 0u32);
         assert(h != 0u32);
     }
+
+    @noupgrade async constructor() {}
 }
