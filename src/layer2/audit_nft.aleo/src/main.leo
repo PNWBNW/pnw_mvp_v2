@@ -15,7 +15,7 @@ program audit_nft.aleo {
     const STATUS_REVOKED: u8 = 2u8;
     const STATUS_EXPIRED: u8 = 3u8;
 
-    function assert_status_valid(s: u8) {
+    inline assert_status_valid(s: u8) {
         assert(s == 0u8 || s == STATUS_ACTIVE || s == STATUS_REVOKED || s == STATUS_EXPIRED);
     }
 
