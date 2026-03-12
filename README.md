@@ -25,20 +25,20 @@ This repository (`pnw_mvp_v2`) is the **foundation layer** — Leo programs, Typ
 │  ├─ employer_profiles               └─ audit_nft                 │
 │  ├─ worker_profiles                                              │
 │  ├─ employer_agreement                                           │
-│  ├─ payroll_core  ← USDCx settlement                            │
+│  ├─ payroll_core  ← USDCx settlement                             │      ← this repo
 │  ├─ paystub_receipts                                             │
 │  ├─ payroll_audit_log                                            │
 │  └─ pnw_router                                                   │
 └─────────────────────────────┬────────────────────────────────────┘
                               │ snarkos developer execute
                     ┌─────────┴─────────┐
-                    │   pnw_mvp_v2      │  ← this repo
+                    │   pnw_mvp_v2      │     ← this repo
                     │  adapters + CI    │
                     └────────┬──────────┘
                exports manifest + adapter types
                ┌─────────────┴──────────────┐
                ▼                            ▼
-  pnw_employment_portal_v1     pnw_auditing_portal_v1
+  pnw_employment_portal_v1     pnw_auditing_portal_v1      ← future repos
   (employer + worker UI)       (auditor UI)
 ```
 
