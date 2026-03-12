@@ -14,6 +14,7 @@ on:
         options:
           - payroll_smoke
           - onboarding_smoke
+          - batch_payroll_smoke
 
 jobs:
   execute_gate:
@@ -41,6 +42,9 @@ jobs:
       ALEO_VIEW_KEY: ${{ secrets.ALEO_VIEW_KEY }}
       ALEO_ADDRESS: ${{ secrets.ALEO_ADDRESS }}
       WORKER_ADDRESS: ${{ secrets.WORKER_ADDRESS }}
+      WORKER1_ADDRESS: ${{ secrets.WORKER1_ADDRESS }}
+      WORKER2_ADDRESS: ${{ secrets.WORKER2_ADDRESS }}
+      WORKER3_ADDRESS: ${{ secrets.WORKER3_ADDRESS }}
       ENDPOINT: ${{ secrets.ENDPOINT }}
       USDCX_PROGRAM_ID: ${{ secrets.USDCX_PROGRAM_ID }}
       PHASE4_SCENARIO: ${{ github.event.inputs.scenario || 'onboarding_smoke' }}
@@ -99,6 +103,9 @@ jobs:
               ;;
             onboarding_smoke)
               echo "PHASE4_SCENARIO_FILE=config/scenarios/testnet/min_spend.onboarding.json" >> "$GITHUB_ENV"
+              ;;
+            batch_payroll_smoke)
+              echo "PHASE4_SCENARIO_FILE=config/scenarios/testnet/batch_payroll_smoke.json" >> "$GITHUB_ENV"
               ;;
             *)
               echo "ERROR: unsupported scenario '$PHASE4_SCENARIO'" >&2
