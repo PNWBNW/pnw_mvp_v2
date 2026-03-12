@@ -119,7 +119,7 @@ async transition mint_cycle_nft(
         ...
     };
     // Cross-program async calls
-    let f1: Future = employer_agreement.aleo/assert_agreement_active(agreement_id);
+    let f1: Future = employer_agreement_v2.aleo/assert_agreement_active(agreement_id);
     let f2: Future = payroll_audit_log.aleo/assert_event_anchored(inputs_hash);
     return (nft, finalize_mint_cycle_nft(f1, f2, nft_id));
 }
@@ -296,7 +296,7 @@ The correct Aleo zero address (all zeros) would be `aleo1qqqqqqqqqqqqqqqqqqqqqqq
 **Files:** `src/layer2/*/program.json`
 **Problem:** The Leo build system may require `program.toml` (not just `program.json`) depending on the Leo version. Verify that `leo build` runs correctly with the existing `program.json` files for Leo v3.5.0.
 
-**Also fixed:** `payroll_nfts.aleo/program.json` listed `paystub_receipts.aleo` as a dependency (wrong) — corrected to `employer_agreement.aleo` to match the actual `import` in `main.leo`.
+**Also fixed:** `payroll_nfts.aleo/program.json` listed `paystub_receipts.aleo` as a dependency (wrong) — corrected to `employer_agreement_v2.aleo` to match the actual `import` in `main.leo`.
 
 **Check:** Run `leo build` in each `src/layer2/*.aleo/` directory after fixing compilation bugs (#3/#4/#4b/#4c/#4d).
 

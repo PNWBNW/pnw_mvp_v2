@@ -64,7 +64,7 @@ pnw_mvp_v2/
 │  │  │  ├─ main.leo                       # Create/update employer profile records + profile anchor checks
 │  │  │  └─ program.json                   # Program manifest/config for employer profiles
 │  │  │
-│  │  ├─ employer_agreement.aleo/
+│  │  ├─ employer_agreement_v2.aleo/
 │  │  │  ├─ README.md                      # Employment agreement lifecycle narrative
 │  │  │  ├─ main.leo                       # Offer/accept/pause/terminate/resume/supersede agreement transitions
 │  │  │  └─ program.json                   # Program manifest/config for employer agreement

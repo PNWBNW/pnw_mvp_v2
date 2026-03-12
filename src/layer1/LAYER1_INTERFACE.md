@@ -26,7 +26,7 @@ This file exists to provide a **single, stable source of truth** for how off-cha
 
 ---
 
-## employer_agreement.aleo
+## employer_agreement_v2.aleo
 
 ### Transitions
 
@@ -379,7 +379,7 @@ transition create_job_offer(
     terms_root: [u8; 32]
 )
 
-transition accept_job_offer(pending: employer_agreement.aleo/PendingAgreement)
+transition accept_job_offer(pending: employer_agreement_v2.aleo/PendingAgreement)
 
 transition pause_agreement_employer(agreement_id: [u8; 32], parties_key: [u8; 32], employer_name_hash: field)
 

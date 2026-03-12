@@ -1,4 +1,4 @@
-import employer_agreement.aleo;
+import employer_agreement_v2.aleo;
 import payroll_audit_log.aleo;
 
 program payroll_nfts.aleo {
@@ -85,7 +85,7 @@ program payroll_nfts.aleo {
         assert(calc_v != 0u16);
         assert(policy_v != 0u16);
 
-        let f1: Future = employer_agreement.aleo/assert_agreement_active(agreement_id);
+        let f1: Future = employer_agreement_v2.aleo/assert_agreement_active(agreement_id);
         let f2: Future = payroll_audit_log.aleo/assert_event_anchored(inputs_hash);
 
         let nft: PayrollNFT = PayrollNFT {
@@ -128,7 +128,7 @@ program payroll_nfts.aleo {
         assert(calc_v != 0u16);
         assert(policy_v != 0u16);
 
-        let f1: Future = employer_agreement.aleo/assert_agreement_active(agreement_id);
+        let f1: Future = employer_agreement_v2.aleo/assert_agreement_active(agreement_id);
         let f2: Future = payroll_audit_log.aleo/assert_event_anchored(inputs_hash);
 
         let nft: PayrollNFT = PayrollNFT {
@@ -171,7 +171,7 @@ program payroll_nfts.aleo {
         assert(calc_v != 0u16);
         assert(policy_v != 0u16);
 
-        let f1: Future = employer_agreement.aleo/assert_agreement_active(agreement_id);
+        let f1: Future = employer_agreement_v2.aleo/assert_agreement_active(agreement_id);
         let f2: Future = payroll_audit_log.aleo/assert_event_anchored(inputs_hash);
 
         let nft: PayrollNFT = PayrollNFT {
@@ -214,7 +214,7 @@ program payroll_nfts.aleo {
         assert(calc_v != 0u16);
         assert(policy_v != 0u16);
 
-        let f1: Future = employer_agreement.aleo/assert_agreement_active(agreement_id);
+        let f1: Future = employer_agreement_v2.aleo/assert_agreement_active(agreement_id);
         let f2: Future = payroll_audit_log.aleo/assert_event_anchored(inputs_hash);
 
         let nft: PayrollNFT = PayrollNFT {

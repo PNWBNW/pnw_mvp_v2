@@ -8,7 +8,7 @@ Layer 1 contains the **canonical on-chain programs** for PNW MVP v2. These progr
 - **`employer_license_registry.aleo`** — employer eligibility gating (e.g., license verification) used as a prerequisite for employer name registration.
 - **`worker_profiles.aleo`** — private worker profile records + anchor utilities (existence/height).
 - **`employer_profiles.aleo`** — private employer profile records + anchor utilities (existence/height).
-- **`employer_agreement.aleo`** — employment agreement lifecycle (offer → acceptance → active/pause/terminate/resume) with anchored agreement IDs.
+- **`employer_agreement_v2.aleo`** — employment agreement lifecycle (offer → acceptance → active/pause/terminate/resume) with anchored agreement IDs.
 - **`payroll_core.aleo`** — payroll settlement using **private USDCx records** via `transfer_private`; consumes employer USDCx and outputs worker USDCx as private records; issues paystub receipts; anchors audit events.
 - **`paystub_receipts.aleo`** — private paystub receipt minting (worker + employer receipts) and reversal/correction receipts; anchor utilities.
 - **`payroll_audit_log.aleo`** — minimal hash-only audit anchoring and height lookup for payroll events (see `payroll_audit_log.aleo/README.md` for evidence taxonomy and privacy rationale).

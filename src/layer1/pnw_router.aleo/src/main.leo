@@ -1,4 +1,4 @@
-import employer_agreement.aleo;
+import employer_agreement_v2.aleo;
 import employer_profiles.aleo;
 import worker_profiles.aleo;
 import pnw_name_registry.aleo;
@@ -39,9 +39,9 @@ program pnw_router.aleo {
         terms_doc_hash: [u8; 32],
         terms_root: [u8; 32],
         offer_time_hash: [u8; 32]
-    ) -> (employer_agreement.aleo/PendingAgreement, Future) {
-        let (rec, f): (employer_agreement.aleo/PendingAgreement, Future) =
-            employer_agreement.aleo/create_job_offer(
+    ) -> (employer_agreement_v2.aleo/PendingAgreement, Future) {
+        let (rec, f): (employer_agreement_v2.aleo/PendingAgreement, Future) =
+            employer_agreement_v2.aleo/create_job_offer(
                 agreement_id,
                 parties_key,
                 employer_name_hash,
@@ -63,11 +63,11 @@ program pnw_router.aleo {
     }
 
     async transition accept_job_offer(
-        pending: employer_agreement.aleo/PendingAgreement,
+        pending: employer_agreement_v2.aleo/PendingAgreement,
         accept_time_hash: [u8; 32]
-    ) -> (employer_agreement.aleo/FinalAgreement, Future) {
-        let (rec, f): (employer_agreement.aleo/FinalAgreement, Future) =
-            employer_agreement.aleo/accept_job_offer(pending, accept_time_hash);
+    ) -> (employer_agreement_v2.aleo/FinalAgreement, Future) {
+        let (rec, f): (employer_agreement_v2.aleo/FinalAgreement, Future) =
+            employer_agreement_v2.aleo/accept_job_offer(pending, accept_time_hash);
         return (rec, async { f.await(); });
     }
 
@@ -81,7 +81,7 @@ program pnw_router.aleo {
         employer_name_hash: field,
         worker_name_hash: field
     ) -> Future {
-        let f: Future = employer_agreement.aleo/pause_agreement_employer(
+        let f: Future = employer_agreement_v2.aleo/pause_agreement_employer(
             agreement_id, parties_key, employer_name_hash, worker_name_hash
         );
         return async { f.await(); };
@@ -93,7 +93,7 @@ program pnw_router.aleo {
         employer_name_hash: field,
         worker_name_hash: field
     ) -> Future {
-        let f: Future = employer_agreement.aleo/pause_agreement_worker(
+        let f: Future = employer_agreement_v2.aleo/pause_agreement_worker(
             agreement_id, parties_key, employer_name_hash, worker_name_hash
         );
         return async { f.await(); };
@@ -105,7 +105,7 @@ program pnw_router.aleo {
         employer_name_hash: field,
         worker_name_hash: field
     ) -> Future {
-        let f: Future = employer_agreement.aleo/pause_agreement_dao(
+        let f: Future = employer_agreement_v2.aleo/pause_agreement_dao(
             agreement_id, parties_key, employer_name_hash, worker_name_hash
         );
         return async { f.await(); };
@@ -117,7 +117,7 @@ program pnw_router.aleo {
         employer_name_hash: field,
         worker_name_hash: field
     ) -> Future {
-        let f: Future = employer_agreement.aleo/terminate_agreement_employer(
+        let f: Future = employer_agreement_v2.aleo/terminate_agreement_employer(
             agreement_id, parties_key, employer_name_hash, worker_name_hash
         );
         return async { f.await(); };
@@ -129,7 +129,7 @@ program pnw_router.aleo {
         employer_name_hash: field,
         worker_name_hash: field
     ) -> Future {
-        let f: Future = employer_agreement.aleo/terminate_agreement_worker(
+        let f: Future = employer_agreement_v2.aleo/terminate_agreement_worker(
             agreement_id, parties_key, employer_name_hash, worker_name_hash
         );
         return async { f.await(); };
@@ -141,7 +141,7 @@ program pnw_router.aleo {
         employer_name_hash: field,
         worker_name_hash: field
     ) -> Future {
-        let f: Future = employer_agreement.aleo/terminate_agreement_dao(
+        let f: Future = employer_agreement_v2.aleo/terminate_agreement_dao(
             agreement_id, parties_key, employer_name_hash, worker_name_hash
         );
         return async { f.await(); };
@@ -157,7 +157,7 @@ program pnw_router.aleo {
         employer_name_hash: field,
         worker_name_hash: field
     ) -> Future {
-        let f: Future = employer_agreement.aleo/approve_resume_employer(
+        let f: Future = employer_agreement_v2.aleo/approve_resume_employer(
             agreement_id, parties_key, employer_name_hash, worker_name_hash
         );
         return async { f.await(); };
@@ -169,7 +169,7 @@ program pnw_router.aleo {
         employer_name_hash: field,
         worker_name_hash: field
     ) -> Future {
-        let f: Future = employer_agreement.aleo/approve_resume_worker(
+        let f: Future = employer_agreement_v2.aleo/approve_resume_worker(
             agreement_id, parties_key, employer_name_hash, worker_name_hash
         );
         return async { f.await(); };
@@ -181,7 +181,7 @@ program pnw_router.aleo {
         employer_name_hash: field,
         worker_name_hash: field
     ) -> Future {
-        let f: Future = employer_agreement.aleo/approve_resume_dao(
+        let f: Future = employer_agreement_v2.aleo/approve_resume_dao(
             agreement_id, parties_key, employer_name_hash, worker_name_hash
         );
         return async { f.await(); };
@@ -193,7 +193,7 @@ program pnw_router.aleo {
         employer_name_hash: field,
         worker_name_hash: field
     ) -> Future {
-        let f: Future = employer_agreement.aleo/resume_agreement(
+        let f: Future = employer_agreement_v2.aleo/resume_agreement(
             agreement_id, parties_key, employer_name_hash, worker_name_hash
         );
         return async { f.await(); };
@@ -204,12 +204,12 @@ program pnw_router.aleo {
     // ---------------------------------------------------------
 
     async transition assert_agreement_active(agreement_id: [u8; 32]) -> Future {
-        let f: Future = employer_agreement.aleo/assert_agreement_active(agreement_id);
+        let f: Future = employer_agreement_v2.aleo/assert_agreement_active(agreement_id);
         return async { f.await(); };
     }
 
     async transition assert_agreement_exists(agreement_id: [u8; 32]) -> Future {
-        let f: Future = employer_agreement.aleo/assert_agreement_anchored(agreement_id);
+        let f: Future = employer_agreement_v2.aleo/assert_agreement_anchored(agreement_id);
         return async { f.await(); };
     }
 

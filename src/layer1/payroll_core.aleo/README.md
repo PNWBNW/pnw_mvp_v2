@@ -93,7 +93,7 @@ This provides:
 ## Relationship to Other Programs
 
 - **Depends on**
-  - `employer_agreement.aleo` (agreement validity)
+  - `employer_agreement_v2.aleo` (agreement validity)
   - `paystub_receipts.aleo` (receipt record types)
   - `payroll_audit_log.aleo` (audit anchoring)
   - `test_usdcx_stablecoin.aleo` (USDCx records)
