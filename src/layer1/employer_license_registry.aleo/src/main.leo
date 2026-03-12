@@ -45,4 +45,6 @@ program employer_license_registry.aleo {
         let ok: bool = is_verified.get_or_use(wallet, false);
         assert(ok);
     }
+
+    @noupgrade async constructor() {}
 }

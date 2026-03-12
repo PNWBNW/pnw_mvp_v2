@@ -678,4 +678,6 @@ program employer_agreement.aleo {
         let s: u8 = agreement_status.get_or_use(agreement_id, 255u8);
         assert(s == STATUS_ACTIVE);
     }
+
+    @noupgrade async constructor() {}
 }
