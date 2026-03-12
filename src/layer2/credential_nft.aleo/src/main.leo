@@ -15,7 +15,7 @@ program credential_nft.aleo {
     const STATUS_ACTIVE: u8 = 1u8;
     const STATUS_REVOKED: u8 = 2u8;
 
-    function assert_status_valid(s: u8) {
+    inline function assert_status_valid(s: u8) {
         assert(s == 0u8 || s == STATUS_ACTIVE || s == STATUS_REVOKED);
     }
 
