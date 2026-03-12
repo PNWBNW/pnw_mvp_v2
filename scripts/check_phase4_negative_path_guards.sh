@@ -11,6 +11,7 @@ trap 'rm -rf "$TMP_DIR"' EXIT
 export ALEO_PRIVATE_KEY="dummy"
 export ALEO_VIEW_KEY="dummy"
 export ALEO_ADDRESS="aleo1qqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqs3ljyz"
+export WORKER_ADDRESS="aleo1qqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqs3ljyz"
 export ENDPOINT="https://api.explorer.provable.com/v1/testnet"
 export USDCX_PROGRAM_ID="test_usdcx_stablecoin.aleo"
 export MANIFEST_PATH="config/testnet.manifest.json"
