@@ -2,7 +2,7 @@
 set -euo pipefail
 
 required=(
-  ALEO_PRIVATE_KEY
+  PRIVATE_KEY
   ALEO_VIEW_KEY
   ALEO_ADDRESS
   WORKER_ADDRESS
