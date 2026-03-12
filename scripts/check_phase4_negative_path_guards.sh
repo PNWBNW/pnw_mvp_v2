@@ -8,6 +8,7 @@ TMP_DIR="$(mktemp -d)"
 trap 'rm -rf "$TMP_DIR"' EXIT
 
 # provide minimal required execute env contract for local validation path
+export PRIVATE_KEY="dummy"
 export ALEO_PRIVATE_KEY="dummy"
 export ALEO_VIEW_KEY="dummy"
 export ALEO_ADDRESS="aleo1qqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqs3ljyz"
