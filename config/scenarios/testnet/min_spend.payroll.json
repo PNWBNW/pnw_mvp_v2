@@ -8,12 +8,12 @@
     "employer": {
       "name_raw": "Acme Inc.",
       "name_hash_hex": "0x94237d83d5738ff14b43023d4b39324bb6f54eae7163e3195eb179c7fb296fd4",
-      "address": "aleo1qqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqs3ljyz"
+      "address": "${ALEO_ADDRESS}"
     },
     "worker": {
       "name_raw": "John D. Doe",
       "name_hash_hex": "0x07ffe942bd893f22eb76a8ae636230ce3b7d58354bce921bdcfa4bd1f0b3c7ad",
-      "address": "aleo1jtqxvdqdxdw34sh3smjltuh7t3rwrdraa4eq58694rdzf0vk2syq5ajvw6"
+      "address": "${WORKER_ADDRESS}"
     }
   },
   "payroll": {
@@ -29,11 +29,12 @@
     "utc_time_hash_hex": "0x127c37c6257eb5902e19ee1e2a14ea0153abead69042bfd7c6b43bedf3c5fd3c",
     "audit_event_hash_hex": "0x6922e6bd85c075465ab57ccd65dfa287dc9629320da5b25faa24212f358a141d",
     "employer_usdcx_record": {
-      "raw": "{ owner: aleo1qqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqs3ljyz.private, amount: 1u64.private }"
+      "raw": "{ owner: ${ALEO_ADDRESS}.private, amount: 1u64.private }"
     }
   },
   "notes": [
-    "Employer/fee wallet currently uses placeholder. Replace with secret wallet address before execute broadcast.",
+    "Address fields use env var tokens (${ALEO_ADDRESS}, ${WORKER_ADDRESS}). Never hardcode addresses in this file.",
+    "The run script substitutes tokens from env/secrets at runtime before validation. Portal injects addresses from authenticated session.",
     "All hash values are deterministic local placeholders suitable for test wiring; replace with canonical commitment outputs during real execution."
   ]
 }
