@@ -6,8 +6,8 @@
   "dependencies": [
     {
       "name": "payroll_audit_log.aleo",
-      "location": "local",
-      "path": "../../layer1/payroll_audit_log.aleo"
+      "location": "network",
+      "path": null
     }
   ]
 }

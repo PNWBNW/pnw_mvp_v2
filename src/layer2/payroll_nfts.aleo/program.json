@@ -6,13 +6,13 @@
   "dependencies": [
     {
       "name": "employer_agreement_v2.aleo",
-      "location": "local",
-      "path": "../../layer1/employer_agreement_v2.aleo"
+      "location": "network",
+      "path": null
     },
     {
       "name": "payroll_audit_log.aleo",
-      "location": "local",
-      "path": "../../layer1/payroll_audit_log.aleo"
+      "location": "network",
+      "path": null
     }
   ]
 }
