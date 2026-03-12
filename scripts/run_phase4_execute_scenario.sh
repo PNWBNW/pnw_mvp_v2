@@ -49,7 +49,7 @@ if [[ -z "$SCENARIO_FILE" ]]; then
 fi
 
 case "$SCENARIO" in
-  payroll_smoke|onboarding_smoke|nft_smoke)
+  payroll_smoke|onboarding_smoke|nft_smoke|batch_payroll_smoke)
     ;;
   *)
     echo "ERROR: unsupported scenario '$SCENARIO'" >&2
@@ -88,12 +88,20 @@ if [[ -n "$SCENARIO_FILE" ]]; then
     exit 1
   fi
 
-  # Substitute ${ALEO_ADDRESS} and ${WORKER_ADDRESS} tokens from env into a temp file.
-  # Real addresses must never be committed; scenario files are templates only.
+  # Substitute address tokens from env into a temp file.
+  # ALEO_ADDRESS: employer address (GitHub Variable)
+  # WORKER_ADDRESS: single-worker scenarios (GitHub Variable)
+  # WORKER1_ADDRESS, WORKER2_ADDRESS, WORKER3_ADDRESS: batch scenarios (GitHub Secrets)
+  # Real private keys / view keys must never appear in scenario files.
   RESOLVED_SCENARIO_FILE="$(mktemp /tmp/pnw_scenario_XXXXXX.json)"
   trap 'rm -f "$RESOLVED_SCENARIO_FILE"' EXIT
-  ALEO_ADDRESS="${ALEO_ADDRESS:-}" WORKER_ADDRESS="${WORKER_ADDRESS:-}" \
-    envsubst '${ALEO_ADDRESS} ${WORKER_ADDRESS}' < "$SCENARIO_FILE" > "$RESOLVED_SCENARIO_FILE"
+  ALEO_ADDRESS="${ALEO_ADDRESS:-}" \
+  WORKER_ADDRESS="${WORKER_ADDRESS:-}" \
+  WORKER1_ADDRESS="${WORKER1_ADDRESS:-}" \
+  WORKER2_ADDRESS="${WORKER2_ADDRESS:-}" \
+  WORKER3_ADDRESS="${WORKER3_ADDRESS:-}" \
+    envsubst '${ALEO_ADDRESS} ${WORKER_ADDRESS} ${WORKER1_ADDRESS} ${WORKER2_ADDRESS} ${WORKER3_ADDRESS}' \
+    < "$SCENARIO_FILE" > "$RESOLVED_SCENARIO_FILE"
 
   python3 scripts/validate_phaseA_scenario.py "$RESOLVED_SCENARIO_FILE"
 
@@ -115,6 +123,7 @@ scenario_kind = data.get("scenario_kind")
 expected_kind = {
     "payroll_smoke": "payroll",
     "onboarding_smoke": "onboarding",
+    "batch_payroll_smoke": "batch_payroll",
 }.get(scenario)
 if expected_kind is not None and scenario_kind != expected_kind:
     print(
@@ -164,6 +173,15 @@ scenario_steps = {
         "assert_authorization_exists",
         "assert_authorization_active",
         "get_authorization_status",
+    ],
+    "batch_payroll_smoke": [
+        # Tx 1: execute_payroll_batch_2 (workers 1 + 2)
+        "assert_agreement_active_worker1",
+        "assert_agreement_active_worker2",
+        "execute_payroll_batch_2",
+        # Tx 2: execute_payroll (worker 3)
+        "assert_agreement_active_worker3",
+        "execute_payroll_worker3",
     ],
 }
 

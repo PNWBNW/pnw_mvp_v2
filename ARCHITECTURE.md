@@ -16,13 +16,20 @@ The architecture is intentionally split into:
 ## 2. Threat Model & Privacy Goals
 
 ### 2.1 Privacy Goals
-The system is designed so that the following are **not publicly observable** on-chain:
+The system is designed so that the following are **not publicly observable** — on-chain or in any portal database:
 - Worker identity (e.g., `.pnw` name)
+- Worker wallet address (input to portal, owner field in private records)
 - Employer identity (e.g., `.pnw` name)
 - Customer identity
 - Wage amounts, hours, invoices, deductions
 - Employment terms / scope-of-work text
 - Aggregated payroll totals or reports
+
+**On-chain note:** Aleo private records encrypt the `owner` field. A worker's wallet address used as the recipient of `transfer_private` is not visible to third-party chain observers — only to the record owner (via view key). Portal systems must extend this guarantee off-chain: worker addresses must not appear in public-facing logs, public databases, or version-controlled config files.
+
+**Portal storage model (production):** Worker wallet addresses are stored encrypted at rest in the portal backend database using a per-employer-workspace encryption key. The workspace key is the single managed secret — one key covers all workers in that employer's roster. This means onboarding thousands of workers requires no new secrets; the employer workspace key is provisioned once. Workers authenticate by signing a server-issued nonce with their Aleo private key; the portal derives and stores the address from the verified signature, never asking for the private key itself.
+
+**CI/test distinction:** GitHub Secrets (`WORKER1_ADDRESS`, `WORKER2_ADDRESS`, `WORKER3_ADDRESS`) are test infrastructure for a small number of fixed test wallets. They are not the production model and do not scale. The production model is the encrypted-at-rest DB described above.
 
 ### 2.2 Publicly Observable (Allowed)
 The system allows only **non-sensitive public state**, typically:
@@ -212,7 +219,7 @@ The project is built across three independent repositories, each with a distinct
    - MVP: employer generates a scoped view key and shares it with the auditor manually. The NFT transaction ID is the handshake token both sides reference.
    - Phase 6: encrypted delivery — portal encrypts the scoped view key to the auditor's Aleo public key, eliminating manual copy.
 
-4. **Shared privacy rules.** All three repos enforce the same privacy invariants: no private keys/view keys/wages/names stored in any database (session memory only), no real addresses committed to git, no plaintext identity or salary on public chain state, no cumulative spend counters, PDFs generated client-side only, audit disclosure scoped and time-limited.
+4. **Shared privacy rules.** All three repos enforce the same privacy invariants: no private keys/view keys/wages/names/wallet addresses stored in any database (session memory only); no real addresses committed to git or any public config; no plaintext identity, wallet addresses, or salary on public chain state; no cumulative spend counters; PDFs generated client-side only; audit disclosure scoped and time-limited. Worker wallet addresses entered in the employment portal must be treated as sensitive credentials — stored only in encrypted/access-controlled backend storage, never in public logs, public database tables, or version-controlled files.
 
 See `docs/MULTI_REPO_PLAN.md` for the full interoperability plan including build order, versioning coordination, and open questions.
 
