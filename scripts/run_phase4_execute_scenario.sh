@@ -91,7 +91,7 @@ if [[ -n "$SCENARIO_FILE" ]]; then
   # Substitute address tokens from env into a temp file.
   # ALEO_ADDRESS: employer address (GitHub Variable)
   # WORKER_ADDRESS: single-worker scenarios (GitHub Variable)
-  # WORKER1_ADDRESS, WORKER2_ADDRESS, WORKER3_ADDRESS: batch scenarios (GitHub Variables, not Secrets)
+  # WORKER1_ADDRESS, WORKER2_ADDRESS, WORKER3_ADDRESS: batch scenarios (GitHub Secrets)
   # Real private keys / view keys must never appear in scenario files.
   RESOLVED_SCENARIO_FILE="$(mktemp /tmp/pnw_scenario_XXXXXX.json)"
   trap 'rm -f "$RESOLVED_SCENARIO_FILE"' EXIT
