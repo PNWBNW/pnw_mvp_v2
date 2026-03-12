@@ -21,5 +21,25 @@
     "external": {
       "usdcx": "test_usdcx_stablecoin.aleo"
     }
+  },
+  "deployments": {
+    "employer_agreement_v2.aleo": {
+      "status": "deployed",
+      "transaction_id": "at1jgwcq3k52u050544gyzuz3cr6g4kxlc8dd0hekvxrh5as56gccysas7xtw",
+      "fee_transaction_id": "at13y7q4np4v8gt5lgnanu0ynwqr22s0gehpy23v4k2kcnjlz3k7c8qskcehz",
+      "deployed_at": "2026-03-12"
+    },
+    "payroll_audit_log.aleo": {
+      "status": "deployed",
+      "transaction_id": "at18ww9zuyvxdzhqj9leenjafpwkpfk6hv86xevu256plyapjwa2qyq3d376y",
+      "fee_transaction_id": "at1meyyw87efh0f2j6tceha57hnhuy0y7m5ms2m5g0ypr6zvx7sssfq443a7a",
+      "deployed_at": "2026-03-12"
+    },
+    "payroll_nfts.aleo": {
+      "status": "deployed",
+      "transaction_id": "at1hhd5ahu0zkg5gn37ldvjlht3mkk7yykxvuyuz8fzsxg07ep9kq8qjuk0p2",
+      "fee_transaction_id": "at1dzmgs8lva64shlqgyz5krvrmd555gzqx7ua3yg7583rdf0jf2szqdzq04g",
+      "deployed_at": "2026-03-12"
+    }
   }
 }

@@ -90,7 +90,7 @@ See `NOTES.md` for full details and fix priority. Summary:
 ### HIGH
 | # | Bug | File | Status |
 |---|-----|------|--------|
-| 5 | Programs not deployed — manifest IDs are file names, not verified testnet IDs | `testnet.manifest.json` | ⚠️ Pre-deploy |
+| 5 | Programs not deployed — manifest IDs are file names, not verified testnet IDs | `testnet.manifest.json` | ✅ L2 deployed (employer_agreement_v2, payroll_audit_log, payroll_nfts) — L1 pending |
 | 6 | `SNARKOS_ENDPOINT` required by env script but actual commands use `RPC_URL`/`PHASE4_SUBMIT_ENDPOINT` | `require_phase4_execute_env.sh` | ✅ Fixed — consolidated to single `ENDPOINT` var |
 | 7 | Execute gate fires on every push to `main` (not just manual dispatch) | `execute_testnet.yml` | ✅ Fixed |
 | 8 | Receipt verification tries JSON-RPC first; Aleo uses REST — should try REST first | `verify_phase4_receipts.py` | ✅ Fixed |
@@ -101,7 +101,7 @@ See `NOTES.md` for full details and fix priority. Summary:
 |---|-----|------|--------|
 | 10 | Valid-length Aleo employer addresses in onboarding/payroll testnet scenarios | `min_spend.onboarding.json`, `min_spend.payroll.json` | ✅ Fixed |
 | 11 | All-placeholder hashes (`0x1111...`) in sample mint args | `onboarding_mint_args.sample.json` | ⚠️ Sample file |
-| 12 | Layer 2 `program.json` files may be incomplete (missing `program.toml` for Leo build) | `src/layer2/*/` | ❌ Needs verify |
+| 12 | Layer 2 `program.json` files may be incomplete (missing `program.toml` for Leo build) | `src/layer2/*/` | ✅ Verified — all 3 compile and deploy successfully |
 | 13 | Bundle SHA check fails if artifacts re-generated in same run (SHA changes) | `verify_phase4_execute_artifacts.py` | ⚠️ Minor |
 
 ---
