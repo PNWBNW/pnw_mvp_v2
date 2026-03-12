@@ -6,8 +6,8 @@
   "dependencies": [
     {
       "name": "employer_agreement_v2.aleo",
-      "location": "local",
-      "path": "../employer_agreement_v2.aleo"
+      "location": "network",
+      "network": "testnet"
     },
     {
       "name": "employer_profiles.aleo",
