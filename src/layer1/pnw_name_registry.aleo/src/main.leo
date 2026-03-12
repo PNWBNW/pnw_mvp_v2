@@ -282,4 +282,6 @@ program pnw_name_registry.aleo {
         assert(name_owner.get_or_use(name_hash, aleo1qqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqq3ljyzc) == owner);
         assert(employer_suffix_code.get_or_use(name_hash, 0u8) == suffix_code);
     }
+
+    @noupgrade async constructor() {}
 }

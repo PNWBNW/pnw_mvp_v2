@@ -312,4 +312,6 @@ program payroll_core.aleo {
         assert(!already_paid2);
         paid_epoch.set(key2, true);
     }
+
+    @noupgrade async constructor() {}
 }

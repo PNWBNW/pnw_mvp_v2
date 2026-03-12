@@ -318,4 +318,6 @@ program audit_nft.aleo {
         let h: u32 = attestation_anchor_height.get_or_use(attestation_hash, 0u32);
         assert(h != 0u32);
     }
+
+    @noupgrade async constructor() {}
 }

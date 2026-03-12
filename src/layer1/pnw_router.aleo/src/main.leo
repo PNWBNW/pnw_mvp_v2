@@ -227,4 +227,6 @@ program pnw_router.aleo {
         let f: Future = pnw_name_registry.aleo/assert_is_owner(name_hash, owner);
         return async { f.await(); };
     }
+
+    @noupgrade async constructor() {}
 }
