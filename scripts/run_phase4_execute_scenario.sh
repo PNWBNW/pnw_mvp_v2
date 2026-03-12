@@ -78,15 +78,26 @@ scripts/require_phase4_execute_env.sh
 SCENARIO_PAYLOAD_ID=""
 SCENARIO_PAYLOAD_MODE=""
 SCENARIO_PAYLOAD_KIND=""
+
+# Resolved scenario file — may be a substituted temp copy
+RESOLVED_SCENARIO_FILE=""
+
 if [[ -n "$SCENARIO_FILE" ]]; then
   if [[ ! -f "$SCENARIO_FILE" ]]; then
     echo "ERROR: scenario file not found: $SCENARIO_FILE" >&2
     exit 1
   fi
 
-  python3 scripts/validate_phaseA_scenario.py "$SCENARIO_FILE"
+  # Substitute ${ALEO_ADDRESS} and ${WORKER_ADDRESS} tokens from env into a temp file.
+  # Real addresses must never be committed; scenario files are templates only.
+  RESOLVED_SCENARIO_FILE="$(mktemp /tmp/pnw_scenario_XXXXXX.json)"
+  trap 'rm -f "$RESOLVED_SCENARIO_FILE"' EXIT
+  ALEO_ADDRESS="${ALEO_ADDRESS:-}" WORKER_ADDRESS="${WORKER_ADDRESS:-}" \
+    envsubst '${ALEO_ADDRESS} ${WORKER_ADDRESS}' < "$SCENARIO_FILE" > "$RESOLVED_SCENARIO_FILE"
 
-  SCENARIO_META_RAW="$(python3 - "$SCENARIO_FILE" "$NETWORK" "$SCENARIO" <<'PY'
+  python3 scripts/validate_phaseA_scenario.py "$RESOLVED_SCENARIO_FILE"
+
+  SCENARIO_META_RAW="$(python3 - "$RESOLVED_SCENARIO_FILE" "$NETWORK" "$SCENARIO" <<'PY'
 import json
 import sys
 from pathlib import Path
@@ -123,7 +134,9 @@ PY
   SCENARIO_PAYLOAD_KIND="${SCENARIO_META[2]:-}"
 fi
 
-python3 - "$SCENARIO" "$NETWORK" "$MANIFEST_PATH" "$ARTIFACT_DIR" "$SCENARIO_FILE" "$SCENARIO_PAYLOAD_ID" "$SCENARIO_PAYLOAD_MODE" "$SCENARIO_PAYLOAD_KIND" "$ENDPOINT" "$EXECUTE_BROADCAST" "$BROADCAST_COMMANDS_FILE" <<'PY'
+# Pass RESOLVED_SCENARIO_FILE for data reading; SCENARIO_FILE (original path) as the trace label.
+_RESOLVED_FOR_PY="${RESOLVED_SCENARIO_FILE:-$SCENARIO_FILE}"
+python3 - "$SCENARIO" "$NETWORK" "$MANIFEST_PATH" "$ARTIFACT_DIR" "$_RESOLVED_FOR_PY" "$SCENARIO_PAYLOAD_ID" "$SCENARIO_PAYLOAD_MODE" "$SCENARIO_PAYLOAD_KIND" "$ENDPOINT" "$EXECUTE_BROADCAST" "$BROADCAST_COMMANDS_FILE" "$SCENARIO_FILE" <<'PY'
 import json
 import sys
 import time
@@ -132,7 +145,7 @@ import subprocess
 import shlex
 from pathlib import Path
 
-scenario, network, manifest_path, artifact_dir, scenario_file, scenario_payload_id, scenario_payload_mode, scenario_payload_kind, endpoint, execute_broadcast, broadcast_commands_file = sys.argv[1:12]
+scenario, network, manifest_path, artifact_dir, scenario_file, scenario_payload_id, scenario_payload_mode, scenario_payload_kind, endpoint, execute_broadcast, broadcast_commands_file, scenario_file_label = sys.argv[1:13]
 base = Path(artifact_dir)
 base.mkdir(parents=True, exist_ok=True)
 
@@ -174,7 +187,7 @@ for idx, kind in enumerate(scenario_steps[scenario]):
 step_traces = {
     "schema_version": "phase4.step_traces.v1",
     "scenario": scenario,
-    "scenario_file": scenario_file or None,
+    "scenario_file": scenario_file_label or None,
     "scenario_payload_id": scenario_payload_id or None,
     "scenario_payload_mode": scenario_payload_mode or None,
     "scenario_payload_kind": scenario_payload_kind or None,
@@ -262,7 +275,7 @@ if execute_broadcast == "true":
 transaction_ids = {
     "schema_version": "phase4.tx_ids.v1",
     "scenario": scenario,
-    "scenario_file": scenario_file or None,
+    "scenario_file": scenario_file_label or None,
     "network": network,
     "tx_ids": tx_id_entries,
 }
@@ -277,7 +290,7 @@ if tx_id_entries:
 verification_summary = {
     "schema_version": "phase4.verification_summary.v1",
     "scenario": scenario,
-    "scenario_file": scenario_file or None,
+    "scenario_file": scenario_file_label or None,
     "network": network,
     "checks": [
         {"name": "manifest_valid", "status": "pass"},
@@ -315,8 +328,8 @@ verification_summary = {
         },
         {
             "name": "scenario_file_valid",
-            "status": "pass" if scenario_file else "skip",
-            "value": scenario_file or None,
+            "status": "pass" if scenario_file_label else "skip",
+            "value": scenario_file_label or None,
         },
     ],
 }
