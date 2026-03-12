@@ -178,6 +178,8 @@ program payroll_core.aleo {
         worker2_audit_event_hash: [u8; 32]
     ) -> (
         test_usdcx_stablecoin.aleo/Token,              // remaining USDCx returned to employer
+        test_usdcx_stablecoin.aleo/Token,              // worker 1 USDCx token
+        test_usdcx_stablecoin.aleo/Token,              // worker 2 USDCx token
         paystub_receipts.aleo/WorkerPaystubReceipt,    // worker 1 receipt
         paystub_receipts.aleo/EmployerPaystubReceipt,  // employer copy for worker 1 payment
         paystub_receipts.aleo/WorkerPaystubReceipt,    // worker 2 receipt
@@ -207,10 +209,6 @@ program payroll_core.aleo {
             test_usdcx_stablecoin.aleo/Token,
             test_usdcx_stablecoin.aleo/Token
         ) = test_usdcx_stablecoin.aleo/transfer_private(remainder1, worker2_addr, worker2_net_amount);
-
-        // Suppress unused variable warning — worker tokens are outputs captured by the VM
-        let _w1: test_usdcx_stablecoin.aleo/Token = worker1_usdcx;
-        let _w2: test_usdcx_stablecoin.aleo/Token = worker2_usdcx;
 
         // Mint paystub receipts for worker 1
         let (w1_worker_receipt, w1_employer_receipt, f_receipt1): (
@@ -262,6 +260,8 @@ program payroll_core.aleo {
 
         return (
             remaining_usdcx,
+            worker1_usdcx,
+            worker2_usdcx,
             w1_worker_receipt,
             w1_employer_receipt,
             w2_worker_receipt,
