@@ -1,213 +1,157 @@
-# PNW MVP v2  
-**Proven National Workers — Aleo-Native Payroll, Receipts, and Audit Framework**
+# PNW MVP v2
+**Proven National Workers — Privacy-First Payroll and Compliance on Aleo**
 
 ---
 
-## Overview
+## What This Is
 
-**PNW MVP v2** is a privacy-first payroll and compliance framework built natively on **Aleo**, using **USDCx** for stable-value settlement.
+PNW MVP v2 is a privacy-first payroll and compliance framework built natively on **Aleo**, using **USDCx** for stable-value settlement. It enables employers to execute payroll privately, workers to receive cryptographically verifiable paystub receipts, and auditors to verify compliance — all without exposing identities, wages, or business data on public chain state.
 
-The system enables employers, workers, and oversight entities to:
-- execute payroll privately,
-- issue verifiable paystub receipts,
-- generate compliant reports,
-- and support permissible audits,
+**The core promise:** USDCx proves the funds are clean. PNW proves the payroll relationship is legitimate. Neither requires the other to expose sensitive data to do its job.
 
-**without exposing identities, wages, or business data on-chain**.
-
-All authoritative state changes occur on Aleo.  
-All aggregation, reporting, and presentation occur privately off-chain.
+This repository (`pnw_mvp_v2`) is the **foundation layer** — Leo programs, TypeScript adapters, CI/CD infrastructure, and manifests. The portal applications are built in separate repos that consume from this one.
 
 ---
 
-## Core Principles
+## Architecture at a Glance
 
-### 1. Aleo-Native Settlement (USDCx)
-- Payroll is settled using **USDCx on Aleo**
-- Employers and workers use standard Aleo wallets
-- No bridges, custodial pools, or external remittance rails
-- The protocol does **not** track balances or custody funds
+```
+┌──────────────────────────────────────────────────────────────────┐
+│                         Aleo Testnet                             │
+│                                                                  │
+│  Layer 1 (Canonical Logic)          Layer 2 (NFT Anchors)        │
+│  ├─ pnw_name_registry               ├─ payroll_nfts              │
+│  ├─ employer_license_registry       ├─ credential_nft            │
+│  ├─ employer_profiles               └─ audit_nft                 │
+│  ├─ worker_profiles                                              │
+│  ├─ employer_agreement                                           │
+│  ├─ payroll_core  ← USDCx settlement                            │
+│  ├─ paystub_receipts                                             │
+│  ├─ payroll_audit_log                                            │
+│  └─ pnw_router                                                   │
+└─────────────────────────────┬────────────────────────────────────┘
+                              │ snarkos developer execute
+                    ┌─────────┴─────────┐
+                    │   pnw_mvp_v2      │  ← this repo
+                    │  adapters + CI    │
+                    └────────┬──────────┘
+               exports manifest + adapter types
+               ┌─────────────┴──────────────┐
+               ▼                            ▼
+  pnw_employment_portal_v1     pnw_auditing_portal_v1
+  (employer + worker UI)       (auditor UI)
+```
 
-> **Note**  
-> USDCx is treated as a standalone Aleo program (`test_usdcx_stablecoin.aleo` on testnet).  
-> Token references are configurable and resolved at deploy time.
+### Layer 1 — Canonical On-Chain Logic
 
----
+Nine Leo programs forming the source of truth for all payroll and compliance state transitions. They handle identity commitments, employment agreements, USDCx payroll execution, private receipt issuance, and hash-only audit anchoring. They never expose identities, wages, or aggregated statistics.
 
-### 2. Privacy by Default
-- No plaintext identities on-chain
-- No public wages, hours, invoices, or balances
-- Public state contains **hashes and commitments only**
-- Financial and identity data exist only in:
-  - private Aleo records, or
-  - encrypted off-chain summaries
+| Program | Purpose |
+|---|---|
+| `pnw_name_registry.aleo` | Employer/worker name hash registry with suffix codes |
+| `employer_license_registry.aleo` | License eligibility validation |
+| `employer_profiles.aleo` | Employer profile commitment anchoring |
+| `worker_profiles.aleo` | Worker profile commitment anchoring |
+| `employer_agreement.aleo` | Employment agreement creation, amendment, termination |
+| `payroll_core.aleo` | USDCx payroll execution — consumes employer records, emits worker records |
+| `paystub_receipts.aleo` | Private paystub receipt issuance |
+| `payroll_audit_log.aleo` | Hash-only audit event anchoring |
+| `pnw_router.aleo` | Multi-program orchestration entry point |
 
----
+### Layer 2 — Commitment NFT Anchors
 
-### 3. Append-Only, Verifiable History
-- All payroll and compliance events are:
-  - append-only
-  - immutable once anchored
-- Corrections and reversals are represented as **new artifacts**, not mutations
-- On-chain data provides **existence and ordering proofs**, not content disclosure
+Three Leo programs providing on-chain commitment anchors for reporting and audit. They are **not** a ledger or custody mechanism — they anchor hashes only.
 
----
+| Program | Purpose |
+|---|---|
+| `payroll_nfts.aleo` | Payroll cycle, quarter, YTD, and EOY commitment NFTs |
+| `credential_nft.aleo` | Employment credential authorization NFTs |
+| `audit_nft.aleo` | Audit authorization NFTs with block-height expiry |
 
-## Dual-Layer Architecture
+### Privacy Rules (Non-Negotiable)
 
-### Layer 1 — Canonical On-Chain Logic (Leo / Aleo)
-
-Layer 1 programs are the **source of truth**.
-
-They are responsible for:
-- identity and role commitments
-- employer–worker agreements
-- USDCx payroll execution
-- minting **private receipt records**
-- anchoring **hash-only audit events**
-
-Layer 1 programs explicitly do **not**:
-- compute reports or analytics
-- store balances or aggregates
-- expose identities or wages
-- generate presentation artifacts
-
-  ## Layer 1 Programs (Canonical)
-
-Layer 1 defines authoritative behavior.
-
-They handle:
-- identity commitments
-- agreements and eligibility
-- payroll settlement
-- receipt issuance
-- audit anchoring
-
-They never expose:
-- identities
-- wages or deductions
-- employment terms
-- aggregated statistics
+- No plaintext identities, wages, or addresses on public chain state
+- Public mappings hold hashes and commitment anchors only
+- No cumulative spend counters (salary leakage via delta inference)
+- Layer 2 NFTs are commitment anchors — they never move funds
+- No pooled custody — employer USDCx records are consumed → worker records emitted directly
 
 ---
 
-### Layer 2 — Aggregation, Reporting, and Commitments (Portal + NFTs)
+## Three-Repo Structure
 
-Layer 2 tooling operates off-chain and optionally anchors results on-chain.
+This project is built across three repositories designed to stay independent with clean interoperability contracts.
 
-Responsibilities:
-- decrypt authorized Layer 1 receipts
-- normalize receipts into deterministic base events
-- build paystubs, invoices, and periodic reports
-- compute Merkle roots and document commitments
-- optionally mint **commitment-based NFTs** for disclosure or audit
+| Repo | Contents | Status |
+|---|---|---|
+| `pnw_mvp_v2` | Leo programs, adapters, CI, manifests | Active — this repo |
+| `pnw_employment_portal_v1` | Employer + Worker two-sided portal | Planned — post Phase 5 |
+| `pnw_auditing_portal_v1` | Auditor portal | Planned — post Phase 5 |
 
-Layer 2 never:
-- moves funds
-- alters Layer 1 state
-- bypasses Layer 1 validation rules
+The portal repos consume `config/testnet.manifest.json` from this repo as their canonical program ID source. No portal ever hardcodes a program ID. See [`docs/MULTI_REPO_PLAN.md`](./docs/MULTI_REPO_PLAN.md) for the full interoperability plan.
 
---
+---
 
-## Layer 2 NFTs — Minimal Taxonomy
+## Phase Status
 
-Layer 2 includes commitment-only NFTs used for disclosure and audit.
+| Phase | Description | Status |
+|---|---|---|
+| 0 | Layer 1 Leo programs + interfaces | ✅ Done |
+| 1 | Portal workflow definitions (planning layer) | ✅ Done |
+| 2 | Layer 2 NFT programs | ✅ Done |
+| 3 | Layer 2 router, type contracts, compile gate | ✅ Done |
+| 4 | Adapter execution boundary + CI split | 🔧 In progress |
+| 5 | Testnet correctness validation | ⏳ Pending |
+| 6 | Hardening, tax exports, release | ⏳ Pending |
 
-### 1. Receipt NFTs
-- Paystub receipts
-- Payroll cycle summaries
-- Invoice receipts
+**Phase 4 exit criteria:**
+- [x] Adapter generates correct `snarkos developer execute` commands per step kind
+- [ ] Leo programs compile (`leo build`) — fixes applied, needs Codespace verification
+- [ ] One reproducible end-to-end testnet happy path run
+- [x] CI split: `plan_gate` (PR-safe, no secrets) + `execute_gate` (protected, manual dispatch)
+- [x] Manifest validation wired before execute mode
 
-Used for:
-- presentation
-- selective disclosure
-- worker-controlled sharing
+---
 
+## Repository Navigation
 
-### 2. Credential NFTs
-- Employer verification credentials
-- Employment relationship credentials
-- Auditor / tax agent credentials
+| Where to start | File |
+|---|---|
+| Session context + bug list + phase status | [`CLAUDE.md`](./CLAUDE.md) |
+| Full issue tracker + fix order | [`NOTES.md`](./NOTES.md) |
+| Technical architecture spec | [`ARCHITECTURE.md`](./ARCHITECTURE.md) |
+| Complete file directory | [`DIRECTORY.md`](./DIRECTORY.md) |
+| Employment portal product spec | [`docs/EMPLOYMENT_PORTAL.md`](./docs/EMPLOYMENT_PORTAL.md) |
+| Three-repo interoperability plan | [`docs/MULTI_REPO_PLAN.md`](./docs/MULTI_REPO_PLAN.md) |
+| Phase 4 CLI setup (local + Codespace) | [`docs/operations/PHASE4_CLI_SETUP.md`](./docs/operations/PHASE4_CLI_SETUP.md) |
+| Testnet deployment gameplan | [`docs/operations/PHASE4_TESTNET_GAMEPLAN.md`](./docs/operations/PHASE4_TESTNET_GAMEPLAN.md) |
 
-Used as:
-- capability tokens
-- authorization proofs
-- revocable permissions
+---
 
+## Toolchain
 
-### 3. Audit NFTs
-- Audit authorization tokens
-- Audit report anchors
-- Audit result attestations
+| Tool | Pinned Version |
+|---|---|
+| Leo | 3.5.0 |
+| snarkOS | v4.5.1 |
+| Node.js | 20 |
 
-Used to:
-- enable audits without exposing raw data
-- prove compliance against on-chain anchors
+---
 
-All NFTs store:
-- commitment hashes
-- Merkle roots
-- epoch and version metadata
-- **never raw payroll or identity data**
+## CI / CD
 
-## USDCx Integration Model
+**`deploy.yml` (plan gate)** — runs on every PR and push to `main`. No secrets required. Typechecks the TypeScript adapter and router layers, runs codec tests, validates the testnet manifest schema, and enforces Layer 1 public-state leakage guards.
 
-- USDCx is treated as a native Aleo asset
-- Employers fund payroll via USDCx records
-- Payroll consumes employer records and outputs worker records
-- No wrapping, mirroring, or balance accounting
+**`execute_testnet.yml` (execute gate)** — manual dispatch only (or push to `work` branch). Requires secrets. Runs a full testnet scenario against real deployed programs with broadcast enabled and receipt verification required.
 
-The design is intentionally minimal and composable.
+---
 
-## Layered Compliance Model
+## USDCx Note
 
-PNW MVP v2 is designed to **complement**, not replace, the compliance guarantees provided by USDCx.
+USDCx is treated as a native Aleo asset (`test_usdcx_stablecoin.aleo` on testnet). The protocol never wraps, mirrors, or custodies USDCx — employer records are consumed and worker records are emitted directly in the same payroll transaction. Token program ID is configurable via `config/testnet.manifest.json`.
 
-- **USDCx compliance** ensures the *money* is lawful  
-  (AML, sanctions screening, monetary controls)
-- **PNW compliance** ensures the *relationship* is lawful  
-  (employment legitimacy, wage correctness, consented auditability)
-
-These layers operate independently but reinforce each other:
-
-> USDCx proves the funds are clean.  
-> PNW proves the payroll relationship is legitimate.
-
-PNW never bypasses or obscures issuer-level compliance. Instead, it adds a privacy-preserving employment and audit framework **on top of** compliant stablecoin settlement.
-
-For a detailed technical explanation, see:  
-📄 **[ARCHITECTURE.md — Layered Compliance & Auditability](./ARCHITECTURE.md)**
-
-## Intended Use Cases
-
-- Private payroll execution
-- Worker-controlled paystub disclosure
-- Employer compliance reporting
-- SubDAO or organizational oversight
-- Selective, permissioned audits
-
-
-## Status
-
-This repository defines the forward-looking MVP architecture and is under active development.
-
-Current priorities:
-- correctness
-- privacy
-- minimal on-chain surface area
-- long-term extensibility
-
-## Session Context & Issue Tracker
-
-- **[CLAUDE.md](./CLAUDE.md)** — phase status, bug list, file map, architecture invariants (start here every session)
-- **[NOTES.md](./NOTES.md)** — full issue tracker, fix priority order, per-issue acceptance criteria
-
-## Operator References
-
-- Phase 4 CLI setup guide: [docs/operations/PHASE4_CLI_SETUP.md](./docs/operations/PHASE4_CLI_SETUP.md)
-- Phase 4→6 testnet gameplan: [docs/operations/PHASE4_TESTNET_GAMEPLAN.md](./docs/operations/PHASE4_TESTNET_GAMEPLAN.md)
+---
 
 ## License
 
-This repository and all contained programs are **PROPRIETARY**.  
-No rights are granted for reuse, redistribution, or deployment without explicit authorization.
+**PROPRIETARY.** No rights granted for reuse, redistribution, or deployment without explicit written authorization.
