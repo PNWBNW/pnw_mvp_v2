@@ -279,7 +279,7 @@ All commitment artifacts include:
 - Stores employer profile anchors (hash-only commitments)
 - Provides existence and anchored-state assertions
 
-### 8.5 `employer_agreement.aleo`
+### 8.5 `employer_agreement_v2.aleo`
 - Defines agreement lifecycle (offer → active → pause/terminate → resume)
 - Anchors agreement terms (doc commitments)
 - Provides `ACTIVE` status checks for payroll gating

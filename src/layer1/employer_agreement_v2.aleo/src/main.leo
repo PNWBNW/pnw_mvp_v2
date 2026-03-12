@@ -1,7 +1,7 @@
 import pnw_name_registry.aleo;
 import employer_license_registry.aleo;
 
-program employer_agreement.aleo {
+program employer_agreement_v2.aleo {
 
     // ---------------------------------------------------------
     // Employer Agreement (Layer 1) - PNW MVP v2 (Leo v3.x)

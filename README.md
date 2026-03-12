@@ -52,7 +52,7 @@ Nine Leo programs forming the source of truth for all payroll and compliance sta
 | `employer_license_registry.aleo` | License eligibility validation |
 | `employer_profiles.aleo` | Employer profile commitment anchoring |
 | `worker_profiles.aleo` | Worker profile commitment anchoring |
-| `employer_agreement.aleo` | Employment agreement creation, amendment, termination |
+| `employer_agreement_v2.aleo` | Employment agreement creation, amendment, termination |
 | `payroll_core.aleo` | USDCx payroll execution — consumes employer records, emits worker records |
 | `paystub_receipts.aleo` | Private paystub receipt issuance |
 | `payroll_audit_log.aleo` | Hash-only audit event anchoring |
