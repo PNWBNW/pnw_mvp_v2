@@ -90,7 +90,7 @@ See `NOTES.md` for full details and fix priority. Summary:
 ### HIGH
 | # | Bug | File | Status |
 |---|-----|------|--------|
-| 5 | Programs not deployed — manifest IDs are file names, not verified testnet IDs | `testnet.manifest.json` | ✅ L2 deployed (employer_agreement_v2, payroll_audit_log, payroll_nfts) — L1 pending |
+| 5 | Programs not deployed — manifest IDs are file names, not verified testnet IDs | `testnet.manifest.json` | ✅ All L2 programs deployed (payroll_nfts, credential_nft, audit_nft + deps) — L1 pending |
 | 6 | `SNARKOS_ENDPOINT` required by env script but actual commands use `RPC_URL`/`PHASE4_SUBMIT_ENDPOINT` | `require_phase4_execute_env.sh` | ✅ Fixed — consolidated to single `ENDPOINT` var |
 | 7 | Execute gate fires on every push to `main` (not just manual dispatch) | `execute_testnet.yml` | ✅ Fixed |
 | 8 | Receipt verification tries JSON-RPC first; Aleo uses REST — should try REST first | `verify_phase4_receipts.py` | ✅ Fixed |
