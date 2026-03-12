@@ -47,7 +47,11 @@ export function loadEnv(processEnv: NodeJS.ProcessEnv = process.env): PortalEnv 
 
   const ALEO_RPC_URL = processEnv.ALEO_RPC_URL?.trim() || undefined;
 
-  const PORTAL_PRIVATE_KEY = processEnv.PORTAL_PRIVATE_KEY?.trim() || undefined;
+  // Accept PRIVATE_KEY (canonical, used by leo CLI) or PORTAL_PRIVATE_KEY (legacy alias)
+  const PORTAL_PRIVATE_KEY =
+    processEnv.PRIVATE_KEY?.trim() ||
+    processEnv.PORTAL_PRIVATE_KEY?.trim() ||
+    undefined;
   const PORTAL_VIEW_KEY = processEnv.PORTAL_VIEW_KEY?.trim() || undefined;
   const PORTAL_ADDRESS = processEnv.PORTAL_ADDRESS?.trim() || undefined;
 
