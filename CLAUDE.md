@@ -64,7 +64,7 @@ The snarkOS SHA256 is hardcoded in `deploy.yml` and should also be set as the `S
 
 ### Phase 4 Exit Criteria
 - [x] Adapter generates correct `snarkos developer execute` commands per `step.kind`
-- [ ] Leo programs compile (all 3 Layer 2 programs) — bugs fixed, needs `leo build` verification in Codespace
+- [x] Leo programs compile (all 3 Layer 2 programs) — verified in Codespace 2026-03-12 (warnings only: self.caller as owner)
 - [ ] One reproducible end-to-end testnet happy path runs
 - [x] CI split: `plan_gate` (PR-safe) + `execute_gate` (protected, manual dispatch only)
 - [x] Manifest validation wired before execute mode
@@ -193,6 +193,10 @@ scripts/verify_provable_cli.sh
 > **Canonical endpoint** (Provable Explorer v1, network-qualified):
 > `ENDPOINT=https://api.explorer.provable.com/v1/testnet`
 > Copy `.env.example` to `.env` and fill in credentials. Never commit `.env`.
+>
+> **For `leo deploy` / `leo execute`:** Leo CLI reads `PRIVATE_KEY` (not `ALEO_PRIVATE_KEY`).
+> Your `.env` must contain `PRIVATE_KEY=APrivateKey1...` for deploy to work.
+> `ALEO_PRIVATE_KEY` is used only by the portal TypeScript adapter (`snarkos developer execute`).
 
 ---
 
