@@ -23,6 +23,11 @@
     }
   },
   "deployments": {
+    "pnw_name_registry.aleo": {
+      "status": "pre-existing",
+      "notes": "Already deployed on testnet prior to 2026-03-12 session; leo deploy rejected with 'already exists'",
+      "deployed_at": "pre-2026-03-12"
+    },
     "employer_agreement_v2.aleo": {
       "status": "deployed",
       "transaction_id": "at1jgwcq3k52u050544gyzuz3cr6g4kxlc8dd0hekvxrh5as56gccysas7xtw",
