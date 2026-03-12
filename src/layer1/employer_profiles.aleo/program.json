@@ -6,13 +6,13 @@
   "dependencies": [
     {
       "name": "pnw_name_registry.aleo",
-      "location": "local",
-      "path": "../pnw_name_registry.aleo"
+      "location": "network",
+      "network": "testnet"
     },
     {
       "name": "employer_license_registry.aleo",
-      "location": "local",
-      "path": "../employer_license_registry.aleo"
+      "location": "network",
+      "network": "testnet"
     }
   ]
 }

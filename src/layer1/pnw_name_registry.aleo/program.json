@@ -6,8 +6,8 @@
   "dependencies": [
     {
       "name": "employer_license_registry.aleo",
-      "location": "local",
-      "path": "../employer_license_registry.aleo"
+      "location": "network",
+      "network": "testnet"
     },
     {
       "name": "test_usdcx_stablecoin.aleo",
