@@ -152,6 +152,8 @@ export function resolveLayer1Endpoint(network: Network, step: CallPlanStep): TxM
     // -----------------------------
     case "execute_payroll":
       return { program: "payroll_core.aleo", transition: "execute_payroll", network };
+    case "execute_payroll_batch_2":
+      return { program: "payroll_core.aleo", transition: "execute_payroll_batch_2", network };
 
     default: {
       // Exhaustiveness check

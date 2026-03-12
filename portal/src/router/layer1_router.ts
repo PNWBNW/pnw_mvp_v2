@@ -21,6 +21,26 @@ import type {
 
 import type { CanonicalHashes } from "../commitments/canonical_types";
 
+/**
+ * Per-worker args for execute_payroll_batch_2.
+ * Each worker must have its own pre-computed canonical hashes.
+ */
+export type BatchPayrollWorker = {
+  worker_addr: Address;
+  worker_name_hash: Field;
+  agreement_id: Bytes32;
+  epoch_id: U32;
+  gross_amount: U128;
+  net_amount: U128;
+  tax_withheld: U128;
+  fee_amount: U128;
+  receipt_anchor: Bytes32;
+  receipt_pair_hash: Bytes32;
+  payroll_inputs_hash: Bytes32;
+  utc_time_hash: Bytes32;
+  audit_event_hash: Bytes32;
+};
+
 // Adapter interface (implemented by aleo_cli.ts, aleo_wallet.ts, etc.)
 import type { Layer1Adapter } from "../adapters/layer1_adapter";
 
@@ -314,6 +334,17 @@ export type CallPlanStep =
         utc_time_hash: Bytes32;
         audit_event_hash: Bytes32;
       };
+    }
+  | {
+      kind: "execute_payroll_batch_2";
+      args: {
+        // Single USDCx record; split internally by the circuit
+        employer_usdcx: UsdcxRecord;
+        employer_addr: Address;
+        employer_name_hash: Field;
+        worker1: BatchPayrollWorker;
+        worker2: BatchPayrollWorker;
+      };
     };
 
 /**
@@ -361,6 +392,28 @@ export class Layer1Router {
    */
   planExecutePayroll(args: CallPlanStep & { kind: "execute_payroll" }["args"]): CallPlanStep[] {
     return [{ kind: "execute_payroll", args }];
+  }
+
+  /**
+   * Batch payroll for two workers in a single on-chain transaction.
+   *
+   * One employer USDCx record is consumed; the circuit splits it internally
+   * via chained transfer_private calls. No wallet record management needed.
+   *
+   * All canonical hashes (receipt_anchor, audit_event_hash, etc.) must be
+   * pre-computed off-chain per worker before calling this.
+   */
+  planExecutePayrollBatch2(
+    employer_usdcx: UsdcxRecord,
+    employer_addr: Address,
+    employer_name_hash: Field,
+    worker1: BatchPayrollWorker,
+    worker2: BatchPayrollWorker,
+  ): CallPlanStep[] {
+    return [{
+      kind: "execute_payroll_batch_2",
+      args: { employer_usdcx, employer_addr, employer_name_hash, worker1, worker2 },
+    }];
   }
 
   /**
