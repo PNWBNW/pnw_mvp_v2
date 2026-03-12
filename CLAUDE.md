@@ -19,6 +19,13 @@ Full technical spec: `ARCHITECTURE.md`
 
 ---
 
+## Commit Message Rules
+
+- **Never** append a `https://claude.ai/...` session link to commit messages.
+- Commit messages should be plain descriptive text only.
+
+---
+
 ## Toolchain Pins
 
 | Tool | Version | Binary name | SHA256 |
