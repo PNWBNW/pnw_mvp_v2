@@ -23,6 +23,11 @@
     }
   },
   "deployments": {
+    "pnw_name_registry.aleo": {
+      "status": "pre-existing",
+      "notes": "Already deployed on testnet prior to 2026-03-12 session; leo deploy rejected with 'already exists'",
+      "deployed_at": "pre-2026-03-12"
+    },
     "employer_agreement_v2.aleo": {
       "status": "deployed",
       "transaction_id": "at1jgwcq3k52u050544gyzuz3cr6g4kxlc8dd0hekvxrh5as56gccysas7xtw",
@@ -39,6 +44,18 @@
       "status": "deployed",
       "transaction_id": "at1hhd5ahu0zkg5gn37ldvjlht3mkk7yykxvuyuz8fzsxg07ep9kq8qjuk0p2",
       "fee_transaction_id": "at1dzmgs8lva64shlqgyz5krvrmd555gzqx7ua3yg7583rdf0jf2szqdzq04g",
+      "deployed_at": "2026-03-12"
+    },
+    "credential_nft.aleo": {
+      "status": "deployed",
+      "transaction_id": "at1t0zlpphuqfvghjnjjzjt7sjea7kk2yv740r3pefw9ajddklx85qqw84ms2",
+      "fee_transaction_id": "at109gaa5nnzc7jf5663tjvyrp39zspzxzpw8ksfw2u6uysjdgcyyxqsvy0p6",
+      "deployed_at": "2026-03-12"
+    },
+    "audit_nft.aleo": {
+      "status": "deployed",
+      "transaction_id": "at1gvhfmt56t6dc7alg6pgqp6mq4kryxwjtvfyxe2zyt50e2qq845yqk3n3ea",
+      "fee_transaction_id": "at1rxm9ufpyr70t4s8hx205nnjh9rqyr02pex88zxrt8qgpa5zauvqswq6w8z",
       "deployed_at": "2026-03-12"
     }
   }

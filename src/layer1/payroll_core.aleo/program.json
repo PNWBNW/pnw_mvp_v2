@@ -11,8 +11,8 @@
     },
     {
       "name": "employer_agreement_v2.aleo",
-      "location": "local",
-      "path": "../employer_agreement_v2.aleo"
+      "location": "network",
+      "network": "testnet"
     },
     {
       "name": "paystub_receipts.aleo",
@@ -21,8 +21,8 @@
     },
     {
       "name": "payroll_audit_log.aleo",
-      "location": "local",
-      "path": "../payroll_audit_log.aleo"
+      "location": "network",
+      "network": "testnet"
     }
   ]
 }
