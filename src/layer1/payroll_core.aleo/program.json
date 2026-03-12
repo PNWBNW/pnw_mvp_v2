@@ -6,8 +6,8 @@
   "dependencies": [
     {
       "name": "test_usdcx_stablecoin.aleo",
-      "location": "local",
-      "path": "../../stubs/test_usdcx_stablecoin.aleo"
+      "location": "network",
+      "network": "testnet"
     },
     {
       "name": "employer_agreement.aleo",
