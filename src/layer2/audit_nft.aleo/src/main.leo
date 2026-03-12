@@ -7,9 +7,49 @@ program audit_nft.aleo {
     // ---------------------------------------------------------
     //
     // Purpose:
-    // - Mint revocable audit authorization NFTs.
-    // - Enforce expiry semantics for authorization usage.
+    // - Mint revocable audit authorization NFTs with dual-consent evidence.
+    // - Enforce scope-bound, time-limited access authorization.
     // - Anchor audit attestation commitments linked to active authorization NFTs.
+    //
+    // Authorization Model (Option A — dual consent, portal-anchored):
+    //   1. Auditor submits AuditScopeRequest specifying exactly what data categories,
+    //      time period, and access duration they are requesting.
+    //   2. Employer hashes their consent over (scope_hash + access_duration + expires_epoch)
+    //      and anchors employer_consent_hash in Layer 1.
+    //   3. Worker does the same, anchoring worker_consent_hash in Layer 1.
+    //   4. Portal derives authorization_event_hash = BLAKE3(employer || worker || request_id)
+    //      and anchors it in Layer 1.
+    //   5. mint_authorization_nft verifies all three hashes are anchored before minting.
+    //   6. The resulting NFT is owned by the auditor and privately encodes the full
+    //      consent evidence. The auditor can only access data matching scope_hash.
+    //
+    // OPTION_B UPGRADE PATH (on-chain sequential signing):
+    //   Replace portal-anchored consent hashes with consumed consent NFTs:
+    //
+    //   record EmployerConsentNFT {
+    //       request_id: [u8; 32],
+    //       scope_hash: [u8; 32],
+    //       auditor_addr_hash: [u8; 32],  // BLAKE3 of auditor address
+    //       expires_epoch: u32,
+    //       access_duration_epochs: u32,
+    //       employer_id_hash: [u8; 32],
+    //       owner: address,               // employer address
+    //   }
+    //
+    //   record WorkerConsentNFT {
+    //       request_id: [u8; 32],
+    //       scope_hash: [u8; 32],
+    //       auditor_addr_hash: [u8; 32],
+    //       expires_epoch: u32,
+    //       access_duration_epochs: u32,
+    //       worker_id_hash: [u8; 32],
+    //       employer_consent_hash: [u8; 32],  // binds to employer's signed consent
+    //       owner: address,                   // worker address
+    //   }
+    //
+    //   mint_authorization_nft would consume both NFTs and derive the
+    //   authorization_event_hash from their contents — no portal trust required.
+    //   This upgrade requires no changes to data structures or mapping layout below.
 
     const STATUS_ACTIVE: u8 = 1u8;
     const STATUS_REVOKED: u8 = 2u8;
@@ -19,22 +59,61 @@ program audit_nft.aleo {
         assert(s == 0u8 || s == STATUS_ACTIVE || s == STATUS_REVOKED || s == STATUS_EXPIRED);
     }
 
+    // ---------------------------------------------------------
+    // AuditAuthorizationNFT
+    // ---------------------------------------------------------
+    //
+    // All fields are private (owned by the auditor).
+    //
+    // scope_hash:              BLAKE3(TLV-encoded AuditScopeRequest)
+    //   Commits to: data_categories (bitmask), period_start_epoch, period_end_epoch,
+    //   worker_id_hash, employer_id_hash, purpose_code, access_duration_epochs.
+    //   The auditor must reveal the pre-image to the portal to receive data.
+    //   The portal serves ONLY records that match the declared scope — nothing else.
+    //
+    // employer_consent_hash:   BLAKE3(TLV-encoded AuditConsentRequest, role=employer)
+    // worker_consent_hash:     BLAKE3(TLV-encoded AuditConsentRequest, role=worker)
+    //   Both commit to the identical scope_hash + access_duration_epochs + expires_epoch.
+    //   Neither party can be tricked into approving a different scope or duration.
+    //
+    // authorization_event_hash: BLAKE3(employer_consent_hash || worker_consent_hash || request_id)
+    //   The combined dual-consent proof. All three hashes are verified anchored in
+    //   Layer 1 (payroll_audit_log) before this NFT is minted.
+    //
+    // access_duration_epochs:  What the auditor originally requested. Stored privately
+    //   for audit trail purposes. expires_epoch = issued_epoch + access_duration_epochs.
+    //
+    // OPTION_B NOTE: employer_consent_hash and worker_consent_hash would be replaced
+    //   by consumed EmployerConsentNFT / WorkerConsentNFT records in the transition
+    //   signature. The field names and semantics here remain identical.
     record AuditAuthorizationNFT {
         auth_id: [u8; 32],
 
-        // Commitments
+        // Off-chain correlation (matches the portal AuditScopeRequest.request_id)
+        request_id: [u8; 32],
+
+        // Scope commitment — auditor reveals pre-image to portal to receive data
         scope_hash: [u8; 32],
+
+        // Dual-consent evidence (Option A: portal-anchored; Option B: consumed NFTs)
+        employer_consent_hash: [u8; 32],
+        worker_consent_hash: [u8; 32],
+
+        // Combined authorization proof anchored in Layer 1
         authorization_event_hash: [u8; 32],
+
+        // Policy document hash
         policy_hash: [u8; 32],
 
-        // Expiry semantics (epoch-style value chosen by portal policy)
+        // Expiry: issued_epoch + access_duration_epochs = expires_epoch (enforced in transition)
         issued_epoch: u32,
         expires_epoch: u32,
+        access_duration_epochs: u32,
 
         schema_v: u16,
         policy_v: u16,
 
-        // Metadata (sentinel; actual height in auth_anchor_height mapping)
+        // Metadata sentinel (actual anchor height is in auth_anchor_height mapping)
         issued_height: u32,
 
         owner: address,
@@ -51,46 +130,84 @@ program audit_nft.aleo {
     mapping attestation_auth_id: [u8; 32] => [u8; 32];
 
     // ---------------------------------------------------------
-    // Mint authorization NFT
+    // Mint authorization NFT (Option A: 3-hash dual-consent verification)
     // ---------------------------------------------------------
+    //
+    // Requires all three hashes to be pre-anchored in payroll_audit_log.aleo:
+    //   - employer_consent_hash: employer signed off on this exact scope + duration
+    //   - worker_consent_hash:   worker signed off on this exact scope + duration
+    //   - authorization_event_hash: combined proof derived from both consent hashes
+    //
+    // expires_epoch is enforced as exactly issued_epoch + access_duration_epochs.
+    // access_duration_epochs must be non-zero (zero duration = no access).
+    //
+    // The caller (self.caller) becomes the NFT owner (the auditor's Aleo address).
+    //
+    // OPTION_B UPGRADE: Replace employer_consent_hash + worker_consent_hash params
+    //   with `employer_nft: EmployerConsentNFT` and `worker_nft: WorkerConsentNFT`
+    //   consumed records. Derive consent hashes from their fields. Remove the two
+    //   assert_event_anchored calls for those hashes (NFT consumption is the proof).
     async transition mint_authorization_nft(
         auth_id: [u8; 32],
+        request_id: [u8; 32],
         scope_hash: [u8; 32],
         authorization_event_hash: [u8; 32],
+        employer_consent_hash: [u8; 32],
+        worker_consent_hash: [u8; 32],
         policy_hash: [u8; 32],
         issued_epoch: u32,
         expires_epoch: u32,
+        access_duration_epochs: u32,
         schema_v: u16,
         policy_v: u16
     ) -> (AuditAuthorizationNFT, Future) {
         assert(issued_epoch != 0u32);
-        assert(expires_epoch >= issued_epoch);
+        assert(access_duration_epochs != 0u32);
+        assert(expires_epoch == issued_epoch + access_duration_epochs);
         assert(schema_v != 0u16);
         assert(policy_v != 0u16);
 
-        // The authorization event must already be anchored in Layer 1 audit log.
-        let f: Future = payroll_audit_log.aleo/assert_event_anchored(authorization_event_hash);
+        // Verify employer consented to this exact scope + duration
+        let f_employer: Future = payroll_audit_log.aleo/assert_event_anchored(employer_consent_hash);
+
+        // Verify worker consented to this exact scope + duration
+        let f_worker: Future = payroll_audit_log.aleo/assert_event_anchored(worker_consent_hash);
+
+        // Verify the combined dual-consent proof is anchored
+        let f_auth: Future = payroll_audit_log.aleo/assert_event_anchored(authorization_event_hash);
 
         let nft: AuditAuthorizationNFT = AuditAuthorizationNFT {
             auth_id: auth_id,
+            request_id: request_id,
             scope_hash: scope_hash,
+            employer_consent_hash: employer_consent_hash,
+            worker_consent_hash: worker_consent_hash,
             authorization_event_hash: authorization_event_hash,
             policy_hash: policy_hash,
             issued_epoch: issued_epoch,
             expires_epoch: expires_epoch,
+            access_duration_epochs: access_duration_epochs,
             schema_v: schema_v,
             policy_v: policy_v,
             issued_height: 0u32,
             owner: self.caller,
         };
 
-        return (nft, finalize_mint_authorization_nft(f, auth_id, expires_epoch));
+        return (nft, finalize_mint_authorization_nft(f_employer, f_worker, f_auth, auth_id, expires_epoch));
     }
 
-    async function finalize_mint_authorization_nft(f: Future, auth_id: [u8; 32], expires_epoch: u32) {
-        f.await();
+    async function finalize_mint_authorization_nft(
+        f_employer: Future,
+        f_worker: Future,
+        f_auth: Future,
+        auth_id: [u8; 32],
+        expires_epoch: u32
+    ) {
+        f_employer.await();
+        f_worker.await();
+        f_auth.await();
 
-        // anchor_auth_once (inlined)
+        // Idempotency guard: auth_id must not already be anchored
         let existing: u32 = auth_anchor_height.get_or_use(auth_id, 0u32);
         assert(existing == 0u32);
 
