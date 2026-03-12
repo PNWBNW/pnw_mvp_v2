@@ -6,8 +6,8 @@
   "dependencies": [
     {
       "name": "pnw_name_registry.aleo",
-      "location": "local",
-      "path": "../pnw_name_registry.aleo"
+      "location": "network",
+      "network": "testnet"
     }
   ]
 }
