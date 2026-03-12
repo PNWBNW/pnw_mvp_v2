@@ -1,6 +1,6 @@
 # Employment Portal — Product Specification
 
-> Version: 0.1 (MVP scope)
+> Version: 0.2
 > Last updated: 2026-03-12
 > Status: Design phase — no UI built yet
 
@@ -12,75 +12,107 @@ The Employment Portal is a privacy-first web application that sits between users
 the Aleo blockchain. It is **not a wallet** — it never holds funds, private keys, or
 cumulative spend data. It is an **employment relationship interface**: a shared space
 where employers and workers can execute payroll, view their own private records,
-manage credentials, and respond to audit requests.
+manage credentials, respond to audit requests, and generate printable documents.
 
-The closest analogy is QuickBooks meets a blockchain wallet app — but with zero
-plaintext wage or identity data ever leaving the user's session.
+The closest analogy is QuickBooks meets a blockchain employment record — but with
+zero plaintext wage or identity data ever leaving the user's session, and with all
+source-of-truth records cryptographically anchored on-chain.
 
 **What the portal does:**
-- Authenticates both parties and holds their addresses in session only
+- Authenticates both parties via wallet connection or key entry; holds credentials
+  in session only
 - Builds transaction inputs from that session context
 - Dispatches `snarkos developer execute` commands through the adapter layer
 - Decodes the user's own private records back to them via their view key
 - Presents status, history, and pending actions in a clean two-sided UI
+- Generates printable PDFs of NFT-backed documents (paystubs, credentials, audit
+  authorizations) — client-side only, never uploaded
 
 **What the portal never does:**
-- Store private keys, view keys, wages, or names in a database
+- Store private keys, view keys, wages, names, or addresses in a database
 - Show one party's records to the other
 - Act as a custodian of any funds
 - Write plaintext identity or salary data to public chain state
+- Send notifications — users are notified by their Aleo wallet when funds arrive;
+  they open the portal to see the employment details
 
 ---
 
 ## Two-Sided Layout
 
 The portal has two authenticated contexts — **Employer** and **Worker** — with a
-shared zone for actions that require consent from both parties (audit authorization).
+shared zone for actions requiring consent from both parties.
 
 ```
-┌─────────────────────────────────────────────────────────────────┐
-│                    PNW Employment Portal                        │
-├────────────────────────┬────────────────────────────────────────┤
-│   EMPLOYER SIDE        │   WORKER SIDE                          │
-│                        │                                        │
-│  Dashboard             │  Dashboard                             │
-│  ├─ Active employees   │  ├─ My employment status               │
-│  ├─ Pending payroll    │  ├─ My paystubs (private)              │
-│  ├─ USDCx balance      │  ├─ My credentials                     │
-│  └─ Pending audits     │  └─ Pending audit requests             │
-│                        │                                        │
-│  Payroll               │  Wallet Activity                       │
-│  ├─ Run payroll        │  ├─ USDCx received (by epoch)          │
-│  ├─ Payroll history    │  └─ YTD summary (private)              │
-│  └─ YTD summary        │                                        │
-│                        │  Credentials                           │
-│  Employees             │  ├─ My active credentials              │
-│  ├─ Onboard worker     │  └─ Credential history                 │
-│  ├─ View agreements    │                                        │
-│  └─ Revoke/supersede   │  Tax Summary (Phase 6)                 │
-│                        │  ├─ W-2 data export                    │
-│  Credentials           │  └─ State filing summary               │
-│  ├─ Issue credential   │                                        │
-│  └─ Revoke credential  ├────────────────────────────────────────┤
-│                        │   SHARED — AUDIT ZONE                  │
-│  Tax / Compliance      │                                        │
-│  ├─ Audit log          │  Pending Audit Requests                │
-│  ├─ Request audit      │  ├─ View scope + expiry                │
-│  └─ State filing prep  │  ├─ Approve / Decline                  │
-└────────────────────────┴────────────────────────────────────────┘
+┌──────────────────────────────────────────────────────────────────┐
+│                     PNW Employment Portal                        │
+├─────────────────────────┬────────────────────────────────────────┤
+│   EMPLOYER SIDE         │   WORKER SIDE                          │
+│                         │                                        │
+│  Dashboard              │  Dashboard                             │
+│  ├─ Active employees    │  ├─ My employers                       │
+│  ├─ Pending payroll     │  ├─ My paystubs (private)              │
+│  ├─ USDCx balance       │  ├─ My credentials                     │
+│  └─ Pending audits      │  └─ Pending audit requests             │
+│                         │                                        │
+│  Payroll                │  Wallet Activity                       │
+│  ├─ Run payroll         │  ├─ USDCx received (by epoch)          │
+│  ├─ Payroll history     │  └─ YTD summary (private)              │
+│  └─ YTD summary         │                                        │
+│                         │  Credentials                           │
+│  Employees              │  ├─ My active credentials              │
+│  ├─ Onboard worker      │  ├─ Credential history                 │
+│  ├─ View agreements     │  └─ Print credential certificate       │
+│  └─ Revoke/supersede    │                                        │
+│                         │  Documents                             │
+│  Credentials            │  ├─ Print paystub                      │
+│  ├─ Issue credential    │  └─ Print YTD summary                  │
+│  └─ Revoke credential   │                                        │
+│                         │  Tax Summary (Phase 6+)                │
+│  Documents              │  ├─ W-2 / 1099 export                  │
+│  ├─ Print payroll run   │  └─ State filing summary               │
+│  └─ Print YTD summary   ├────────────────────────────────────────┤
+│                         │   SHARED — AUDIT ZONE                  │
+│  Tax / Compliance       │                                        │
+│  ├─ Audit log           │  Pending Audit Requests                │
+│  ├─ Request audit       │  ├─ View scope + expiry                │
+│  └─ State filing prep   │  ├─ Approve / Decline                  │
+│  (Phase 6+)             │  └─ Print authorization doc            │
+└─────────────────────────┴────────────────────────────────────────┘
 ```
 
 ---
 
+## Authentication — Wallet-Agnostic Model
+
+**Decision: No specific wallet is required or gated.**
+
+The portal supports two connection paths, and users can choose either:
+
+**Path A — Wallet Connection (preferred)**
+Connect any compatible Aleo wallet extension (Shield, Puzzle, Leo Wallet, or others).
+The wallet signs transactions and exposes the view key to the portal session. The
+private key never leaves the wallet extension. This is the most secure path and the
+one most users will use once wallet extensions are common.
+
+**Path B — Direct Key Entry (fallback)**
+User pastes their private key and view key directly into a secure session input.
+Portal holds them in memory only for the session duration, never writes them
+anywhere. Suitable for CLI-first operators and Codespace-based testing.
+
+**What the portal needs from the user's session:**
+- `address` — public Aleo address (for record ownership / recipient identification)
+- `view_key` — for decoding their own private records
+- `private_key` — for signing transactions dispatched through the adapter
+
+**What never happens:**
+- No wallet is recommended over another
+- No wallet-specific APIs are hardcoded — wallet integration uses a common interface
+- Wallet gating decisions deferred to post-MVP
+
+---
+
 ## Employer Side
-
-### Authentication
-The employer logs in once per session. Their Aleo address and view key are held in
-the session only — never written to a portal database. The session token authorizes
-all dispatched transactions for the session duration.
-
-The portal injects `ALEO_ADDRESS` into scenario templates at dispatch time. No
-address appears in config files or source code.
 
 ### Dashboard
 - Active worker count (from local employment agreement records)
@@ -94,12 +126,13 @@ address appears in config files or source code.
 1. Employer selects pay period and confirms gross/net/tax breakdown
 2. Portal computes commitment hashes locally (no server round-trip for sensitive data)
 3. Portal dispatches `payroll_core` → `paystub_receipts` → `payroll_nfts` via adapter
-4. Worker receives private USDCx record + PayrollNFT in their wallet
-5. Portal shows confirmation with transaction IDs (linkable to explorer)
+4. Worker receives private USDCx record + PayrollNFT in their Aleo wallet
+5. Portal shows confirmation with transaction IDs (linkable to Provable Explorer)
+6. Employer can immediately generate a printable payroll run document
 
 **Payroll History**
 - List of past payroll epochs for each worker
-- Each row: epoch ID, gross amount, net amount, tx ID, PayrollNFT status
+- Each row: epoch ID, gross, net, tax withheld, tx ID, PayrollNFT status
 - All amounts decoded locally via employer view key — never stored in portal DB
 
 **YTD Summary**
@@ -109,15 +142,41 @@ address appears in config files or source code.
 
 ### Employee Management
 
-**Onboard Worker**
-1. Employer enters worker's Aleo address (or worker scans a QR from their side)
-2. Portal computes name hash locally
-3. Dispatches `worker_profiles` → `employer_agreement` → optional `credential_nft`
-4. Employment agreement NFT anchored on-chain; both parties can verify
+**Onboard Worker — QR Code Flow**
+
+The employer initiates onboarding from the portal. The portal generates a unique
+QR code per employee that encodes a pre-populated onboarding package.
+
+```
+Employer fills in portal:
+  - Worker's prospective role / wage agreement terms
+  - State/jurisdiction (suffix code)
+  - Any initial credential types to issue at hire
+
+Portal generates:
+  - Unique onboarding QR code (contains: employer address hash,
+    agreement template data, portal onboarding link)
+  - Pre-populated employment agreement document (printable)
+  - Optional: code of conduct, wage disclosure, offer letter template
+
+Employer provides QR to worker (printed, emailed, shown on screen)
+
+Worker scans QR → lands on portal onboarding page:
+  - Agreement terms pre-populated
+  - Worker connects wallet or enters credentials
+  - Worker reviews and confirms all terms
+  - Portal dispatches: worker_profiles → employer_agreement → credential_nft (if any)
+  - Employment agreement NFT anchored on-chain; both parties can verify
+```
+
+The portal generates these documents. Physical paperwork (I-9, W-4, state forms)
+is handled outside the portal for MVP. The QR links the off-chain onboarding
+paperwork to the on-chain employment agreement.
 
 **Employment Agreements**
 - View active agreements (decoded from employer's records)
 - Supersede or terminate agreement (triggers on-chain revoke + new mint)
+- Multi-worker view: each worker listed with their agreement status
 
 ### Credentials
 
@@ -125,6 +184,7 @@ address appears in config files or source code.
 - Select worker, credential type, scope, and expiry
 - Portal dispatches `credential_nft` → `mint_credential_nft`
 - Credential NFT is owned by the worker; employer holds an anchor hash
+- Portal can immediately generate a printable credential certificate
 
 **Revoke Credential**
 - Select active credential
@@ -139,32 +199,44 @@ address appears in config files or source code.
 
 **Request Audit Authorization**
 - Employer fills in: auditor address, scope (which epochs), expiry block height
-- Portal creates an `AuditAuthorizationNFT` request visible to the worker
-- Audit only proceeds after both parties sign (see Audit Zone below)
+- Portal creates a pending request visible to the worker
+- Audit only proceeds after both parties consent (see Audit Zone below)
 
 ---
 
 ## Worker Side
 
-### Authentication
-Workers log in with their Aleo address and view key. The portal uses the view key
-to decode only records owned by that worker — no other records are visible.
-
-`WORKER_ADDRESS` is injected into transactions from session context. The portal
-never stores it persistently.
-
 ### Dashboard
-- Current employer name (decoded from agreement record)
-- Most recent paystub (net amount, epoch, tx ID)
-- Active credentials summary
+- **Multi-employer aware**: lists all employers the worker has active agreements with
+- For each employer: current status, most recent paystub epoch, active credentials
 - Any pending audit authorization requests requiring worker consent
+
+### Multi-Employer Support
+
+A worker can have active employment agreements with multiple employers simultaneously.
+The portal surfaces each employer relationship as a separate card/section. Payroll
+history, credentials, and audit requests are always scoped to the specific employer
+relationship — never mixed.
+
+```
+My Employers:
+  ├─ [Employer A — Active — last paid: epoch 20260302]
+  │     ├─ 3 active credentials
+  │     └─ 1 pending audit request
+  └─ [Employer B — Active — last paid: epoch 20260228]
+        └─ 1 active credential
+```
+
+Workers do not need to notify any employer of their other employment relationships.
+Each relationship is private to the parties involved.
 
 ### Paystubs
 
 **Paystub List**
-- One row per payroll epoch: date, gross, net, tax withheld, USDCx received
+- One row per payroll epoch per employer: date, gross, net, tax withheld, USDCx received
 - All decoded locally via worker's view key from their PayrollNFTs and paystub records
 - Each row links to the Provable Explorer tx ID for independent verification
+- Each row has a "Print Paystub" button
 
 **Paystub Detail**
 - Full breakdown: gross, deductions, net
@@ -175,8 +247,10 @@ never stores it persistently.
 
 **USDCx Received**
 - List of inbound USDCx records with amounts and epoch IDs
-- Not a wallet — just a decoded view of the worker's private records
-- Worker can copy their address to receive in any compatible Aleo wallet
+- **Not a wallet** — a decoded view of the worker's private records only
+- Worker's Aleo wallet (Shield, Puzzle, etc.) is where actual funds live and where
+  they will have been notified of receipt; this portal shows the employment context
+  for those receipts
 
 **YTD Summary (Worker View)**
 - Total gross earned, total net received, total tax withheld year-to-date
@@ -188,9 +262,7 @@ never stores it persistently.
 **Active Credentials**
 - List of credential NFTs owned by worker: type, issuer, scope, expiry
 - Status: active / expiring soon / expired / revoked
-
-**Credential History**
-- All credentials ever issued, including revoked ones, with timestamps
+- "Print Certificate" button for each active credential
 
 ---
 
@@ -205,24 +277,24 @@ unilaterally grant an auditor access to payroll data.
 Employer requests audit
         │
         ▼
-Portal creates pending AuditAuthorizationNFT (not yet minted)
+Portal creates pending request (no NFT yet):
+  - Auditor address
+  - Scope: which pay epochs
+  - Expiry: block height (portal shows estimated date)
         │
         ▼
 Worker sees pending request on their dashboard
-        │
-   Worker reviews:
-   - Auditor address
-   - Scope: which pay periods
-   - Expiry: how long access lasts
+Worker reviews full scope and timeline
         │
    ┌────┴────┐
    │ Approve │  → Portal dispatches audit_nft → mint_audit_authorization_nft
+   │         │  → Both parties can print authorization document
    │ Decline │  → Request closed; no NFT minted; no audit proceeds
    └─────────┘
         │
         ▼
 AuditAuthorizationNFT minted, owned by auditor
-Auditor can use it to request scoped disclosure
+Auditor uses it to request scoped disclosure within the access window
         │
         ▼
 At expiry block height: NFT becomes inactive automatically
@@ -241,20 +313,148 @@ At expiry block height: NFT becomes inactive automatically
 
 ---
 
+## Printable Documents — NFT-Backed PDFs
+
+**Decision: Every major NFT action generates a printable human-readable document.**
+
+The portal generates PDFs client-side (no server upload, no third-party service).
+Each document contains enough information to be useful to a human reader — employer
+HR teams, workers keeping personal records, accountants, auditors — without
+exposing private wage or identity data to unauthorized parties.
+
+### Paystub PDF
+
+Generated from the worker's decoded PayrollNFT record.
+
+```
+┌─────────────────────────────────────────────────────┐
+│             PNW Verified Paystub                    │
+│                                                     │
+│  Pay Period:    [Epoch 20260302]                    │
+│  Employer:      [Employer display label]            │
+│  Worker:        [Worker display label]              │
+│                                                     │
+│  Gross Pay:            $X,XXX.XX                   │
+│  Federal Tax:          $  XXX.XX                   │
+│  State Tax:            $   XX.XX                   │
+│  Other Deductions:     $    X.XX                   │
+│  ─────────────────────────────────────             │
+│  Net Pay:              $X,XXX.XX                   │
+│                                                     │
+│  Settled via USDCx on Aleo Testnet                 │
+│                                                     │
+│  On-chain verification:                             │
+│  TX: [transaction ID]                               │
+│  PayrollNFT: [anchor hash]                          │
+│  [QR code → Provable Explorer tx link]              │
+│                                                     │
+│  This document was generated from a private Aleo   │
+│  record. The on-chain anchor is the authoritative  │
+│  source of truth. No private data is published.    │
+└─────────────────────────────────────────────────────┘
+```
+
+- Display labels are set by the user in their session (not stored anywhere)
+- Dollar amounts are decoded from private records via view key
+- The QR code links to the public tx on Provable Explorer
+- No private key material, raw addresses, or unmasked identity data appears
+
+### Credential Certificate PDF
+
+Generated from a CredentialNFT.
+
+```
+┌─────────────────────────────────────────────────────┐
+│           PNW Verified Credential                   │
+│                                                     │
+│  Credential Type:   [e.g., "Employment Verified"]  │
+│  Issued To:         [Worker display label]          │
+│  Issued By:         [Employer display label]        │
+│                                                     │
+│  Scope:             [e.g., "Full-time, WA State"]  │
+│  Valid Through:     [Expiry date / block height]   │
+│  Status:            ACTIVE                         │
+│                                                     │
+│  On-chain verification:                             │
+│  TX: [transaction ID]                               │
+│  CredentialNFT: [anchor hash]                       │
+│  [QR code → Provable Explorer tx link]              │
+│                                                     │
+│  This credential is anchored on the Aleo network.  │
+│  Verify authenticity at [explorer link].            │
+└─────────────────────────────────────────────────────┘
+```
+
+Useful for workers presenting employment verification to third parties (banks,
+landlords, lenders) without disclosing their blockchain address or salary.
+
+### Audit Authorization PDF
+
+Generated from an AuditAuthorizationNFT after both parties consent.
+
+```
+┌─────────────────────────────────────────────────────┐
+│        PNW Audit Authorization Certificate          │
+│                                                     │
+│  Authorized Parties:                                │
+│    Employer:   [Employer display label]             │
+│    Worker:     [Worker display label]               │
+│                                                     │
+│  Authorized To:  [Auditor display label / org]     │
+│                                                     │
+│  Scope:          Pay epochs [X] through [Y]        │
+│  Valid Through:  Block [N] (est. [date])           │
+│  Status:         ACTIVE                             │
+│                                                     │
+│  IMPORTANT: This document confirms authorization   │
+│  scope only. It does not contain private payroll   │
+│  data. Payroll records are accessible only through  │
+│  the authorized disclosure channel for the         │
+│  duration above.                                   │
+│                                                     │
+│  On-chain verification:                             │
+│  TX: [transaction ID]                               │
+│  AuditAuthNFT: [anchor hash]                        │
+│  [QR code → Provable Explorer tx link]              │
+└─────────────────────────────────────────────────────┘
+```
+
+This document can be provided to auditors, regulators, or attorneys as proof
+that a properly scoped and time-limited audit authorization exists on-chain —
+without disclosing the actual payroll data.
+
+### PDF Privacy Rules
+
+| What appears in PDF | Allowed |
+|---|---|
+| User-chosen display labels | Yes — user controls this |
+| Decoded amounts (worker's own data) | Yes — from session view key only |
+| Transaction IDs (public) | Yes — public by definition |
+| Anchor hashes (public commitments) | Yes — hash only, no preimage |
+| Raw Aleo addresses | No — never printed |
+| Private key / view key material | Never |
+| Other party's private data | Never |
+
+---
+
 ## Privacy Model Summary
 
 | Data | Where it lives | Who can see it |
 |---|---|---|
-| Worker address | Session only | Worker, employer (at dispatch) |
+| Worker address | Session only | Worker, employer (at dispatch time) |
 | Employer address | Session only | Employer |
 | Wages / paystub amounts | Private Aleo records | Record owner only (via view key) |
 | Name hashes | Public chain | Anyone (hash only, not name) |
 | Agreement anchors | Public chain | Anyone (commitment only) |
 | Audit event hashes | Public chain | Anyone (hash only) |
 | Actual audit data | Off-chain, scoped | Auditor + parties, time-limited |
+| PDF documents | Client-side only | User who generated it |
 | Tax export CSV | Client-side only | User who exported it |
 
 The portal never writes plaintext wages, names, or addresses to any server database.
+Notifications are handled by the user's Aleo wallet — the portal is not a notification
+system. Workers open the portal to see employment context for activity their wallet
+already showed them.
 
 ---
 
@@ -267,36 +467,41 @@ The portal never writes plaintext wages, names, or addresses to any server datab
 | Issue credential | `credential_nft` | Layer 2 adapter |
 | Request audit | `audit_nft` | Layer 2 adapter |
 | Decode private records | View key scan | Aleo SDK (client-side) |
-| Address injection | `envsubst` / session context | `scripts/run_phase4_execute_scenario.sh` |
+| Address injection | Session context → envsubst | `scripts/run_phase4_execute_scenario.sh` |
 | Scenario validation | JSON schema check | `scripts/validate_phaseA_scenario.py` |
 | Program ID registry | Manifest lookup | `config/testnet.manifest.json` |
+| PDF generation | Client-side render | Portal UI (repo TBD — see Multi-Repo Plan) |
+| QR code generation | Client-side render | Portal UI (repo TBD) |
 
-All execution goes through `aleo_cli_adapter.ts` — the portal UI never calls `snarkos` directly.
+All execution goes through `aleo_cli_adapter.ts` — the portal UI never calls
+`snarkos` directly.
 
 ---
 
 ## Future: Tax & Compliance (Phase 6+)
 
-### W-2 / 1099 Data Export
-- Worker exports their decoded payroll records as a structured JSON or CSV
-- Fields: employer name hash, gross, federal tax withheld, state tax withheld, year
-- No server involvement — computed locally from private records via view key
-- Worker submits to their tax preparer; preparer has no blockchain access required
+**Scope**: Eventually all 50 states + local jurisdictions. MVP focuses on WA.
+The tax export module is designed to be jurisdiction-extensible from the start —
+each jurisdiction is a mapping from decoded payroll fields to a filing schema.
 
-### State Filing Prep (Washington / PNW)
+### W-2 / 1099 Data Export
+- Worker exports decoded payroll records as structured JSON or CSV
+- Fields: employer identifier, gross, federal tax withheld, state tax withheld, year
+- No server involvement — computed locally from private records via view key
+- Worker provides to tax preparer; preparer requires no blockchain access
+
+### State Filing Prep (WA first, all states eventually)
 - Employer exports per-worker YTD summary
-- Maps to WA L&I / ESD reporting fields
+- Maps to WA L&I / ESD fields for MVP; extensible to all state schemas
 - Employer downloads, reviews, submits to state — portal generates the draft only
 
 ### Federal EIN / TIN Handling
-- EIN stored as a hash anchor only — never plaintext on-chain
-- Portal holds EIN in employer session for form population
-- Printed on exported tax docs, never written to chain
+- EIN held in employer session only; never written to chain
+- Printed on exported tax docs at generation time
 
 ### Audit-Ready Package
-- On audit request: portal assembles a scoped disclosure package
-- Contains decoded records for the authorized epochs only
-- Delivered to auditor address via the AuditAuthorizationNFT access grant
+- On audit: portal assembles scoped disclosure package for authorized epochs only
+- Delivered through AuditAuthorizationNFT access grant
 
 ---
 
@@ -304,20 +509,18 @@ All execution goes through `aleo_cli_adapter.ts` — the portal UI never calls `
 
 - Not a custodial wallet — it never holds USDCx or Aleo credits
 - Not a payroll processor — it dispatches; the Aleo program executes
+- Not a notification service — the user's Aleo wallet handles fund notifications
 - Not a tax advisor — it exports data; filing is the user's responsibility
 - Not a source of truth — the blockchain record is canonical; the portal is a view
 
 ---
 
-## Open Questions (To Resolve Before UI Build)
+## Open Questions (Deferred — Not Blocking MVP)
 
-1. **Authentication method** — Aleo wallet extension (Puzzle/Leo wallet) vs. private key
-   paste vs. hardware wallet? Determines how view key is obtained at session start.
-2. **Worker onboarding UX** — does the employer paste the worker's address, or does the
-   worker scan a QR code from the employer's portal session?
-3. **Multi-employer support** — can one worker address have agreements with multiple
-   employers? Yes per the protocol, but the UI needs to handle this.
-4. **Notification layer** — how does a worker know a payroll was run or an audit was
-   requested if they're not watching the portal? Push notification, email digest, or
-   polling?
-5. **Mobile** — responsive web only for MVP, or native app for Phase 6?
+1. **Wallet integration API** — common interface across Shield, Puzzle, Leo wallet, and
+   future wallets. No specific wallet is recommended or gated. Defer to post-MVP.
+2. **Mobile** — responsive web for MVP; native app is Phase 6+ consideration.
+3. **Physical onboarding docs** (I-9, W-4, state forms) — these live outside the portal
+   for MVP. Integration path to be defined.
+4. **Multi-repo interoperability** — see separate `MULTI_REPO_PLAN.md` (to be written
+   after 3-repo structure is confirmed).
