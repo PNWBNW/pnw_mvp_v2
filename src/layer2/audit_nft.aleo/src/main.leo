@@ -107,10 +107,10 @@ program audit_nft.aleo {
         assert(nft.owner == self.caller);
 
         let id: [u8; 32] = nft.auth_id;
-        return finalize_revoke_authorization_nft(id);
+        return finalize_revoke_auth_nft(id);
     }
 
-    async function finalize_revoke_authorization_nft(id: [u8; 32]) {
+    async function finalize_revoke_auth_nft(id: [u8; 32]) {
         let s: u8 = auth_status.get_or_use(id, 0u8);
         assert_status_valid(s);
         assert(s == STATUS_ACTIVE);
@@ -122,10 +122,10 @@ program audit_nft.aleo {
     // Mark authorization expired (permissionless maintenance)
     // ---------------------------------------------------------
     async transition mark_authorization_expired(auth_id: [u8; 32], current_epoch: u32) -> Future {
-        return finalize_mark_authorization_expired(auth_id, current_epoch);
+        return finalize_mark_auth_expired(auth_id, current_epoch);
     }
 
-    async function finalize_mark_authorization_expired(auth_id: [u8; 32], current_epoch: u32) {
+    async function finalize_mark_auth_expired(auth_id: [u8; 32], current_epoch: u32) {
         let s: u8 = auth_status.get_or_use(auth_id, 0u8);
         assert_status_valid(s);
         assert(s == STATUS_ACTIVE);
@@ -145,10 +145,10 @@ program audit_nft.aleo {
         attestation_hash: [u8; 32],
         current_epoch: u32
     ) -> Future {
-        return finalize_anchor_audit_attestation(auth_id, attestation_hash, current_epoch);
+        return finalize_anchor_audit_attest(auth_id, attestation_hash, current_epoch);
     }
 
-    async function finalize_anchor_audit_attestation(
+    async function finalize_anchor_audit_attest(
         auth_id: [u8; 32],
         attestation_hash: [u8; 32],
         current_epoch: u32
@@ -171,19 +171,19 @@ program audit_nft.aleo {
     // Public verification utilities (async; read via REST API off-chain)
     // ---------------------------------------------------------
     async transition assert_authorization_exists(auth_id: [u8; 32]) -> Future {
-        return finalize_assert_authorization_exists(auth_id);
+        return finalize_assert_auth_exists(auth_id);
     }
 
-    async function finalize_assert_authorization_exists(auth_id: [u8; 32]) {
+    async function finalize_assert_auth_exists(auth_id: [u8; 32]) {
         let h: u32 = auth_anchor_height.get_or_use(auth_id, 0u32);
         assert(h != 0u32);
     }
 
     async transition assert_authorization_active(auth_id: [u8; 32], current_epoch: u32) -> Future {
-        return finalize_assert_authorization_active(auth_id, current_epoch);
+        return finalize_assert_auth_active(auth_id, current_epoch);
     }
 
-    async function finalize_assert_authorization_active(auth_id: [u8; 32], current_epoch: u32) {
+    async function finalize_assert_auth_active(auth_id: [u8; 32], current_epoch: u32) {
         let s: u8 = auth_status.get_or_use(auth_id, 0u8);
         assert_status_valid(s);
         assert(s == STATUS_ACTIVE);
@@ -194,10 +194,10 @@ program audit_nft.aleo {
     }
 
     async transition assert_attestation_anchored(attestation_hash: [u8; 32]) -> Future {
-        return finalize_assert_attestation_anchored(attestation_hash);
+        return finalize_assert_attest_anchor(attestation_hash);
     }
 
-    async function finalize_assert_attestation_anchored(attestation_hash: [u8; 32]) {
+    async function finalize_assert_attest_anchor(attestation_hash: [u8; 32]) {
         let h: u32 = attestation_anchor_height.get_or_use(attestation_hash, 0u32);
         assert(h != 0u32);
     }
