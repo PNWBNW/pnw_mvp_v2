@@ -100,30 +100,30 @@ export function resolveLayer1Endpoint(network: Network, step: CallPlanStep): TxM
       return { program: "employer_license_registry.aleo", transition: "get_license_hash", network };
 
     // -----------------------------
-    // employer_agreement.aleo
+    // employer_agreement_v2.aleo
     // -----------------------------
     case "create_job_offer":
-      return { program: "employer_agreement.aleo", transition: "create_job_offer", network };
+      return { program: "employer_agreement_v2.aleo", transition: "create_job_offer", network };
     case "accept_job_offer":
-      return { program: "employer_agreement.aleo", transition: "accept_job_offer", network };
+      return { program: "employer_agreement_v2.aleo", transition: "accept_job_offer", network };
     case "pause_agreement":
-      return { program: "employer_agreement.aleo", transition: "pause_agreement", network };
+      return { program: "employer_agreement_v2.aleo", transition: "pause_agreement", network };
     case "terminate_agreement":
-      return { program: "employer_agreement.aleo", transition: "terminate_agreement", network };
+      return { program: "employer_agreement_v2.aleo", transition: "terminate_agreement", network };
     case "resume_agreement_employer":
-      return { program: "employer_agreement.aleo", transition: "resume_agreement_employer", network };
+      return { program: "employer_agreement_v2.aleo", transition: "resume_agreement_employer", network };
     case "resume_agreement_worker":
-      return { program: "employer_agreement.aleo", transition: "resume_agreement_worker", network };
+      return { program: "employer_agreement_v2.aleo", transition: "resume_agreement_worker", network };
     case "resume_agreement_dao":
-      return { program: "employer_agreement.aleo", transition: "resume_agreement_dao", network };
+      return { program: "employer_agreement_v2.aleo", transition: "resume_agreement_dao", network };
     case "finalize_resume":
-      return { program: "employer_agreement.aleo", transition: "finalize_resume", network };
+      return { program: "employer_agreement_v2.aleo", transition: "finalize_resume", network };
     case "supersede_agreement":
-      return { program: "employer_agreement.aleo", transition: "supersede_agreement", network };
+      return { program: "employer_agreement_v2.aleo", transition: "supersede_agreement", network };
     case "assert_agreement_active":
-      return { program: "employer_agreement.aleo", transition: "assert_agreement_active", network };
+      return { program: "employer_agreement_v2.aleo", transition: "assert_agreement_active", network };
     case "get_agreement_anchor_height":
-      return { program: "employer_agreement.aleo", transition: "get_anchor_height", network };
+      return { program: "employer_agreement_v2.aleo", transition: "get_anchor_height", network };
 
     // -----------------------------
     // paystub_receipts.aleo

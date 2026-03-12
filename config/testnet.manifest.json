@@ -8,7 +8,7 @@
       "worker_profiles": "worker_profiles.aleo",
       "employer_profiles": "employer_profiles.aleo",
       "employer_license_registry": "employer_license_registry.aleo",
-      "employer_agreement": "employer_agreement.aleo",
+      "employer_agreement_v2": "employer_agreement_v2.aleo",
       "payroll_core": "payroll_core.aleo",
       "paystub_receipts": "paystub_receipts.aleo",
       "payroll_audit_log": "payroll_audit_log.aleo"

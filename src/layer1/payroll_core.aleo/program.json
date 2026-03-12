@@ -10,9 +10,9 @@
       "network": "testnet"
     },
     {
-      "name": "employer_agreement.aleo",
+      "name": "employer_agreement_v2.aleo",
       "location": "local",
-      "path": "../employer_agreement.aleo"
+      "path": "../employer_agreement_v2.aleo"
     },
     {
       "name": "paystub_receipts.aleo",

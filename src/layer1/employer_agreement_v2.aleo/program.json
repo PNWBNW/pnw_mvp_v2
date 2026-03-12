@@ -1,5 +1,5 @@
 {
-  "program": "employer_agreement.aleo",
+  "program": "employer_agreement_v2.aleo",
   "version": "0.1.0",
   "description": "Layer 1 employer-worker agreement framework for PNW MVP v2. Supports one-step job offers (PendingAgreement), two-step acceptance into DAO-custodied FinalAgreement, public hash anchors, status control (pause/terminate), and 3-of-3 resume approvals (employer+worker+DAO).",
   "license": "PROPRIETARY",

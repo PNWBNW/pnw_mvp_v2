@@ -1,5 +1,5 @@
 import test_usdcx_stablecoin.aleo;
-import employer_agreement.aleo;
+import employer_agreement_v2.aleo;
 import paystub_receipts.aleo;
 import payroll_audit_log.aleo;
 
@@ -66,7 +66,7 @@ program payroll_core.aleo {
         assert(gross_amount >= tax_withheld);
 
         // Assert agreement is ACTIVE (cross-program Future)
-        let f_agreement: Future = employer_agreement.aleo/assert_agreement_active(agreement_id);
+        let f_agreement: Future = employer_agreement_v2.aleo/assert_agreement_active(agreement_id);
 
         // Execute USDCx private transfer (employer -> worker)
         let (worker_usdcx, remaining_usdcx): (
@@ -193,8 +193,8 @@ program payroll_core.aleo {
         assert(worker2_gross_amount >= worker2_tax_withheld);
 
         // Assert both agreements are ACTIVE
-        let f_agreement1: Future = employer_agreement.aleo/assert_agreement_active(worker1_agreement_id);
-        let f_agreement2: Future = employer_agreement.aleo/assert_agreement_active(worker2_agreement_id);
+        let f_agreement1: Future = employer_agreement_v2.aleo/assert_agreement_active(worker1_agreement_id);
+        let f_agreement2: Future = employer_agreement_v2.aleo/assert_agreement_active(worker2_agreement_id);
 
         // Transfer worker1's net_amount; remainder1 is the change record
         let (worker1_usdcx, remainder1): (

@@ -56,7 +56,7 @@ export function programsForNetwork(net: Network): ProgramRegistry {
     WORKER_PROFILES: { group: "layer1", name: "worker_profiles.aleo" },
     EMPLOYER_PROFILES: { group: "layer1", name: "employer_profiles.aleo" },
     EMPLOYER_LICENSE_REGISTRY: { group: "layer1", name: "employer_license_registry.aleo" },
-    EMPLOYER_AGREEMENT: { group: "layer1", name: "employer_agreement.aleo" },
+    EMPLOYER_AGREEMENT: { group: "layer1", name: "employer_agreement_v2.aleo" },
     PAYROLL_CORE: { group: "layer1", name: "payroll_core.aleo" },
     PAYSTUB_RECEIPTS: { group: "layer1", name: "paystub_receipts.aleo" },
     PAYROLL_AUDIT_LOG: { group: "layer1", name: "payroll_audit_log.aleo" },
