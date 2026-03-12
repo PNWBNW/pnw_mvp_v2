@@ -1,0 +1,86 @@
+{
+  "schema_version": "phaseA.scenario.v1",
+  "scenario_id": "testnet.batch_payroll_smoke.three-workers",
+  "scenario_kind": "batch_payroll",
+  "network": "testnet",
+  "execution_mode": "plan_only",
+  "participants": {
+    "employer": {
+      "name_raw": "Acme Inc.",
+      "name_hash_hex": "0x94237d83d5738ff14b43023d4b39324bb6f54eae7163e3195eb179c7fb296fd4",
+      "address": "${ALEO_ADDRESS}"
+    },
+    "worker1": {
+      "name_hash_hex": "0xa1b2c3d4e5f6a7b8c9d0e1f2a3b4c5d6e7f8a9b0c1d2e3f4a5b6c7d8e9f0a1b2",
+      "address": "${WORKER1_ADDRESS}"
+    },
+    "worker2": {
+      "name_hash_hex": "0xb2c3d4e5f6a7b8c9d0e1f2a3b4c5d6e7f8a9b0c1d2e3f4a5b6c7d8e9f0a1b2c3",
+      "address": "${WORKER2_ADDRESS}"
+    },
+    "worker3": {
+      "name_hash_hex": "0xc3d4e5f6a7b8c9d0e1f2a3b4c5d6e7f8a9b0c1d2e3f4a5b6c7d8e9f0a1b2c3d4",
+      "address": "${WORKER3_ADDRESS}"
+    }
+  },
+  "batch_tx": {
+    "_comment": "execute_payroll_batch_2 — workers 1 and 2 in one transaction, one USDCx record in",
+    "employer_usdcx_record": {
+      "raw": "{ owner: ${ALEO_ADDRESS}.private, amount: 2u64.private }"
+    },
+    "worker1_payroll": {
+      "agreement_id_hex": "0x1a2b3c4d5e6f7a8b9c0d1e2f3a4b5c6d7e8f9a0b1c2d3e4f5a6b7c8d9e0f1a2b",
+      "epoch_id": 20260302,
+      "gross_amount": "1",
+      "net_amount": "1",
+      "tax_withheld": "0",
+      "fee_amount": "0",
+      "receipt_anchor_hex": "0x1111111111111111111111111111111111111111111111111111111111111111",
+      "receipt_pair_hash_hex": "0x2222222222222222222222222222222222222222222222222222222222222222",
+      "payroll_inputs_hash_hex": "0x3333333333333333333333333333333333333333333333333333333333333333",
+      "utc_time_hash_hex": "0x4444444444444444444444444444444444444444444444444444444444444444",
+      "audit_event_hash_hex": "0x5555555555555555555555555555555555555555555555555555555555555555"
+    },
+    "worker2_payroll": {
+      "agreement_id_hex": "0x2b3c4d5e6f7a8b9c0d1e2f3a4b5c6d7e8f9a0b1c2d3e4f5a6b7c8d9e0f1a2b3c",
+      "epoch_id": 20260302,
+      "gross_amount": "1",
+      "net_amount": "1",
+      "tax_withheld": "0",
+      "fee_amount": "0",
+      "receipt_anchor_hex": "0x6666666666666666666666666666666666666666666666666666666666666666",
+      "receipt_pair_hash_hex": "0x7777777777777777777777777777777777777777777777777777777777777777",
+      "payroll_inputs_hash_hex": "0x8888888888888888888888888888888888888888888888888888888888888888",
+      "utc_time_hash_hex": "0x9999999999999999999999999999999999999999999999999999999999999999",
+      "audit_event_hash_hex": "0xaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa"
+    }
+  },
+  "single_tx": {
+    "_comment": "execute_payroll — worker 3 as a separate transaction (3 workers exceed batch_2 arity; use two transactions)",
+    "employer_usdcx_record": {
+      "raw": "{ owner: ${ALEO_ADDRESS}.private, amount: 1u64.private }"
+    },
+    "worker3_payroll": {
+      "agreement_id_hex": "0x3c4d5e6f7a8b9c0d1e2f3a4b5c6d7e8f9a0b1c2d3e4f5a6b7c8d9e0f1a2b3c4d",
+      "epoch_id": 20260302,
+      "gross_amount": "1",
+      "net_amount": "1",
+      "tax_withheld": "0",
+      "fee_amount": "0",
+      "receipt_anchor_hex": "0xbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb",
+      "receipt_pair_hash_hex": "0xcccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc",
+      "payroll_inputs_hash_hex": "0xdddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddd",
+      "utc_time_hash_hex": "0xeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeee",
+      "audit_event_hash_hex": "0xffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff"
+    }
+  },
+  "notes": [
+    "WORKER1_ADDRESS, WORKER2_ADDRESS, WORKER3_ADDRESS are GitHub Secrets — kept private even though addresses appear on-chain.",
+    "ALEO_ADDRESS is a GitHub Variable; ALEO_PRIVATE_KEY and ALEO_VIEW_KEY are GitHub Secrets.",
+    "Tx 1 (batch_tx): execute_payroll_batch_2 pays worker1 + worker2 from a single employer USDCx record. employer_usdcx_record.amount must be >= worker1.net_amount + worker2.net_amount.",
+    "Tx 2 (single_tx): execute_payroll pays worker3 from a separate employer USDCx record (the remaining_usdcx output from Tx 1 can be reused here).",
+    "All hash values in this file are placeholder scaffolds. Replace with outputs from commitments/canonical_encoder.ts before broadcast execution.",
+    "epoch_id values must be unique per (agreement_id, epoch_id) pair — the double-pay guard will reject re-use.",
+    "Use scripts/scan_usdcx_records.sh to find a real employer USDCx record before switching execution_mode to broadcast."
+  ]
+}
