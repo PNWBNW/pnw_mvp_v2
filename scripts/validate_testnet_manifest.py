@@ -13,7 +13,7 @@ REQUIRED = {
         "worker_profiles",
         "employer_profiles",
         "employer_license_registry",
-        "employer_agreement",
+        "employer_agreement_v2",
         "payroll_core",
         "paystub_receipts",
         "payroll_audit_log",
