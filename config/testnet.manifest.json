@@ -25,7 +25,12 @@
   "deployments": {
     "pnw_name_registry.aleo": {
       "status": "pre-existing",
-      "notes": "Already deployed on testnet prior to 2026-03-12 session; leo deploy rejected with 'already exists'",
+      "notes": "Already deployed on testnet prior to 2026-03-12 session; @noupgrade constructor — immutable",
+      "deployed_at": "pre-2026-03-12"
+    },
+    "employer_license_registry.aleo": {
+      "status": "pre-existing",
+      "notes": "Already deployed on testnet prior to 2026-03-12 session; @noupgrade constructor — immutable",
       "deployed_at": "pre-2026-03-12"
     },
     "employer_agreement_v2.aleo": {
