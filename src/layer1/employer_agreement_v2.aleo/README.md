@@ -1,4 +1,4 @@
-# employer_agreement.aleo — README
+# employer_agreement_v2.aleo — README
 
 **Layer:** 1 (Canonical)  
 **Language:** Leo v3.4.0 semantics  
@@ -8,7 +8,7 @@
 
 ## 1) What this program does
 
-`employer_agreement.aleo` is the **canonical agreement contract** that binds an employer and worker to a specific job relationship without exposing identities or terms on-chain.
+`employer_agreement_v2.aleo` is the **canonical agreement contract** that binds an employer and worker to a specific job relationship without exposing identities or terms on-chain.
 
 It supports a two-step flow:
 

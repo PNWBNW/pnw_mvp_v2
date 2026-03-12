@@ -6,7 +6,7 @@
 It exists to provide the portal a **single stable entry surface** and to **orchestrate prerequisite ordering** across Layer 1 programs.
 
 ## What it does
-- Calls into `employer_agreement.aleo` for agreement lifecycle transitions
+- Calls into `employer_agreement_v2.aleo` for agreement lifecycle transitions
 - Calls into `worker_profiles.aleo` / `employer_profiles.aleo` for anchor assertions
 - Calls into `pnw_name_registry.aleo` for ownership assertions
 
@@ -18,7 +18,7 @@ It exists to provide the portal a **single stable entry surface** and to **orche
 - Move USDCx funds (that happens in `payroll_core.aleo`)
 
 ## Dependencies
-- `employer_agreement.aleo`
+- `employer_agreement_v2.aleo`
 - `employer_profiles.aleo`
 - `worker_profiles.aleo`
 - `pnw_name_registry.aleo`

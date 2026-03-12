@@ -16,7 +16,7 @@ cd ../pnw_name_registry.aleo && leo build
 
 # 3. Agreement (deps: name_registry + license_registry)
 
-cd ../employer_agreement.aleo && leo build
+cd ../employer_agreement_v2.aleo && leo build
 
 # 4. Profiles (deps: name_registry [+ license_registry])
 
