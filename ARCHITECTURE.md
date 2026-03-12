@@ -138,7 +138,7 @@ These routers:
 - exist to coordinate user workflows and private computation
 
 ### 5.3 Why There Is No Layer 2 On-Chain Router
-Layer 2 on-chain programs (`receipt_nft.aleo`, `credential_nft.aleo`, `audit_nft.aleo`) are intentionally:
+Layer 2 on-chain programs (`payroll_nfts.aleo`, `credential_nft.aleo`, `audit_nft.aleo`) are intentionally:
 - small
 - single-purpose
 - commitment- and permission-focused
@@ -150,9 +150,77 @@ They do not require an on-chain router because:
 
 ---
 
-## 6. Canonical Data Objects
+## 6. Execution Boundary & Three-Repo Structure
 
-### 6.1 Identity Hashes
+### 6.1 Adapter Execution Boundary (Core Invariant)
+
+The system enforces a strict architectural separation between **planning** and **execution**. This is one of the most important invariants in the codebase.
+
+**Planning layer (never executes):**
+- **Workflows** (`portal/src/workflows/`) define user intent — "run payroll for this agreement and epoch." They produce a typed list of steps but never touch the network, never construct CLI strings, and never hold private keys.
+- **Routers** (`portal/src/router/`) translate workflow output into typed call plans. A call plan is an ordered list of `AleoCLIStep` objects, each specifying a program ID, transition name, and typed arguments. Routers resolve which Layer 1 or Layer 2 programs to call and in what order. They still do not execute.
+- **Layer-specific adapters** (`layer1_adapter.ts`, `layer2_adapter.ts`) map abstract step kinds (e.g., `"mint_payroll_nft"`) to concrete program/transition pairs (e.g., `payroll_nfts.aleo` / `mint_cycle_paystub_nft`). They are lookup tables, not execution engines.
+
+**Execution layer (the only place that talks to the network):**
+- **`aleo_cli_adapter.ts`** is the sole execution boundary. It takes a resolved `AleoCLIStep` and produces a fully formed `snarkos developer execute` command string with correct flag syntax (`--endpoint`, `--broadcast`, `--private-key`), correct argument encoding (array literals like `[ 1u8, 2u8, ... ]`, not hex), and correct program/transition targeting.
+
+**Why this matters:**
+- **Security surface is minimal.** Only one module constructs commands that spend funds or modify chain state. Auditing execution behavior means auditing one file.
+- **Program IDs are centralized.** If a program is redeployed with a new ID, the change propagates from the manifest through the adapter — workflows and routers don't need to change.
+- **Testability is high.** Adapter codec tests (`portal/tests/phase4_adapter.test.ts`) verify command shape, argument encoding, and step kind dispatch without touching the network.
+- **CLI evolution is isolated.** If `snarkos` changes flag names or syntax, only the adapter changes. The entire planning layer remains stable.
+- **Portal UIs never construct CLI commands.** They call workflow functions, receive call plans, and pass them to the adapter. This prevents scattered, inconsistent command construction across the codebase.
+
+### 6.2 CI Gate Architecture
+
+CI is split into two independent gates with a hard security boundary between them:
+
+**Plan Gate (`deploy.yml`):**
+- Triggers on every PR and push to `main`
+- Requires zero secrets — safe to run on any contributor's PR
+- Runs: TypeScript typecheck (Phase 3 + Phase 4 tsconfigs), adapter codec tests, testnet manifest schema validation, Layer 1 public-state leakage guards (ensures no plaintext wages/addresses in public mappings), scenario/file mismatch negative-path guards
+- Failure blocks merge — this is the quality gate for all code changes
+
+**Execute Gate (`execute_testnet.yml`):**
+- Triggers only on manual `workflow_dispatch` or push to the protected `work` branch
+- Requires secrets: `ALEO_PRIVATE_KEY`, `ALEO_VIEW_KEY`, `ALEO_ADDRESS`, `WORKER_ADDRESS`, `ENDPOINT`, `USDCX_PROGRAM_ID`, broadcast command payloads
+- Runs: full testnet scenario execution with real broadcast, receipt verification against the Aleo REST API, evidence bundle generation with SHA integrity checks
+- Protected by GitHub environment (`testnet-staging`) with concurrency controls — only one execute run at a time per ref
+
+**Why the split exists:**
+- Plan-gate runs must never risk spending testnet funds, leaking credentials, or creating on-chain state as a side effect of a PR review
+- Execute-gate runs are expensive (real transactions, real fees) and must be intentionally triggered
+- The two gates validate different things: plan-gate validates code correctness, execute-gate validates on-chain behavior
+
+### 6.3 Three-Repo Structure
+
+The project is built across three independent repositories, each with a distinct audience and responsibility boundary:
+
+| Repo | Purpose | Audience |
+|------|---------|----------|
+| `pnw_mvp_v2` | Foundation: Leo programs, TypeScript adapters, CI/CD, manifests, commitment utilities | Developers, operators |
+| `pnw_employment_portal_v1` | Two-sided employer + worker portal UI: payroll runs, paystubs, credentials, QR onboarding, PDF generation, audit consent | Employers, workers |
+| `pnw_auditing_portal_v1` | Auditor portal UI: view authorization NFTs, receive disclosure keys, decode scoped records, generate audit reports | Auditors, regulators |
+
+**Interoperability contracts between repos:**
+
+1. **Manifest as single source of truth.** `config/testnet.manifest.json` in `pnw_mvp_v2` is the canonical registry of deployed program IDs. Both portal repos consume this file — they never hardcode program IDs. On program redeployment, the manifest is updated here first, then both portals update their pinned reference in the same release window.
+
+2. **Shared adapter interface types.** Both portals call the Aleo network through the same adapter interface defined in `pnw_mvp_v2`. For MVP, portals maintain a local copy of the adapter types with a version comment tracking which `pnw_mvp_v2` commit it came from. Post-MVP, this becomes a published npm package (`@pnw/adapter-types`).
+
+3. **Audit disclosure handoff (the key interop surface).** The `AuditAuthorizationNFT` on Aleo proves an auditor is authorized to view specific payroll epochs for a specific employment relationship. But the NFT authorizes access — it does not deliver data. Actual data delivery is off-chain:
+   - MVP: employer generates a scoped view key and shares it with the auditor manually. The NFT transaction ID is the handshake token both sides reference.
+   - Phase 6: encrypted delivery — portal encrypts the scoped view key to the auditor's Aleo public key, eliminating manual copy.
+
+4. **Shared privacy rules.** All three repos enforce the same privacy invariants: no private keys/view keys/wages/names stored in any database (session memory only), no real addresses committed to git, no plaintext identity or salary on public chain state, no cumulative spend counters, PDFs generated client-side only, audit disclosure scoped and time-limited.
+
+See `docs/MULTI_REPO_PLAN.md` for the full interoperability plan including build order, versioning coordination, and open questions.
+
+---
+
+## 7. Canonical Data Objects
+
+### 7.1 Identity Hashes
 All identities are represented as hashed identifiers:
 - `worker_id: field`
 - `employer_id: field`
@@ -163,20 +231,20 @@ Domain separation example:
 - `H("pnw:v2:worker_id" || <name-encoding> || salt)`
 - `H("pnw:v2:employer_id" || <name-encoding> || salt)`
 
-### 6.2 Epoch IDs
+### 7.2 Epoch IDs
 Payroll periods are referenced via:
 - `epoch_id: u32`
 
 Layer 2 defines epoch encoding rules (weekly, biweekly, monthly, quarterly).  
 Layer 1 enforces only minimal constraints (e.g., epoch uniqueness per agreement).
 
-### 6.3 Commitments
+### 7.3 Commitments
 Standard commitments used across Layer 2 NFTs:
 - `doc_hash: [u8; 32]` – commitment to full document representation
 - `root: [u8; 32]` – Merkle root for selective disclosure
 - `inputs_hash: [u8; 32]` – commitment to the set of underlying receipts/events
 
-### 6.4 Versioning
+### 7.4 Versioning
 All commitment artifacts include:
 - `schema_v: u16` – document schema version
 - `calc_v: u16` – calculation recipe version
@@ -184,27 +252,32 @@ All commitment artifacts include:
 
 ---
 
-## 7. Layer 1 Programs (Responsibilities)
+## 8. Layer 1 Programs (Responsibilities)
 
-### 7.1 `pnw_name_registry.aleo`
+### 8.1 `pnw_name_registry.aleo`
 - Registers `.pnw` identities as non-transferable ownership
 - Enforces naming rules and suffix taxonomy constraints
 - Provides ownership assertions for protocol guards
 
-### 7.2 `worker_profiles.aleo`
+### 8.2 `employer_license_registry.aleo`
+- Validates employer license eligibility before payroll or agreement creation
+- Stores license hash anchors (commitment-only, no plaintext license data)
+- Provides verified-status assertions consumed by other Layer 1 programs
+
+### 8.3 `worker_profiles.aleo`
 - Stores worker profile anchors (hash-only commitments)
 - Provides existence and anchored-state assertions
 
-### 7.3 `employer_profiles.aleo`
+### 8.4 `employer_profiles.aleo`
 - Stores employer profile anchors (hash-only commitments)
 - Provides existence and anchored-state assertions
 
-### 7.4 `employer_agreement.aleo`
+### 8.5 `employer_agreement.aleo`
 - Defines agreement lifecycle (offer → active → pause/terminate → resume)
 - Anchors agreement terms (doc commitments)
 - Provides `ACTIVE` status checks for payroll gating
 
-### 7.5 `payroll_core.aleo`
+### 8.6 `payroll_core.aleo`
 - Executes payroll settlement via **USDCx records**
 - Validates:
   - worker profile exists
@@ -214,17 +287,17 @@ All commitment artifacts include:
 - Mints private paystub receipts (worker + employer)
 - Anchors immutable payroll audit events
 
-### 7.6 `paystub_receipts.aleo`
+### 8.7 `paystub_receipts.aleo`
 - Defines private receipt record formats used by Layer 2 reporting
 - Stores minimal public receipt anchors and anchor heights (for ordering and existence proofs)
 
-### 7.7 `payroll_audit_log.aleo`
+### 8.8 `payroll_audit_log.aleo`
 - Hash-only audit anchors
 - Minimal mapping:
   - `event_hash -> u32` (first-seen block height)
 - No identity or amount storage
 
-### 7.8 `pnw_router.aleo`
+### 8.9 `pnw_router.aleo`
 - Provides a stable on-chain entry surface for orchestrated flows
 - Minimizes duplicated client behavior across portals
 - Performs prerequisite assertions and routes to:
@@ -234,24 +307,24 @@ All commitment artifacts include:
 
 ---
 
-## 8. Layer 2 NFTs (On-Chain Anchors & Permissions)
+## 9. Layer 2 NFTs (On-Chain Anchors & Permissions)
 
 Layer 2 contracts store **commitments and permission primitives**, not raw payroll data.
 
-### 8.1 Receipt NFTs (`receipt_nft.aleo`)
+### 9.1 Payroll NFTs (`payroll_nfts.aleo`)
 Used for anchoring:
-- paystub commitments
-- payroll cycle summaries
-- invoice receipts (optional)
+- payroll cycle paystub commitments
+- quarterly summary commitments
+- YTD and EOY summary commitments
 
 Stores:
-- identity hashes
-- epoch
+- identity hashes (worker, employer)
+- epoch and period identifiers
 - `doc_hash`, `root`, `inputs_hash`
-- versions and block height
-- revocation status
+- schema/calc/policy versions and block height
+- revocation and supersede status
 
-### 8.2 Credential NFTs (`credential_nft.aleo`)
+### 9.2 Credential NFTs (`credential_nft.aleo`)
 Used for:
 - employer verification credential (future governance repo)
 - employment relationship credential (optional)
@@ -263,7 +336,7 @@ Stores:
 - issuer commitments
 - revocation fields
 
-### 8.3 Audit NFTs (`audit_nft.aleo`)
+### 9.3 Audit NFTs (`audit_nft.aleo`)
 Used for:
 - audit authorization tokens (scope + expiration)
 - audit report anchors (commitment to report)
@@ -276,16 +349,16 @@ Stores:
 
 ---
 
-## 9. Canonical Workflows
+## 10. Canonical Workflows
 
-## 9.1 Onboarding Workflow (Employer & Worker)
+## 10.1 Onboarding Workflow (Employer & Worker)
 1. Register `.pnw` identity (name registry)
 2. Create worker profile / employer profile anchors
 3. Create an employment job offer and finalize agreement (agreement program)
 
 MVP v2 intentionally treats “issuer / governance credentials” as **external** (extension point).
 
-## 9.2 Payroll Execution Workflow
+## 10.2 Payroll Execution Workflow
 1. Employer funds wallet with USDCx records
 2. Portal calls Layer 1 router / payroll core
 3. Payroll core validates:
@@ -296,30 +369,53 @@ MVP v2 intentionally treats “issuer / governance credentials” as **external*
 5. Payroll core mints private paystub receipts (worker + employer)
 6. Payroll core anchors payroll audit event hash
 
-## 9.3 Paystub & Reporting Workflow (Layer 2)
+## 10.3 Paystub & Reporting Workflow (Layer 2)
 1. Portal fetches Layer 1 receipts and anchors
 2. Portal decrypts authorized receipts
 3. Portal builds paystub/report documents deterministically
 4. Portal computes `doc_hash`, `root`, `inputs_hash`
 5. Portal optionally mints receipt/audit NFTs on-chain
 
-## 9.4 Audit Workflow (Permissible Auditability)
+## 10.4 Audit Workflow (Permissible Auditability)
 
 This system supports audits without exposing raw payroll or identity data on-chain.
 
-### 9.4.1 On-Chain Request + Authorization (Official)
-1. **Auditor creates an official audit request on-chain**:
-   - Includes `request_id`, `scope_hash`, `subject_binding_hash`, and `expiry_height`.
-2. Required approvals are recorded on-chain:
-   - Employer approval
-   - Worker approval
-   - Presiding SubDAO approval (vote-gated; the vote mechanics live outside MVP v2, but the approval is committed on-chain)
-3. After approvals, an **Audit Authorization NFT** is minted on-chain:
-   - Stores only commitment metadata (e.g., `request_id`, `scope_hash`, `issuer_set_hash`, `expiry_height`)
-   - Does **not** contain private payroll data and does **not** decrypt receipts
+> **MVP vs Future scope:** Sections 10.4.1 through 10.4.2 describe the MVP audit model (on-chain authorization + manual scoped view key share). Sections 10.4.3 through 10.4.6 describe the full target architecture for Phase 6 and beyond (release sessions, confidential activity logging, delayed batched anchoring). The MVP model is simpler but delivers the core privacy guarantee: authorization does not equal disclosure.
 
-### 9.4.2 Time-of-Access Release (Off-Chain, Scoped)
-Even after an Audit Authorization NFT exists, **actual disclosure requires fresh “release” confirmation** from both parties at time-of-access:
+### 10.4.1 On-Chain Authorization (MVP + Future)
+
+Both employer and worker consent to an audit via the employment portal's shared audit zone. After both parties consent:
+
+1. An **Audit Authorization NFT** is minted on-chain via `audit_nft.aleo`:
+   - Stores only commitment metadata: `scope_hash`, `subject_binding_hash`, `expiry_height`
+   - The NFT is owned by the auditor's Aleo address
+   - Does **not** contain private payroll data and does **not** decrypt receipts
+2. The NFT transaction ID serves as the handshake token that both portals reference
+
+**MVP:** Employer and worker approval happens in the employment portal UI. No SubDAO vote required for MVP.
+
+**Future (Phase 6+):** SubDAO approval may be added as a third required approval for certain audit types. The vote mechanics would live outside MVP v2, but the approval commitment would be recorded on-chain.
+
+### 10.4.2 Data Disclosure (MVP: Scoped View Key Share)
+
+The Audit Authorization NFT proves the auditor *may* access data — but it does not deliver data. Actual disclosure is off-chain:
+
+**MVP model:**
+1. After authorization, the employer (or worker) generates a scoped view key for the authorized epochs
+   - For MVP, this is the full view key; scoped derivation is a Phase 6 hardening item
+2. The employer shares the view key with the auditor through the portal's disclosure flow
+   - The NFT transaction ID is the handshake token both sides reference
+3. In the auditing portal, the auditor pastes the view key + NFT tx ID
+4. The auditing portal verifies the NFT is active on-chain, decodes authorized records, and generates an audit report
+5. The auditor can print or export the report
+
+**Phase 6 upgrade:** Replace manual view key share with encrypted delivery — the employment portal encrypts the scoped view key to the auditor's Aleo public key, the auditor decrypts with their private key. No manual copy needed.
+
+### 10.4.3 Release Sessions (Phase 6+)
+
+> **This section describes target architecture, not MVP behavior.**
+
+In the full model, even after an Audit Authorization NFT exists, **actual disclosure requires fresh “release” confirmation** from both parties at time-of-access:
 
 1. When the auditor attempts to access information, the tooling/portal generates a `release_hash` bound to:
    - `request_id`
@@ -334,26 +430,36 @@ Even after an Audit Authorization NFT exists, **actual disclosure requires fresh
    - optionally encrypted to an auditor session key to prevent replay/leakage beyond the approved session
 
 This ensures:
-- authorization ≠ disclosure
+- authorization does not equal disclosure
 - disclosure is scoped, explicit, and time-limited
 - compromised auditor credentials alone are insufficient to extract data
 
-### 9.4.3 Confidential Activity Logging (Off-Chain)
+Security properties of the Release Session model:
+- possession of public NFT metadata alone is insufficient to obtain data
+- compromised auditor credentials cannot bypass worker/employer consent
+- access is revocable by simply refusing to sign a new release
+- expired or revoked authorizations cannot be exercised
+
+### 10.4.4 Confidential Activity Logging (Phase 6+)
+
+> **This section describes target architecture, not MVP behavior.**
+
 Each scoped disclosure action produces an **Access Event** recorded off-chain in an append-only log.
 
 An Access Event commits to (non-exhaustive):
-- `request_id`
-- `scope_hash`
+- `request_id`, `scope_hash`
 - authorization reference (commitment to the Audit Authorization NFT)
-- auditor identity hash
-- session identifier
+- auditor identity hash, session identifier
 - `bundle_hash` (hash of the disclosed bundle)
 - hashes of worker/employer release signatures
 - auditor receipt/acknowledgement signature hash
 
 The log is treated as confidential operational security data and is not published in real time.
 
-### 9.4.4 Monthly Delayed Batched Anchoring (On-Chain, Non-Real-Time)
+### 10.4.5 Monthly Delayed Batched Anchoring (Phase 6+)
+
+> **This section describes target architecture, not MVP behavior.**
+
 To provide immutable accountability **without revealing real-time audit activity**, access events are anchored on-chain in **monthly batches**:
 
 1. At the end of each month, the tooling:
@@ -367,59 +473,18 @@ To provide immutable accountability **without revealing real-time audit activity
    - `schema_v` (event schema version)
 3. The on-chain anchor is published with a **delayed posting window** (not immediate at the moment of access), reducing timing correlation risk.
 
-### 9.4.5 Proving an Access Event (When Needed)
+### 10.4.6 Proving an Access Event (Phase 6+)
+
+> **This section describes target architecture, not MVP behavior.**
+
 If a dispute or compliance review requires proof that an access occurred:
 
 1. The disclosing party reveals the specific `access_event_hash` (and optionally its underlying signed components).
 2. They provide a Merkle membership proof that the event is included in the on-chain monthly `root(period_id)`.
 3. Verifiers confirm inclusion against the on-chain root, without requiring public disclosure of payroll contents.
-
-This provides:
-- immutable accountability when required
-- minimal on-chain signal leakage
-- strong privacy preservation by default
-
-### 9.4.6 Disclosure Release Session Model (Off-Chain Gate)
-
-The protocol intentionally separates **authorization** from **disclosure**.
-
-- **Authorization (on-chain)** establishes that disclosure *may* occur (Audit Request + approvals + Audit Authorization NFT).
-- **Disclosure (off-chain)** is the act of actually releasing private information, and must be explicitly re-confirmed at time-of-access.
-
-#### A) Release sessions are required for any disclosure
-
-Even if an Audit Authorization NFT exists and is valid, the tooling must require a **Release Session** before producing any disclosure bundle.
-
-A Release Session is an off-chain, time-limited permission envelope that proves:
-- the request is being exercised by the authorized auditor
-- the worker and employer explicitly approved the release **at time of access**
-- the release is strictly bounded to the approved scope
-
-Release Sessions enforce:
-- auditor identity verification (wallet signature challenge)
-- fresh worker and employer signatures over a `release_hash`
-- strict scope binding (`scope_hash`)
-- a short-lived session TTL (e.g., 12 hours)
-
-Release Sessions are not recorded on-chain in real time and do not emit public signals.
-They exist solely to gate access to private information.
-
-#### B) Security properties
-
-The Release Session model ensures:
-- possession of public NFT metadata alone is insufficient to obtain data
-- compromised auditor credentials cannot bypass worker/employer consent
-- access is revocable by simply refusing to sign a new release
-- expired or revoked authorizations cannot be exercised
-
-#### C) Optional accountability anchoring
-
-While individual Release Sessions remain private, disclosure activity may later be committed on-chain via **delayed, batched anchoring** (see Section 9.4.4).
-
-This provides non-repudiation and accountability without exposing real-time audit behavior or access patterns.
 ---
 
-## 10. USDCx Integration Notes
+## 11. USDCx Integration Notes
 
 - USDCx is treated as a native Aleo stable asset settled via records.
 - The protocol does not mirror balances or manage ledgers.
@@ -529,7 +594,7 @@ This is the intended architecture.
 
 ---
 
-## 11. Non-Goals (MVP)
+## 12. Non-Goals (MVP)
 
 The MVP intentionally excludes:
 - On-chain analytics and aggregation
@@ -542,7 +607,7 @@ Governance is planned as a **separate interoperable repository** that issues cre
 
 ---
 
-## 12. Extension Points
+## 13. Extension Points
 
 Future enhancements can add:
 - Governance repo interoperability (issuer credentials, revocation, disputes)
@@ -552,11 +617,11 @@ Future enhancements can add:
 - Advanced invoice/billing workflows
 - Token registry resolution and formal USDCx metadata bindings
 
-## 13. External Review Alignment (Privacy, Audit Semantics, Custody)
+## 14. External Review Alignment (Privacy, Audit Semantics, Custody)
 
 This section captures our alignment with common payroll-program review feedback (including concerns raised in buildathon reviews):
 
-### 13.1 Prevent cumulative-total leakage
+### 14.1 Prevent cumulative-total leakage
 
 We do **not** expose cumulative payroll totals in public mappings (for example `total_spent` deltas).
 
@@ -567,7 +632,7 @@ Instead:
 
 This avoids salary inference from "before/after" public counters.
 
-### 13.2 Distinguish audit evidence classes
+### 14.2 Distinguish audit evidence classes
 
 Audit data is intentionally separated by evidence type:
 - **existence/order anchors** (Layer 1 hash logs),
@@ -577,7 +642,7 @@ Audit data is intentionally separated by evidence type:
 
 This is more useful for auditors than a single generic "spent total" record.
 
-### 13.3 Custody model is intentionally non-pooled in MVP
+### 14.3 Custody model is intentionally non-pooled in MVP
 
 MVP v2 intentionally avoids protocol-level pooled custody.
 
