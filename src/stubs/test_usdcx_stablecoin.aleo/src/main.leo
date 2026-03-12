@@ -56,4 +56,6 @@ program test_usdcx_stablecoin.aleo {
         };
         return (recipient, change);
     }
+
+    @noupgrade async constructor() {}
 }

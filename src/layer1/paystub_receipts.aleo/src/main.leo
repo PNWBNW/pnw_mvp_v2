@@ -206,4 +206,6 @@ program paystub_receipts.aleo {
         let h: u32 = receipt_anchor_height.get_or_use(receipt_anchor, 0u32);
         assert(h != 0u32);
     }
+
+    @noupgrade async constructor() {}
 }
