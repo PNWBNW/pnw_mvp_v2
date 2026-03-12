@@ -16,13 +16,16 @@ The architecture is intentionally split into:
 ## 2. Threat Model & Privacy Goals
 
 ### 2.1 Privacy Goals
-The system is designed so that the following are **not publicly observable** on-chain:
+The system is designed so that the following are **not publicly observable** — on-chain or in any portal database:
 - Worker identity (e.g., `.pnw` name)
+- Worker wallet address (input to portal, owner field in private records)
 - Employer identity (e.g., `.pnw` name)
 - Customer identity
 - Wage amounts, hours, invoices, deductions
 - Employment terms / scope-of-work text
 - Aggregated payroll totals or reports
+
+**On-chain note:** Aleo private records encrypt the `owner` field. A worker's wallet address used as the recipient of `transfer_private` is not visible to third-party chain observers — only to the record owner (via view key). Portal systems must extend this guarantee off-chain: worker addresses must not appear in public-facing logs, public databases, or version-controlled config files. They are transmitted session-only and stored only in encrypted/access-controlled backend storage.
 
 ### 2.2 Publicly Observable (Allowed)
 The system allows only **non-sensitive public state**, typically:
@@ -212,7 +215,7 @@ The project is built across three independent repositories, each with a distinct
    - MVP: employer generates a scoped view key and shares it with the auditor manually. The NFT transaction ID is the handshake token both sides reference.
    - Phase 6: encrypted delivery — portal encrypts the scoped view key to the auditor's Aleo public key, eliminating manual copy.
 
-4. **Shared privacy rules.** All three repos enforce the same privacy invariants: no private keys/view keys/wages/names stored in any database (session memory only), no real addresses committed to git, no plaintext identity or salary on public chain state, no cumulative spend counters, PDFs generated client-side only, audit disclosure scoped and time-limited.
+4. **Shared privacy rules.** All three repos enforce the same privacy invariants: no private keys/view keys/wages/names/wallet addresses stored in any database (session memory only); no real addresses committed to git or any public config; no plaintext identity, wallet addresses, or salary on public chain state; no cumulative spend counters; PDFs generated client-side only; audit disclosure scoped and time-limited. Worker wallet addresses entered in the employment portal must be treated as sensitive credentials — stored only in encrypted/access-controlled backend storage, never in public logs, public database tables, or version-controlled files.
 
 See `docs/MULTI_REPO_PLAN.md` for the full interoperability plan including build order, versioning coordination, and open questions.
 
