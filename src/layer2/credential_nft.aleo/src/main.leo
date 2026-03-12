@@ -117,10 +117,10 @@ program credential_nft.aleo {
     // Public verification utilities (async; read via REST API off-chain)
     // ---------------------------------------------------------
     async transition assert_credential_exists(credential_id: [u8; 32]) -> Future {
-        return finalize_assert_credential_exists(credential_id);
+        return finalize_assert_cred_exists(credential_id);
     }
 
-    async function finalize_assert_credential_exists(credential_id: [u8; 32]) {
+    async function finalize_assert_cred_exists(credential_id: [u8; 32]) {
         let h: u32 = credential_anchor_height.get_or_use(credential_id, 0u32);
         assert(h != 0u32);
     }
