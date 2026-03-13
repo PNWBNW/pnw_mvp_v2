@@ -122,8 +122,8 @@ program payroll_core.aleo {
     ) {
         f_agreement.await();
         f_transfer.await();
-        f_audit.await();
         f_receipt.await();
+        f_audit.await();
 
         // Prevent double payment for same agreement + epoch
         let key: PaidEpochKey = PaidEpochKey {
@@ -279,10 +279,10 @@ program payroll_core.aleo {
         f_agreement2.await();
         f_transfer1.await();
         f_transfer2.await();
-        f_audit1.await();
-        f_audit2.await();
         f_receipt1.await();
         f_receipt2.await();
+        f_audit1.await();
+        f_audit2.await();
 
         // Double-pay guard: both checks are atomic — if either fails the tx reverts
         let key1: PaidEpochKey = PaidEpochKey {
