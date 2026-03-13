@@ -19,6 +19,24 @@ program payroll_core.aleo {
         epoch_id: u32,
     }
 
+    // Per-worker payment arguments (used by batch transitions to
+    // stay within Leo's 16-input parameter limit)
+    struct WorkerPayArgs {
+        worker_addr: address,
+        worker_name_hash: field,
+        agreement_id: [u8; 32],
+        epoch_id: u32,
+        gross_amount: u128,
+        net_amount: u128,
+        tax_withheld: u128,
+        fee_amount: u128,
+        receipt_anchor: [u8; 32],
+        receipt_pair_hash: [u8; 32],
+        payroll_inputs_hash: [u8; 32],
+        utc_time_hash: [u8; 32],
+        audit_event_hash: [u8; 32],
+    }
+
     // Prevent double-pay per agreement + epoch
     mapping paid_epoch: PaidEpochKey => bool;
 
@@ -54,6 +72,7 @@ program payroll_core.aleo {
         utc_time_hash: [u8; 32],
         audit_event_hash: [u8; 32]
     ) -> (
+        test_usdcx_stablecoin.aleo/ComplianceRecord,
         test_usdcx_stablecoin.aleo/Token,
         paystub_receipts.aleo/WorkerPaystubReceipt,
         paystub_receipts.aleo/EmployerPaystubReceipt,
@@ -69,10 +88,14 @@ program payroll_core.aleo {
         let f_agreement: Future = employer_agreement_v2.aleo/assert_agreement_active(agreement_id);
 
         // Execute USDCx private transfer (employer -> worker)
-        let (worker_usdcx, remaining_usdcx): (
+        // Actual on-chain signature: transfer_private(from, amount, token, to)
+        // Returns: (ComplianceRecord, worker_token, change_token, Future)
+        let (compliance, worker_usdcx, remaining_usdcx, f_transfer): (
+            test_usdcx_stablecoin.aleo/ComplianceRecord,
             test_usdcx_stablecoin.aleo/Token,
-            test_usdcx_stablecoin.aleo/Token
-        ) = test_usdcx_stablecoin.aleo/transfer_private(employer_usdcx, worker_addr, net_amount);
+            test_usdcx_stablecoin.aleo/Token,
+            Future
+        ) = test_usdcx_stablecoin.aleo/transfer_private(employer_addr, net_amount, employer_usdcx, worker_addr);
 
         // Mint paystub receipts (worker + employer) — async, returns Future
         let (worker_receipt, employer_receipt, f_receipt): (
@@ -100,21 +123,24 @@ program payroll_core.aleo {
         let f_audit: Future = payroll_audit_log.aleo/anchor_event(audit_event_hash);
 
         return (
+            compliance,
             remaining_usdcx,
             worker_receipt,
             employer_receipt,
-            finalize_execute_payroll(f_agreement, f_receipt, f_audit, agreement_id, epoch_id)
+            finalize_execute_payroll(f_agreement, f_transfer, f_receipt, f_audit, agreement_id, epoch_id)
         );
     }
 
     async function finalize_execute_payroll(
         f_agreement: Future,
+        f_transfer: Future,
         f_receipt: Future,
         f_audit: Future,
         agreement_id: [u8; 32],
         epoch_id: u32
     ) {
         f_agreement.await();
+        f_transfer.await();
         f_audit.await();
         f_receipt.await();
 
@@ -132,54 +158,22 @@ program payroll_core.aleo {
     // ---------------------------------------------------------
     // Execute payroll for two workers in a single proof
     //
-    // Design: one employer USDCx record is consumed; the circuit
-    // chains two transfer_private calls internally, so no wallet
-    // record-splitting or manual record management is needed.
-    //
+    // Uses WorkerPayArgs struct to stay within Leo's 16-param limit.
+    // One employer USDCx record is consumed; the circuit chains two
+    // transfer_private calls so no manual record splitting is needed.
     // The double-pay guard is atomic — if either (agreement, epoch)
     // pair was already paid, the entire transaction reverts.
     // ---------------------------------------------------------
     async transition execute_payroll_batch_2(
-        // Single funding record — split internally
         employer_usdcx: test_usdcx_stablecoin.aleo/Token,
-
-        // Employer (shared across both payments)
         employer_addr: address,
         employer_name_hash: field,
-
-        // Worker 1
-        worker1_addr: address,
-        worker1_name_hash: field,
-        worker1_agreement_id: [u8; 32],
-        worker1_epoch_id: u32,
-        worker1_gross_amount: u128,
-        worker1_net_amount: u128,
-        worker1_tax_withheld: u128,
-        worker1_fee_amount: u128,
-        worker1_receipt_anchor: [u8; 32],
-        worker1_receipt_pair_hash: [u8; 32],
-        worker1_payroll_inputs_hash: [u8; 32],
-        worker1_utc_time_hash: [u8; 32],
-        worker1_audit_event_hash: [u8; 32],
-
-        // Worker 2
-        worker2_addr: address,
-        worker2_name_hash: field,
-        worker2_agreement_id: [u8; 32],
-        worker2_epoch_id: u32,
-        worker2_gross_amount: u128,
-        worker2_net_amount: u128,
-        worker2_tax_withheld: u128,
-        worker2_fee_amount: u128,
-        worker2_receipt_anchor: [u8; 32],
-        worker2_receipt_pair_hash: [u8; 32],
-        worker2_payroll_inputs_hash: [u8; 32],
-        worker2_utc_time_hash: [u8; 32],
-        worker2_audit_event_hash: [u8; 32]
+        w1: WorkerPayArgs,
+        w2: WorkerPayArgs
     ) -> (
+        test_usdcx_stablecoin.aleo/ComplianceRecord,   // compliance record for worker 1 transfer
+        test_usdcx_stablecoin.aleo/ComplianceRecord,   // compliance record for worker 2 transfer
         test_usdcx_stablecoin.aleo/Token,              // remaining USDCx returned to employer
-        test_usdcx_stablecoin.aleo/Token,              // worker 1 USDCx token
-        test_usdcx_stablecoin.aleo/Token,              // worker 2 USDCx token
         paystub_receipts.aleo/WorkerPaystubReceipt,    // worker 1 receipt
         paystub_receipts.aleo/EmployerPaystubReceipt,  // employer copy for worker 1 payment
         paystub_receipts.aleo/WorkerPaystubReceipt,    // worker 2 receipt
@@ -187,28 +181,32 @@ program payroll_core.aleo {
         Future
     ) {
         // Basic sanity checks
-        assert(worker1_epoch_id != 0u32);
-        assert(worker1_gross_amount >= worker1_net_amount);
-        assert(worker1_gross_amount >= worker1_tax_withheld);
-        assert(worker2_epoch_id != 0u32);
-        assert(worker2_gross_amount >= worker2_net_amount);
-        assert(worker2_gross_amount >= worker2_tax_withheld);
+        assert(w1.epoch_id != 0u32);
+        assert(w1.gross_amount >= w1.net_amount);
+        assert(w1.gross_amount >= w1.tax_withheld);
+        assert(w2.epoch_id != 0u32);
+        assert(w2.gross_amount >= w2.net_amount);
+        assert(w2.gross_amount >= w2.tax_withheld);
 
         // Assert both agreements are ACTIVE
-        let f_agreement1: Future = employer_agreement_v2.aleo/assert_agreement_active(worker1_agreement_id);
-        let f_agreement2: Future = employer_agreement_v2.aleo/assert_agreement_active(worker2_agreement_id);
+        let f_agreement1: Future = employer_agreement_v2.aleo/assert_agreement_active(w1.agreement_id);
+        let f_agreement2: Future = employer_agreement_v2.aleo/assert_agreement_active(w2.agreement_id);
 
         // Transfer worker1's net_amount; remainder1 is the change record
-        let (worker1_usdcx, remainder1): (
+        let (compliance1, worker1_usdcx, remainder1, f_transfer1): (
+            test_usdcx_stablecoin.aleo/ComplianceRecord,
             test_usdcx_stablecoin.aleo/Token,
-            test_usdcx_stablecoin.aleo/Token
-        ) = test_usdcx_stablecoin.aleo/transfer_private(employer_usdcx, worker1_addr, worker1_net_amount);
+            test_usdcx_stablecoin.aleo/Token,
+            Future
+        ) = test_usdcx_stablecoin.aleo/transfer_private(employer_addr, w1.net_amount, employer_usdcx, w1.worker_addr);
 
         // Transfer worker2's net_amount from the change; remaining_usdcx goes back to employer
-        let (worker2_usdcx, remaining_usdcx): (
+        let (compliance2, worker2_usdcx, remaining_usdcx, f_transfer2): (
+            test_usdcx_stablecoin.aleo/ComplianceRecord,
             test_usdcx_stablecoin.aleo/Token,
-            test_usdcx_stablecoin.aleo/Token
-        ) = test_usdcx_stablecoin.aleo/transfer_private(remainder1, worker2_addr, worker2_net_amount);
+            test_usdcx_stablecoin.aleo/Token,
+            Future
+        ) = test_usdcx_stablecoin.aleo/transfer_private(employer_addr, w2.net_amount, remainder1, w2.worker_addr);
 
         // Mint paystub receipts for worker 1
         let (w1_worker_receipt, w1_employer_receipt, f_receipt1): (
@@ -216,20 +214,20 @@ program payroll_core.aleo {
             paystub_receipts.aleo/EmployerPaystubReceipt,
             Future
         ) = paystub_receipts.aleo/mint_paystub_receipts(
-            worker1_addr,
+            w1.worker_addr,
             employer_addr,
-            worker1_name_hash,
+            w1.worker_name_hash,
             employer_name_hash,
-            worker1_agreement_id,
-            worker1_epoch_id,
-            worker1_gross_amount,
-            worker1_net_amount,
-            worker1_tax_withheld,
-            worker1_fee_amount,
-            worker1_payroll_inputs_hash,
-            worker1_receipt_anchor,
-            worker1_receipt_pair_hash,
-            worker1_utc_time_hash
+            w1.agreement_id,
+            w1.epoch_id,
+            w1.gross_amount,
+            w1.net_amount,
+            w1.tax_withheld,
+            w1.fee_amount,
+            w1.payroll_inputs_hash,
+            w1.receipt_anchor,
+            w1.receipt_pair_hash,
+            w1.utc_time_hash
         );
 
         // Mint paystub receipts for worker 2
@@ -238,40 +236,41 @@ program payroll_core.aleo {
             paystub_receipts.aleo/EmployerPaystubReceipt,
             Future
         ) = paystub_receipts.aleo/mint_paystub_receipts(
-            worker2_addr,
+            w2.worker_addr,
             employer_addr,
-            worker2_name_hash,
+            w2.worker_name_hash,
             employer_name_hash,
-            worker2_agreement_id,
-            worker2_epoch_id,
-            worker2_gross_amount,
-            worker2_net_amount,
-            worker2_tax_withheld,
-            worker2_fee_amount,
-            worker2_payroll_inputs_hash,
-            worker2_receipt_anchor,
-            worker2_receipt_pair_hash,
-            worker2_utc_time_hash
+            w2.agreement_id,
+            w2.epoch_id,
+            w2.gross_amount,
+            w2.net_amount,
+            w2.tax_withheld,
+            w2.fee_amount,
+            w2.payroll_inputs_hash,
+            w2.receipt_anchor,
+            w2.receipt_pair_hash,
+            w2.utc_time_hash
         );
 
         // Anchor audit events for both payments
-        let f_audit1: Future = payroll_audit_log.aleo/anchor_event(worker1_audit_event_hash);
-        let f_audit2: Future = payroll_audit_log.aleo/anchor_event(worker2_audit_event_hash);
+        let f_audit1: Future = payroll_audit_log.aleo/anchor_event(w1.audit_event_hash);
+        let f_audit2: Future = payroll_audit_log.aleo/anchor_event(w2.audit_event_hash);
 
         return (
+            compliance1,
+            compliance2,
             remaining_usdcx,
-            worker1_usdcx,
-            worker2_usdcx,
             w1_worker_receipt,
             w1_employer_receipt,
             w2_worker_receipt,
             w2_employer_receipt,
             finalize_payroll_batch_2(
                 f_agreement1, f_agreement2,
+                f_transfer1, f_transfer2,
                 f_receipt1, f_receipt2,
                 f_audit1, f_audit2,
-                worker1_agreement_id, worker1_epoch_id,
-                worker2_agreement_id, worker2_epoch_id
+                w1.agreement_id, w1.epoch_id,
+                w2.agreement_id, w2.epoch_id
             )
         );
     }
@@ -279,17 +278,21 @@ program payroll_core.aleo {
     async function finalize_payroll_batch_2(
         f_agreement1: Future,
         f_agreement2: Future,
+        f_transfer1: Future,
+        f_transfer2: Future,
         f_receipt1: Future,
         f_receipt2: Future,
         f_audit1: Future,
         f_audit2: Future,
-        worker1_agreement_id: [u8; 32],
-        worker1_epoch_id: u32,
-        worker2_agreement_id: [u8; 32],
-        worker2_epoch_id: u32
+        w1_agreement_id: [u8; 32],
+        w1_epoch_id: u32,
+        w2_agreement_id: [u8; 32],
+        w2_epoch_id: u32
     ) {
         f_agreement1.await();
         f_agreement2.await();
+        f_transfer1.await();
+        f_transfer2.await();
         f_audit1.await();
         f_audit2.await();
         f_receipt1.await();
@@ -297,16 +300,16 @@ program payroll_core.aleo {
 
         // Double-pay guard: both checks are atomic — if either fails the tx reverts
         let key1: PaidEpochKey = PaidEpochKey {
-            agreement_id: worker1_agreement_id,
-            epoch_id: worker1_epoch_id,
+            agreement_id: w1_agreement_id,
+            epoch_id: w1_epoch_id,
         };
         let already_paid1: bool = paid_epoch.get_or_use(key1, false);
         assert(!already_paid1);
         paid_epoch.set(key1, true);
 
         let key2: PaidEpochKey = PaidEpochKey {
-            agreement_id: worker2_agreement_id,
-            epoch_id: worker2_epoch_id,
+            agreement_id: w2_agreement_id,
+            epoch_id: w2_epoch_id,
         };
         let already_paid2: bool = paid_epoch.get_or_use(key2, false);
         assert(!already_paid2);
