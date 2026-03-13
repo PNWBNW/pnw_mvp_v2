@@ -266,7 +266,7 @@ program payroll_core.aleo {
             w1_employer_receipt,
             w2_worker_receipt,
             w2_employer_receipt,
-            finalize_execute_payroll_batch_2(
+            finalize_payroll_batch_2(
                 f_agreement1, f_agreement2,
                 f_receipt1, f_receipt2,
                 f_audit1, f_audit2,
@@ -276,7 +276,7 @@ program payroll_core.aleo {
         );
     }
 
-    async function finalize_execute_payroll_batch_2(
+    async function finalize_payroll_batch_2(
         f_agreement1: Future,
         f_agreement2: Future,
         f_receipt1: Future,
