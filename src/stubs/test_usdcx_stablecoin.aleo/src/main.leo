@@ -39,13 +39,31 @@ program test_usdcx_stablecoin.aleo {
         account.set(to, to_bal + amount);
     }
 
+    // Compliance audit record emitted on every private transfer.
+    record ComplianceRecord {
+        owner: address,
+        from_addr: address,
+        to_addr: address,
+        amount: u128,
+    }
+
     // ---------------------------------------------------------
     // transfer_private — split a Token record into two records.
     // Used by payroll_core for employer → worker private payroll.
-    // Input token is consumed implicitly as a transition input.
+    // Actual on-chain signature (as observed from Leo type errors):
+    //   transfer_private(from: address, amount: u128, token: Token, to: address)
+    //   -> (ComplianceRecord, Token, Token, Future)
+    // NOTE: if the 4th arg type or return shape differs from the
+    // deployed program, Leo will report a type error — update to match.
     // ---------------------------------------------------------
-    transition transfer_private(token: Token, to: address, amount: u128) -> (Token, Token) {
+    async transition transfer_private(from: address, amount: u128, token: Token, to: address) -> (ComplianceRecord, Token, Token, Future) {
         assert(token.amount >= amount);
+        let compliance: ComplianceRecord = ComplianceRecord {
+            owner: from,
+            from_addr: from,
+            to_addr: to,
+            amount: amount,
+        };
         let recipient: Token = Token {
             owner: to,
             amount: amount,
@@ -54,7 +72,11 @@ program test_usdcx_stablecoin.aleo {
             owner: token.owner,
             amount: token.amount - amount,
         };
-        return (recipient, change);
+        return (compliance, recipient, change, finalize_transfer_private(from, to, amount));
+    }
+
+    async function finalize_transfer_private(from: address, to: address, amount: u128) {
+        // compliance/audit hook — actual finalize logic determined by on-chain program
     }
 
     @noupgrade async constructor() {}
