@@ -39,7 +39,9 @@
       "receipt_pair_hash_hex": "0x2222222222222222222222222222222222222222222222222222222222222222",
       "payroll_inputs_hash_hex": "0x3333333333333333333333333333333333333333333333333333333333333333",
       "utc_time_hash_hex": "0x4444444444444444444444444444444444444444444444444444444444444444",
-      "audit_event_hash_hex": "0x5555555555555555555555555555555555555555555555555555555555555555"
+      "audit_event_hash_hex": "0x5555555555555555555555555555555555555555555555555555555555555555",
+      "batch_id_hex": "0x0000000000000000000000000000000000000000000000000000000000000001",
+      "row_hash_hex": "0x0000000000000000000000000000000000000000000000000000000000000000"
     },
     "worker2_payroll": {
       "agreement_id_hex": "0x2b3c4d5e6f7a8b9c0d1e2f3a4b5c6d7e8f9a0b1c2d3e4f5a6b7c8d9e0f1a2b3c",
@@ -52,7 +54,9 @@
       "receipt_pair_hash_hex": "0x7777777777777777777777777777777777777777777777777777777777777777",
       "payroll_inputs_hash_hex": "0x8888888888888888888888888888888888888888888888888888888888888888",
       "utc_time_hash_hex": "0x9999999999999999999999999999999999999999999999999999999999999999",
-      "audit_event_hash_hex": "0xaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa"
+      "audit_event_hash_hex": "0xaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+      "batch_id_hex": "0x0000000000000000000000000000000000000000000000000000000000000001",
+      "row_hash_hex": "0x0000000000000000000000000000000000000000000000000000000000000001"
     }
   },
   "single_tx": {
@@ -71,7 +75,9 @@
       "receipt_pair_hash_hex": "0xcccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc",
       "payroll_inputs_hash_hex": "0xdddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddd",
       "utc_time_hash_hex": "0xeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeee",
-      "audit_event_hash_hex": "0xffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff"
+      "audit_event_hash_hex": "0xffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff",
+      "batch_id_hex": "0x0000000000000000000000000000000000000000000000000000000000000001",
+      "row_hash_hex": "0x0000000000000000000000000000000000000000000000000000000000000002"
     }
   },
   "notes": [
