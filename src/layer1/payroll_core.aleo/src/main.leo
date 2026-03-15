@@ -35,6 +35,13 @@ program payroll_core.aleo {
         payroll_inputs_hash: [u8; 32],
         utc_time_hash: [u8; 32],
         audit_event_hash: [u8; 32],
+        // Manifest linkage (Option B): ties each settlement to a portal-side
+        // PayrollRunManifest. batch_id = BLAKE3(canonical manifest bytes);
+        // row_hash = per-worker row hash from the manifest.
+        // Both are committed into the circuit proof so inclusion is verifiable
+        // without any on-chain mapping write.
+        batch_id: [u8; 32],
+        row_hash: [u8; 32],
     }
 
     // Prevent double-pay per agreement + epoch
@@ -122,8 +129,8 @@ program payroll_core.aleo {
     ) {
         f_agreement.await();
         f_transfer.await();
-        f_audit.await();
         f_receipt.await();
+        f_audit.await();
 
         // Prevent double payment for same agreement + epoch
         let key: PaidEpochKey = PaidEpochKey {
@@ -279,10 +286,10 @@ program payroll_core.aleo {
         f_agreement2.await();
         f_transfer1.await();
         f_transfer2.await();
-        f_audit1.await();
-        f_audit2.await();
         f_receipt1.await();
         f_receipt2.await();
+        f_audit1.await();
+        f_audit2.await();
 
         // Double-pay guard: both checks are atomic — if either fails the tx reverts
         let key1: PaidEpochKey = PaidEpochKey {
