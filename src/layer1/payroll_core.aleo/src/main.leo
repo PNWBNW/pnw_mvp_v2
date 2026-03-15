@@ -35,6 +35,13 @@ program payroll_core.aleo {
         payroll_inputs_hash: [u8; 32],
         utc_time_hash: [u8; 32],
         audit_event_hash: [u8; 32],
+        // Manifest linkage (Option B): ties each settlement to a portal-side
+        // PayrollRunManifest. batch_id = BLAKE3(canonical manifest bytes);
+        // row_hash = per-worker row hash from the manifest.
+        // Both are committed into the circuit proof so inclusion is verifiable
+        // without any on-chain mapping write.
+        batch_id: [u8; 32],
+        row_hash: [u8; 32],
     }
 
     // Prevent double-pay per agreement + epoch

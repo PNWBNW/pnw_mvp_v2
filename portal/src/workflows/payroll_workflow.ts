@@ -29,6 +29,9 @@ export type PayrollWorkflowOutput = {
     receipt_pair_hash: Extract<CallPlanStep, { kind: "execute_payroll" }>["args"]["receipt_pair_hash"];
     payroll_inputs_hash: Extract<CallPlanStep, { kind: "execute_payroll" }>["args"]["payroll_inputs_hash"];
     audit_event_hash: Extract<CallPlanStep, { kind: "execute_payroll" }>["args"]["audit_event_hash"];
+    /** Manifest linkage: passed through for Settlement Coordinator reconciliation. */
+    batch_id: Extract<CallPlanStep, { kind: "execute_payroll" }>["args"]["batch_id"];
+    row_hash: Extract<CallPlanStep, { kind: "execute_payroll" }>["args"]["row_hash"];
   };
 };
 
@@ -64,6 +67,8 @@ export function buildPayrollWorkflow(input: PayrollWorkflowInput): PayrollWorkfl
       receipt_pair_hash: input.payroll.receipt_pair_hash,
       payroll_inputs_hash: input.payroll.payroll_inputs_hash,
       audit_event_hash: input.payroll.audit_event_hash,
+      batch_id: input.payroll.batch_id,
+      row_hash: input.payroll.row_hash,
     },
   };
 }
@@ -92,8 +97,8 @@ export type BatchPayrollWorkflowInput = {
 export type BatchPayrollWorkflowOutput = {
   plan: CallPlanStep[];
   outputs: {
-    worker1: Pick<BatchPayrollWorker, "agreement_id" | "epoch_id" | "receipt_anchor" | "audit_event_hash">;
-    worker2: Pick<BatchPayrollWorker, "agreement_id" | "epoch_id" | "receipt_anchor" | "audit_event_hash">;
+    worker1: Pick<BatchPayrollWorker, "agreement_id" | "epoch_id" | "receipt_anchor" | "audit_event_hash" | "batch_id" | "row_hash">;
+    worker2: Pick<BatchPayrollWorker, "agreement_id" | "epoch_id" | "receipt_anchor" | "audit_event_hash" | "batch_id" | "row_hash">;
     /** Total net USDCx that will leave the employer record (minor units) */
     total_net_amount: bigint;
   };
@@ -145,12 +150,16 @@ export function buildBatchPayrollWorkflow(
         epoch_id: input.worker1.epoch_id,
         receipt_anchor: input.worker1.receipt_anchor,
         audit_event_hash: input.worker1.audit_event_hash,
+        batch_id: input.worker1.batch_id,
+        row_hash: input.worker1.row_hash,
       },
       worker2: {
         agreement_id: input.worker2.agreement_id,
         epoch_id: input.worker2.epoch_id,
         receipt_anchor: input.worker2.receipt_anchor,
         audit_event_hash: input.worker2.audit_event_hash,
+        batch_id: input.worker2.batch_id,
+        row_hash: input.worker2.row_hash,
       },
       total_net_amount: input.worker1.net_amount + input.worker2.net_amount,
     },
