@@ -39,6 +39,10 @@ export type BatchPayrollWorker = {
   payroll_inputs_hash: Bytes32;
   utc_time_hash: Bytes32;
   audit_event_hash: Bytes32;
+  /** Manifest linkage: BLAKE3(canonical PayrollRunManifest bytes). */
+  batch_id: Bytes32;
+  /** Manifest linkage: per-worker row hash from PayrollRunManifest.rows[n].row_hash. */
+  row_hash: Bytes32;
 };
 
 // Adapter interface (implemented by aleo_cli.ts, aleo_wallet.ts, etc.)
@@ -333,6 +337,10 @@ export type CallPlanStep =
         payroll_inputs_hash: Bytes32;
         utc_time_hash: Bytes32;
         audit_event_hash: Bytes32;
+        /** Manifest linkage: BLAKE3(canonical PayrollRunManifest bytes). */
+        batch_id: Bytes32;
+        /** Manifest linkage: per-worker row hash from PayrollRunManifest.rows[n].row_hash. */
+        row_hash: Bytes32;
       };
     }
   | {
