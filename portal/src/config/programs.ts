@@ -51,9 +51,9 @@ export function programsForNetwork(net: Network): ProgramRegistry {
     USDCX_STABLECOIN: { group: "external", name: usdcxProgramName(net) },
 
     // Layer 1
-    PNW_ROUTER: { group: "layer1", name: "pnw_router.aleo" },
+    PNW_ROUTER: { group: "layer1", name: "pnw_router_v2.aleo" },
     PNW_NAME_REGISTRY: { group: "layer1", name: "pnw_name_registry.aleo" },
-    WORKER_PROFILES: { group: "layer1", name: "worker_profiles.aleo" },
+    WORKER_PROFILES: { group: "layer1", name: "pnw_worker_profiles.aleo" },
     EMPLOYER_PROFILES: { group: "layer1", name: "employer_profiles.aleo" },
     EMPLOYER_LICENSE_REGISTRY: { group: "layer1", name: "employer_license_registry.aleo" },
     EMPLOYER_AGREEMENT: { group: "layer1", name: "employer_agreement_v2.aleo" },
