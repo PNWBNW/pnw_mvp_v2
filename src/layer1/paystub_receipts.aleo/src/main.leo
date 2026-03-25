@@ -207,5 +207,5 @@ program paystub_receipts.aleo {
         assert(h != 0u32);
     }
 
-    @noupgrade async constructor() {}
+    @admin(address = "aleo1a2qje865a7ccrrwg37z6e36uyjtqlm5vdj8yzlrhypvg60xhncqqlev4dx") async constructor() {}
 }

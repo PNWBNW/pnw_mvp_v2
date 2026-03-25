@@ -69,13 +69,13 @@ export function resolveLayer1Endpoint(network: Network, step: CallPlanStep): TxM
     // worker_profiles.aleo
     // -----------------------------
     case "create_worker_profile":
-      return { program: "worker_profiles.aleo", transition: "create_worker_profile", network };
+      return { program: "pnw_worker_profiles.aleo", transition: "create_worker_profile", network };
     case "update_worker_profile":
-      return { program: "worker_profiles.aleo", transition: "update_worker_profile", network };
+      return { program: "pnw_worker_profiles.aleo", transition: "update_worker_profile", network };
     case "assert_worker_profile_anchored":
-      return { program: "worker_profiles.aleo", transition: "assert_profile_anchored", network };
+      return { program: "pnw_worker_profiles.aleo", transition: "assert_profile_anchored", network };
     case "get_worker_profile_anchor_height":
-      return { program: "worker_profiles.aleo", transition: "get_anchor_height", network };
+      return { program: "pnw_worker_profiles.aleo", transition: "get_anchor_height", network };
 
     // -----------------------------
     // employer_profiles.aleo
