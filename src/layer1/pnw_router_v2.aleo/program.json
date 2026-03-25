@@ -1,5 +1,5 @@
 {
-  "program": "pnw_router.aleo",
+  "program": "pnw_router_v2.aleo",
   "version": "0.2.0",
   "description": "Layer 1 orchestration router for PNW MVP v2. Routes agreement creation, acceptance, status control, and resume approvals across core Layer 1 programs. Contains no business state or aggregation logic.",
   "license": "PROPRIETARY",
@@ -15,9 +15,9 @@
       "path": "../employer_profiles.aleo"
     },
     {
-      "name": "worker_profiles.aleo",
+      "name": "pnw_worker_profiles.aleo",
       "location": "local",
-      "path": "../worker_profiles.aleo"
+      "path": "../pnw_worker_profiles.aleo"
     },
     {
       "name": "pnw_name_registry.aleo",

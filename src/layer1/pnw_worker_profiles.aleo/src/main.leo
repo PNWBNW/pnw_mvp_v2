@@ -1,6 +1,6 @@
 import pnw_name_registry.aleo;
 
-program worker_profiles.aleo {
+program pnw_worker_profiles.aleo {
 
     // ---------------------------------------------------------
     // Worker Profiles (Layer 1) - PNW MVP v2
@@ -238,5 +238,5 @@ program worker_profiles.aleo {
         return finalize_assert_prof_anchored(profile_anchor);
     }
 
-    @noupgrade async constructor() {}
+    @admin(address = "aleo1a2qje865a7ccrrwg37z6e36uyjtqlm5vdj8yzlrhypvg60xhncqqlev4dx") async constructor() {}
 }
