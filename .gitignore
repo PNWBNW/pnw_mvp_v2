@@ -5,3 +5,4 @@ artifacts/
 leo-bin/
 snarkos-bin/
 .tmp_phase4_tests/
+**/build/
