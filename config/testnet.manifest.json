@@ -62,6 +62,36 @@
       "transaction_id": "at1gvhfmt56t6dc7alg6pgqp6mq4kryxwjtvfyxe2zyt50e2qq845yqk3n3ea",
       "fee_transaction_id": "at1rxm9ufpyr70t4s8hx205nnjh9rqyr02pex88zxrt8qgpa5zauvqswq6w8z",
       "deployed_at": "2026-03-12"
+    },
+    "paystub_receipts.aleo": {
+      "status": "deployed",
+      "transaction_id": "at12r0ld9pkqugatje33sv9844qm3kk4hgf9txgfhxvnu4ah0nwyvrsk22087",
+      "fee_transaction_id": "at14j6kvjtexc23drg6csp6pt6sk9lvaecu6sjqvg90yglspqjccv8qgppk7d",
+      "deployed_at": "2026-03-25"
+    },
+    "employer_profiles.aleo": {
+      "status": "deployed",
+      "transaction_id": "at1nre66kgu56zm8mfespf7gduxqu599f9n2z60dkxe54zuzn6a9gqqpfj3ka",
+      "fee_transaction_id": "at1875dla5az0z5k6kjj39z74pdah5uz4ne0nfzmrwxfju78hm8s5qsq2adxx",
+      "deployed_at": "2026-03-25"
+    },
+    "pnw_worker_profiles.aleo": {
+      "status": "deployed",
+      "transaction_id": "at15fwzcv79w8uhvxftmg3hchvrmzah2f8g3d906v6wamhxmj0dtsrqmcsk48",
+      "fee_transaction_id": "at10md4scp3v9wvfcdznusujqfpa5ka9zg5l8td9dwychh7jjxxjcgq70ygyw",
+      "deployed_at": "2026-03-25"
+    },
+    "payroll_core.aleo": {
+      "status": "deployed",
+      "transaction_id": "at1vsznusqwf9776l6v822r0pu2eqxla537q37246ccezxvku5wqvzq4lpt49",
+      "fee_transaction_id": "at1zuaruj4uus8eznpdklyye6e3cn2jxdt04tvwfyn0lcprteegggzs92v8gu",
+      "deployed_at": "2026-03-25"
+    },
+    "pnw_router_v2.aleo": {
+      "status": "deployed",
+      "transaction_id": "at1chmztf8svpmhvvesx6wjuw8f86wdhyg6wlv0sslexp7mkfqm5vzs8x29n2",
+      "fee_transaction_id": "at1kjfedvv8338t8mjdjkwvvt7sysdkrfn4qy3sqavsww80av7jzczsapq9r3",
+      "deployed_at": "2026-03-25"
     }
   }
 }
