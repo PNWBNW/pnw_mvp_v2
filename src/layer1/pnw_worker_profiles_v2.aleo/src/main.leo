@@ -1,6 +1,6 @@
 import pnw_name_registry_v2.aleo;
 
-program pnw_worker_profiles.aleo {
+program pnw_worker_profiles_v2.aleo {
 
     // ---------------------------------------------------------
     // Worker Profiles (Layer 1) - PNW MVP v2

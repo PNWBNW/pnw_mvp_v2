@@ -1,0 +1,6 @@
+{
+  "program": "pnw_name_registry_v2.aleo",
+  "version": "0.1.0",
+  "description": "Layer 1 PNW name registry v2. Pure name storage — no USDCx calls. Payment handled by pnw_name_registrar.aleo.",
+  "license": "PROPRIETARY"
+}

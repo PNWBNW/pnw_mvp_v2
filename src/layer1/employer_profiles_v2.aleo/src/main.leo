@@ -1,7 +1,7 @@
 import pnw_name_registry_v2.aleo;
 import employer_license_registry.aleo;
 
-program employer_profiles.aleo {
+program employer_profiles_v2.aleo {
 
     // ---------------------------------------------------------
     // Employer Profiles (Layer 1) - PNW MVP v2
