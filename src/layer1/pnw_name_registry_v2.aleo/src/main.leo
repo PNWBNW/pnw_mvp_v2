@@ -31,12 +31,13 @@ program pnw_name_registry_v2.aleo {
     }
 
     // ---------------------------------------------------------
-    // Mappings (same as v1)
+    // Mappings
     // ---------------------------------------------------------
     mapping name_owner: field => address;
     mapping name_kind: field => u8;
     mapping employer_suffix_code: field => u8;
     mapping worker_primary_name_of: address => field;
+    mapping employer_primary_name_of: address => field;
     mapping employer_name_count: address => u8;
     mapping employer_base_paid: field => u128;
     mapping sellback_seller: field => address;
@@ -126,6 +127,12 @@ program pnw_name_registry_v2.aleo {
         employer_suffix_code.set(name_hash, suffix_code);
         employer_base_paid.set(name_hash, base_price);
         employer_name_count.set(owner, actual_count + 1u8);
+
+        // Set as primary if this is the first name
+        let current_primary: field = employer_primary_name_of.get_or_use(owner, 0field);
+        if (current_primary == 0field) {
+            employer_primary_name_of.set(owner, name_hash);
+        }
     }
 
     // ---------------------------------------------------------
@@ -208,6 +215,26 @@ program pnw_name_registry_v2.aleo {
         // Clear sellback state
         sellback_seller.set(name_hash, ZERO_ADDR);
         sellback_refund_amount.set(name_hash, 0u128);
+    }
+
+    // ---------------------------------------------------------
+    // Set primary employer name (callable by the employer)
+    // ---------------------------------------------------------
+    async transition set_primary_employer_name(name_hash: field) -> Future {
+        return finalize_set_primary_empl(self.caller, name_hash);
+    }
+
+    async function finalize_set_primary_empl(caller: address, name_hash: field) {
+        // Verify caller owns this name
+        let owner: address = name_owner.get_or_use(name_hash, ZERO_ADDR);
+        assert(owner == caller);
+
+        // Verify it's an employer name
+        let kind: u8 = name_kind.get_or_use(name_hash, 0u8);
+        assert(kind == KIND_EMPLOYER);
+
+        // Set as primary
+        employer_primary_name_of.set(caller, name_hash);
     }
 
     // ---------------------------------------------------------
