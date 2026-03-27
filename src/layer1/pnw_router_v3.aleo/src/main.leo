@@ -1,9 +1,9 @@
 import employer_agreement_v3.aleo;
-import employer_profiles.aleo;
-import pnw_worker_profiles.aleo;
+import employer_profiles_v2.aleo;
+import pnw_worker_profiles_v2.aleo;
 import pnw_name_registry_v2.aleo;
 
-program pnw_router_v2.aleo {
+program pnw_router_v3.aleo {
 
     // ---------------------------------------------------------
     // PNW Layer 1 Router - MVP v2
@@ -214,12 +214,12 @@ program pnw_router_v2.aleo {
     }
 
     async transition assert_worker_profile_anchored(profile_anchor: [u8; 32]) -> Future {
-        let f: Future = pnw_worker_profiles.aleo/assert_profile_anchored(profile_anchor);
+        let f: Future = pnw_worker_profiles_v2.aleo/assert_profile_anchored(profile_anchor);
         return async { f.await(); };
     }
 
     async transition assert_employer_profile_anchor(profile_anchor: [u8; 32]) -> Future {
-        let f: Future = employer_profiles.aleo/assert_profile_anchored(profile_anchor);
+        let f: Future = employer_profiles_v2.aleo/assert_profile_anchored(profile_anchor);
         return async { f.await(); };
     }
 

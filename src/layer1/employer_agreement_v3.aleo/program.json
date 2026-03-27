@@ -1,7 +1,7 @@
 {
-  "program": "employer_profiles.aleo",
+  "program": "employer_agreement_v3.aleo",
   "version": "0.1.0",
-  "description": "Layer 1 employer profiles for PNW MVP v2. Mints private EmployerProfile records anchored by hash commitments and bound to verified employer name ownership. Enforces industry_code == suffix_code.",
+  "description": "Layer 1 employer-worker agreement framework v3. Same logic as v2 but imports pnw_name_registry_v2.aleo and uses @admin constructor.",
   "license": "PROPRIETARY",
   "dependencies": [
     {

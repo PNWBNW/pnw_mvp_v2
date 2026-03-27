@@ -9,6 +9,7 @@
 //
 // Interface surface used by PNW programs:
 //   - pnw_name_registry: transfer_public
+//   - pnw_name_registrar: transfer_public_as_signer
 //   - payroll_core:      transfer_private, Token record
 // ---------------------------------------------------------
 
@@ -32,6 +33,24 @@ program test_usdcx_stablecoin.aleo {
     }
 
     async function finalize_transfer_public(from: address, to: address, amount: u128) {
+        let from_bal: u128 = account.get_or_use(from, 0u128);
+        assert(from_bal >= amount);
+        account.set(from, from_bal - amount);
+        let to_bal: u128 = account.get_or_use(to, 0u128);
+        account.set(to, to_bal + amount);
+    }
+
+    // ---------------------------------------------------------
+    // transfer_public_as_signer — debit SIGNER's public balance, credit `to`.
+    // Used by pnw_name_registrar for name registration fees.
+    // Unlike transfer_public, this uses self.signer (the original tx signer)
+    // so cross-program calls deduct from the user, not the calling program.
+    // ---------------------------------------------------------
+    async transition transfer_public_as_signer(to: address, amount: u128) -> Future {
+        return finalize_transfer_public_as_signer(self.signer, to, amount);
+    }
+
+    async function finalize_transfer_public_as_signer(from: address, to: address, amount: u128) {
         let from_bal: u128 = account.get_or_use(from, 0u128);
         assert(from_bal >= amount);
         account.set(from, from_bal - amount);
