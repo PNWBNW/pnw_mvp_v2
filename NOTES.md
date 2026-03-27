@@ -210,7 +210,7 @@ async function finalize_mint_cycle_nft(f1: Future, f2: Future, nft_id: [u8; 32])
 ---
 
 ### #6 — SNARKOS_ENDPOINT required but commands use different env var ✅ FIXED
-**Fix applied:** Consolidated three endpoint vars (`RPC_URL`, `SNARKOS_ENDPOINT`, `PHASE4_SUBMIT_ENDPOINT`) into a single canonical `ENDPOINT` var. Updated `require_phase4_execute_env.sh`, `execute_testnet.yml`, `run_phase4_execute_scenario.sh`, and `check_phase4_negative_path_guards.sh`. Also bumped snarkOS from v4.4.0 to v4.5.1 and added `.env.example` with canonical endpoint value.
+**Fix applied:** Consolidated three endpoint vars (`RPC_URL`, `SNARKOS_ENDPOINT`, `PHASE4_SUBMIT_ENDPOINT`) into a single canonical `ENDPOINT` var. Updated `require_phase4_execute_env.sh`, `execute_testnet.yml`, `run_phase4_execute_scenario.sh`, and `check_phase4_negative_path_guards.sh`. Also bumped snarkOS from v4.4.0 to v4.5.5 and added `.env.example` with canonical endpoint value.
 
 **Set secret:** Replace old `RPC_URL`/`SNARKOS_ENDPOINT` GitHub secrets with a single `ENDPOINT` secret: `https://api.explorer.provable.com/v1/testnet`
 

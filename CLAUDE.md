@@ -31,7 +31,7 @@ Full technical spec: `ARCHITECTURE.md`
 | Tool | Version | Binary name | SHA256 |
 |------|---------|-------------|--------|
 | Leo  | 3.5.0 | `leo` | set via `vars.LEO_SHA256` repo var |
-| snarkOS | v4.5.1 | `snarkos` | `f32830e828a3e6ecb403bbc3ad6969b05f1b47e5de687f03f09d7662a6fbcd3c` |
+| snarkOS | v4.5.5 | `snarkos` | `f6f59d6cd783532fee1b805a98ac9d665096b51516ba639fb9bb4b0798ae1074` |
 | Node | 20 | `node` | managed by `actions/setup-node` |
 
 Download URLs are in `.github/workflows/deploy.yml` and `.github/workflows/execute_testnet.yml`.

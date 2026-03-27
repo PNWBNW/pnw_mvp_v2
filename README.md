@@ -133,7 +133,7 @@ The portal repos consume `config/testnet.manifest.json` from this repo as their 
 | Tool | Pinned Version |
 |---|---|
 | Leo | 3.5.0 |
-| snarkOS | v4.5.1 |
+| snarkOS | v4.5.5 |
 | Node.js | 20 |
 
 ---

@@ -46,7 +46,7 @@ if [[ -z "$ALEO_VIEW_KEY" ]]; then
 fi
 
 if ! command -v snarkos &>/dev/null; then
-  echo "ERROR: snarkos not found in PATH. Install snarkOS v4.5.1 (see docs/operations/PHASE4_CLI_SETUP.md)" >&2
+  echo "ERROR: snarkos not found in PATH. Install snarkOS v4.5.5 (see docs/operations/PHASE4_CLI_SETUP.md)" >&2
   exit 1
 fi
 
