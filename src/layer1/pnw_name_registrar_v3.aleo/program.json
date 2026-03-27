@@ -1,0 +1,23 @@
+{
+  "program": "pnw_name_registrar_v3.aleo",
+  "version": "0.1.0",
+  "description": "PNW Name Registrar v2 — testnet pricing (1/2/3 USDCx). Uses transfer_public_as_signer for cross-program USDCx payment.",
+  "license": "PROPRIETARY",
+  "dependencies": [
+    {
+      "name": "employer_license_registry.aleo",
+      "location": "network",
+      "network": "testnet"
+    },
+    {
+      "name": "test_usdcx_stablecoin.aleo",
+      "location": "network",
+      "network": "testnet"
+    },
+    {
+      "name": "pnw_name_registry_v2.aleo",
+      "location": "local",
+      "path": "../pnw_name_registry_v2.aleo"
+    }
+  ]
+}
