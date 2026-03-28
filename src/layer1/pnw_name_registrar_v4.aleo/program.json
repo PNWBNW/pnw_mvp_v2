@@ -1,0 +1,23 @@
+{
+  "program": "pnw_name_registrar_v4.aleo",
+  "version": "0.1.0",
+  "description": "PNW Name Registrar v4 — one name per wallet, flat pricing, worker OR employer.",
+  "license": "PROPRIETARY",
+  "dependencies": [
+    {
+      "name": "employer_license_registry.aleo",
+      "location": "network",
+      "network": "testnet"
+    },
+    {
+      "name": "test_usdcx_stablecoin.aleo",
+      "location": "network",
+      "network": "testnet"
+    },
+    {
+      "name": "pnw_name_registry_v2.aleo",
+      "location": "network",
+      "network": "testnet"
+    }
+  ]
+}
