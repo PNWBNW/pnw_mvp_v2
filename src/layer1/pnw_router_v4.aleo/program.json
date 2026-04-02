@@ -1,0 +1,28 @@
+{
+  "program": "pnw_router_v4.aleo",
+  "version": "0.1.0",
+  "description": "Layer 1 router v4 — Leo v4.0. Routes to v4 agreement and v2 profiles/registry.",
+  "license": "PROPRIETARY",
+  "dependencies": [
+    {
+      "name": "employer_agreement_v4.aleo",
+      "location": "network",
+      "network": "testnet"
+    },
+    {
+      "name": "employer_profiles_v2.aleo",
+      "location": "network",
+      "network": "testnet"
+    },
+    {
+      "name": "pnw_worker_profiles_v2.aleo",
+      "location": "network",
+      "network": "testnet"
+    },
+    {
+      "name": "pnw_name_registry_v2.aleo",
+      "location": "network",
+      "network": "testnet"
+    }
+  ]
+}
