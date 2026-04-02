@@ -2,7 +2,12 @@
 
 > Version: 0.2
 > Last updated: 2026-03-12
-> Status: Design phase — no UI built yet
+> Status: **HISTORICAL DOCUMENT** — written pre-implementation
+
+> **NOTE (2026-04-01):** The portal is now fully built and operational on testnet.
+> For current status, architecture, and implementation details, see the
+> [pnw_employment_portal_v1](https://github.com/PNWBNW/pnw_employment_portal_v1) repository.
+> Key docs: `HANDSHAKE.md` (agreement flow), `BUILD_ORDER.md` (phases), `EMPLOYER_FLOWS.md` (UX).
 
 ---
 
