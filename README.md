@@ -44,19 +44,24 @@ This repository (`pnw_mvp_v2`) is the **foundation layer** — Leo programs, Typ
 
 ### Layer 1 — Canonical On-Chain Logic
 
-Nine Leo programs forming the source of truth for all payroll and compliance state transitions. They handle identity commitments, employment agreements, USDCx payroll execution, private receipt issuance, and hash-only audit anchoring. They never expose identities, wages, or aggregated statistics.
+Leo programs forming the source of truth for all payroll and compliance state transitions. They handle identity commitments, employment agreements, USDCx payroll execution, private receipt issuance, and hash-only audit anchoring. They never expose identities, wages, or aggregated statistics.
 
-| Program | Purpose |
-|---|---|
-| `pnw_name_registry.aleo` | Employer/worker name hash registry with suffix codes |
-| `employer_license_registry.aleo` | License eligibility validation |
-| `employer_profiles.aleo` | Employer profile commitment anchoring |
-| `worker_profiles.aleo` | Worker profile commitment anchoring |
-| `employer_agreement_v2.aleo` | Employment agreement creation, amendment, termination |
-| `payroll_core.aleo` | USDCx payroll execution — consumes employer records, emits worker records |
-| `paystub_receipts.aleo` | Private paystub receipt issuance |
-| `payroll_audit_log.aleo` | Hash-only audit event anchoring |
-| `pnw_router.aleo` | Multi-program orchestration entry point |
+**Active programs (current testnet deployment):**
+
+| Program | Purpose | Constructor |
+|---|---|---|
+| `pnw_name_registry_v2.aleo` | Name hash registry with reverse resolver | @admin |
+| `pnw_name_registrar_v5.aleo` | Registration orchestrator (USDCx payment, name_plaintext storage) | @admin |
+| `employer_license_registry.aleo` | License eligibility validation | @noupgrade |
+| `employer_profiles_v2.aleo` | Employer profile commitment anchoring | @admin |
+| `pnw_worker_profiles_v2.aleo` | Worker profile commitment anchoring | @admin |
+| `employer_agreement_v3.aleo` | Employment agreement creation, acceptance, lifecycle | @admin |
+| `payroll_core.aleo` | USDCx payroll execution — consumes employer records, emits worker records | @admin |
+| `paystub_receipts.aleo` | Private paystub receipt issuance | @admin |
+| `payroll_audit_log.aleo` | Hash-only audit event anchoring | @noupgrade |
+| `pnw_router_v3.aleo` | Multi-program orchestration entry point | @admin |
+
+**Architecture note:** The registry/registrar split separates name storage (registry, stable) from payment + business logic (registrar, upgradeable). One `.pnw` name per wallet — worker OR employer, not both.
 
 ### Layer 2 — Commitment NFT Anchors
 
