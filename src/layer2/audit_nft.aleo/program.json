@@ -7,7 +7,7 @@
     {
       "name": "payroll_audit_log.aleo",
       "location": "network",
-      "path": null
+      "network": "testnet"
     }
   ]
 }

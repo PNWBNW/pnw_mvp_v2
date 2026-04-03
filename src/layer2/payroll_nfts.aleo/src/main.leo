@@ -1,4 +1,6 @@
-import employer_agreement_v2.aleo;
+// NOTE: On-chain deployed version still imports employer_agreement_v2.aleo.
+// This source targets v4 for future redeployment as payroll_nfts_v2.aleo.
+import employer_agreement_v4.aleo;
 import payroll_audit_log.aleo;
 
 // ---------------------------------------------------------
@@ -73,7 +75,7 @@ program payroll_nfts.aleo {
         assert(calc_v != 0u16);
         assert(policy_v != 0u16);
 
-        let f1: Final = employer_agreement_v2.aleo::assert_agreement_active(agreement_id);
+        let f1: Final = employer_agreement_v4.aleo::assert_agreement_active(agreement_id);
         let f2: Final = payroll_audit_log.aleo::assert_event_anchored(inputs_hash);
 
         let nft: PayrollNFT = PayrollNFT {
@@ -126,7 +128,7 @@ program payroll_nfts.aleo {
         assert(calc_v != 0u16);
         assert(policy_v != 0u16);
 
-        let f1: Final = employer_agreement_v2.aleo::assert_agreement_active(agreement_id);
+        let f1: Final = employer_agreement_v4.aleo::assert_agreement_active(agreement_id);
         let f2: Final = payroll_audit_log.aleo::assert_event_anchored(inputs_hash);
 
         let nft: PayrollNFT = PayrollNFT {
@@ -179,7 +181,7 @@ program payroll_nfts.aleo {
         assert(calc_v != 0u16);
         assert(policy_v != 0u16);
 
-        let f1: Final = employer_agreement_v2.aleo::assert_agreement_active(agreement_id);
+        let f1: Final = employer_agreement_v4.aleo::assert_agreement_active(agreement_id);
         let f2: Final = payroll_audit_log.aleo::assert_event_anchored(inputs_hash);
 
         let nft: PayrollNFT = PayrollNFT {
@@ -232,7 +234,7 @@ program payroll_nfts.aleo {
         assert(calc_v != 0u16);
         assert(policy_v != 0u16);
 
-        let f1: Final = employer_agreement_v2.aleo::assert_agreement_active(agreement_id);
+        let f1: Final = employer_agreement_v4.aleo::assert_agreement_active(agreement_id);
         let f2: Final = payroll_audit_log.aleo::assert_event_anchored(inputs_hash);
 
         let nft: PayrollNFT = PayrollNFT {
