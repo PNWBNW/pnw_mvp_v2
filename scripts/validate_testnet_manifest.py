@@ -10,10 +10,11 @@ REQUIRED = {
     "layer1": [
         "pnw_router",
         "pnw_name_registry",
+        "pnw_name_registrar",
         "worker_profiles",
         "employer_profiles",
         "employer_license_registry",
-        "employer_agreement_v2",
+        "employer_agreement",
         "payroll_core",
         "paystub_receipts",
         "payroll_audit_log",
