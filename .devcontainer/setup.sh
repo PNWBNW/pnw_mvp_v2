@@ -3,11 +3,11 @@
 # Installs Leo + snarkOS at the exact pinned versions used by CI.
 set -euo pipefail
 
-LEO_VERSION="3.5.0"
-SNARKOS_VERSION="v4.5.5"
-LEO_URL="https://github.com/ProvableHQ/leo/releases/download/v${LEO_VERSION}/leo-release-3.5-x86_64-unknown-linux-gnu.zip"
-SNARKOS_URL="https://github.com/ProvableHQ/snarkOS/releases/download/${SNARKOS_VERSION}/aleo-v4.5.5-x86_64-unknown-linux-gnu.zip"
-SNARKOS_SHA256="f32830e828a3e6ecb403bbc3ad6969b05f1b47e5de687f03f09d7662a6fbcd3c"
+LEO_VERSION="4.0.0"
+SNARKOS_VERSION="v4.6.0"
+LEO_URL="https://github.com/ProvableHQ/leo/releases/download/v${LEO_VERSION}/leo-master-x86_64-unknown-linux-gnu.zip"
+SNARKOS_URL="https://github.com/ProvableHQ/snarkOS/releases/download/${SNARKOS_VERSION}/aleo-${SNARKOS_VERSION}-x86_64-unknown-linux-gnu.zip"
+SNARKOS_SHA256="a7e1fdb4329b8ee45b1372aa5867d56f84a442caffe3c55bca8b20ca34f2bb25"
 
 echo "=== Installing Leo ${LEO_VERSION} ==="
 curl -fsSL "$LEO_URL" -o /tmp/leo.zip
