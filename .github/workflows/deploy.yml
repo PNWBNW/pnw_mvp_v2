@@ -11,12 +11,12 @@ jobs:
     runs-on: ubuntu-24.04
 
     env:
-      LEO_VERSION: 3.5.0
-      SNARKOS_VERSION: v4.5.5
-      LEO_URL: https://github.com/ProvableHQ/leo/releases/download/v3.5.0/leo-release-3.5-x86_64-unknown-linux-gnu.zip
-      SNARKOS_URL: https://github.com/ProvableHQ/snarkOS/releases/download/v4.5.5/aleo-v4.5.5-x86_64-unknown-linux-gnu.zip
+      LEO_VERSION: 4.0.0
+      SNARKOS_VERSION: v4.6.0
+      LEO_URL: https://github.com/ProvableHQ/leo/releases/download/v4.0.0/leo-master-x86_64-unknown-linux-gnu.zip
+      SNARKOS_URL: https://github.com/ProvableHQ/snarkOS/releases/download/v4.6.0/aleo-v4.6.0-x86_64-unknown-linux-gnu.zip
       LEO_SHA256: "${{ vars.LEO_SHA256 }}"
-      SNARKOS_SHA256: "f6f59d6cd783532fee1b805a98ac9d665096b51516ba639fb9bb4b0798ae1074"
+      SNARKOS_SHA256: "a7e1fdb4329b8ee45b1372aa5867d56f84a442caffe3c55bca8b20ca34f2bb25"
       STRICT_VERSION_CHECK: "false"
 
     steps:
@@ -28,16 +28,16 @@ jobs:
         with:
           node-version: '20'
 
-      - name: 🛠️ Install Leo CLI (v3.5.0)
+      - name: 🛠️ Install Leo CLI (v4.0.0)
         run: |
-          curl -L "https://github.com/ProvableHQ/leo/releases/download/v3.5.0/leo-release-3.5-x86_64-unknown-linux-gnu.zip" -o leo.zip
+          curl -L "https://github.com/ProvableHQ/leo/releases/download/v4.0.0/leo-master-x86_64-unknown-linux-gnu.zip" -o leo.zip
           unzip leo.zip -d /tmp
           sudo mv /tmp/leo /usr/local/bin/leo
           sudo chmod +x /usr/local/bin/leo
           leo --version
-      - name: ⚙️ Install snarkOS (v4.5.5)
+      - name: ⚙️ Install snarkOS (v4.6.0)
         run: |
-          curl -L "https://github.com/ProvableHQ/snarkOS/releases/download/v4.5.5/aleo-v4.5.5-x86_64-unknown-linux-gnu.zip" -o snarkos.zip
+          curl -L "https://github.com/ProvableHQ/snarkOS/releases/download/v4.6.0/aleo-v4.6.0-x86_64-unknown-linux-gnu.zip" -o snarkos.zip
           unzip snarkos.zip -d /tmp
           sudo mv /tmp/snarkos /usr/local/bin/snarkos
           sudo chmod +x /usr/local/bin/snarkos
