@@ -3,13 +3,14 @@
   "network": "testnet",
   "program_ids": {
     "layer1": {
-      "pnw_router": "pnw_router_v2.aleo",
-      "pnw_name_registry": "pnw_name_registry.aleo",
-      "worker_profiles": "pnw_worker_profiles.aleo",
-      "employer_profiles": "employer_profiles.aleo",
+      "pnw_router": "pnw_router_v4.aleo",
+      "pnw_name_registry": "pnw_name_registry_v2.aleo",
+      "pnw_name_registrar": "pnw_name_registrar_v5.aleo",
+      "worker_profiles": "pnw_worker_profiles_v2.aleo",
+      "employer_profiles": "employer_profiles_v2.aleo",
       "employer_license_registry": "employer_license_registry.aleo",
-      "employer_agreement_v2": "employer_agreement_v2.aleo",
-      "payroll_core": "payroll_core.aleo",
+      "employer_agreement": "employer_agreement_v4.aleo",
+      "payroll_core": "payroll_core_v2.aleo",
       "paystub_receipts": "paystub_receipts.aleo",
       "payroll_audit_log": "payroll_audit_log.aleo"
     },
@@ -24,74 +25,82 @@
   },
   "deployments": {
     "pnw_name_registry.aleo": {
-      "status": "pre-existing",
-      "notes": "Already deployed on testnet prior to 2026-03-12 session; @noupgrade constructor — immutable",
+      "status": "legacy",
+      "notes": "v1, @noupgrade — superseded by pnw_name_registry_v2.aleo",
       "deployed_at": "pre-2026-03-12"
+    },
+    "pnw_name_registry_v2.aleo": {
+      "status": "active",
+      "notes": "@admin, upgraded with resolver mappings",
+      "deployed_at": "2026-03-26"
+    },
+    "pnw_name_registrar_v5.aleo": {
+      "status": "active",
+      "notes": "@admin, flat 1 USDCx pricing, reverse resolver",
+      "deployed_at": "2026-03-28"
     },
     "employer_license_registry.aleo": {
-      "status": "pre-existing",
-      "notes": "Already deployed on testnet prior to 2026-03-12 session; @noupgrade constructor — immutable",
+      "status": "active",
+      "notes": "@noupgrade — immutable",
       "deployed_at": "pre-2026-03-12"
     },
-    "employer_agreement_v2.aleo": {
-      "status": "deployed",
-      "transaction_id": "at1jgwcq3k52u050544gyzuz3cr6g4kxlc8dd0hekvxrh5as56gccysas7xtw",
-      "fee_transaction_id": "at13y7q4np4v8gt5lgnanu0ynwqr22s0gehpy23v4k2kcnjlz3k7c8qskcehz",
-      "deployed_at": "2026-03-12"
+    "employer_profiles_v2.aleo": {
+      "status": "active",
+      "notes": "@admin, uses registry_v2",
+      "deployed_at": "2026-03-26"
+    },
+    "pnw_worker_profiles_v2.aleo": {
+      "status": "active",
+      "notes": "@admin, uses registry_v2",
+      "deployed_at": "2026-03-26"
+    },
+    "employer_agreement_v4.aleo": {
+      "status": "active",
+      "transaction_id": "at1488hqlv0apt8rx9zrmkr67pe5ffp2pc59w4gtelmflepa04meqxsklhksw",
+      "notes": "@admin, Leo v4.0, 3-party FinalAgreement records",
+      "deployed_at": "2026-04-01"
+    },
+    "payroll_core_v2.aleo": {
+      "status": "active",
+      "transaction_id": "at1kfsdlwvgnuwgtzpmksglhldeachyt6qecfhm7078uqfh0qte2gpskwzmev",
+      "notes": "@admin, Leo v4.0, imports employer_agreement_v4",
+      "deployed_at": "2026-04-01"
+    },
+    "paystub_receipts.aleo": {
+      "status": "active",
+      "transaction_id": "at12r0ld9pkqugatje33sv9844qm3kk4hgf9txgfhxvnu4ah0nwyvrsk22087",
+      "fee_transaction_id": "at14j6kvjtexc23drg6csp6pt6sk9lvaecu6sjqvg90yglspqjccv8qgppk7d",
+      "deployed_at": "2026-03-25"
     },
     "payroll_audit_log.aleo": {
-      "status": "deployed",
+      "status": "active",
       "transaction_id": "at18ww9zuyvxdzhqj9leenjafpwkpfk6hv86xevu256plyapjwa2qyq3d376y",
       "fee_transaction_id": "at1meyyw87efh0f2j6tceha57hnhuy0y7m5ms2m5g0ypr6zvx7sssfq443a7a",
       "deployed_at": "2026-03-12"
     },
+    "pnw_router_v4.aleo": {
+      "status": "active",
+      "transaction_id": "at1an4r6ejuss09kc05m0gdmvz40je4995muupmdw73y2ku6mkrnyyqxfhmfe",
+      "notes": "@admin, Leo v4.0, routes to v4/v2 programs",
+      "deployed_at": "2026-04-01"
+    },
     "payroll_nfts.aleo": {
-      "status": "deployed",
+      "status": "active",
       "transaction_id": "at1hhd5ahu0zkg5gn37ldvjlht3mkk7yykxvuyuz8fzsxg07ep9kq8qjuk0p2",
       "fee_transaction_id": "at1dzmgs8lva64shlqgyz5krvrmd555gzqx7ua3yg7583rdf0jf2szqdzq04g",
       "deployed_at": "2026-03-12"
     },
     "credential_nft.aleo": {
-      "status": "deployed",
+      "status": "active",
       "transaction_id": "at1t0zlpphuqfvghjnjjzjt7sjea7kk2yv740r3pefw9ajddklx85qqw84ms2",
       "fee_transaction_id": "at109gaa5nnzc7jf5663tjvyrp39zspzxzpw8ksfw2u6uysjdgcyyxqsvy0p6",
       "deployed_at": "2026-03-12"
     },
     "audit_nft.aleo": {
-      "status": "deployed",
+      "status": "active",
       "transaction_id": "at1gvhfmt56t6dc7alg6pgqp6mq4kryxwjtvfyxe2zyt50e2qq845yqk3n3ea",
       "fee_transaction_id": "at1rxm9ufpyr70t4s8hx205nnjh9rqyr02pex88zxrt8qgpa5zauvqswq6w8z",
       "deployed_at": "2026-03-12"
-    },
-    "paystub_receipts.aleo": {
-      "status": "deployed",
-      "transaction_id": "at12r0ld9pkqugatje33sv9844qm3kk4hgf9txgfhxvnu4ah0nwyvrsk22087",
-      "fee_transaction_id": "at14j6kvjtexc23drg6csp6pt6sk9lvaecu6sjqvg90yglspqjccv8qgppk7d",
-      "deployed_at": "2026-03-25"
-    },
-    "employer_profiles.aleo": {
-      "status": "deployed",
-      "transaction_id": "at1nre66kgu56zm8mfespf7gduxqu599f9n2z60dkxe54zuzn6a9gqqpfj3ka",
-      "fee_transaction_id": "at1875dla5az0z5k6kjj39z74pdah5uz4ne0nfzmrwxfju78hm8s5qsq2adxx",
-      "deployed_at": "2026-03-25"
-    },
-    "pnw_worker_profiles.aleo": {
-      "status": "deployed",
-      "transaction_id": "at15fwzcv79w8uhvxftmg3hchvrmzah2f8g3d906v6wamhxmj0dtsrqmcsk48",
-      "fee_transaction_id": "at10md4scp3v9wvfcdznusujqfpa5ka9zg5l8td9dwychh7jjxxjcgq70ygyw",
-      "deployed_at": "2026-03-25"
-    },
-    "payroll_core.aleo": {
-      "status": "deployed",
-      "transaction_id": "at1vsznusqwf9776l6v822r0pu2eqxla537q37246ccezxvku5wqvzq4lpt49",
-      "fee_transaction_id": "at1zuaruj4uus8eznpdklyye6e3cn2jxdt04tvwfyn0lcprteegggzs92v8gu",
-      "deployed_at": "2026-03-25"
-    },
-    "pnw_router_v2.aleo": {
-      "status": "deployed",
-      "transaction_id": "at1chmztf8svpmhvvesx6wjuw8f86wdhyg6wlv0sslexp7mkfqm5vzs8x29n2",
-      "fee_transaction_id": "at1kjfedvv8338t8mjdjkwvvt7sysdkrfn4qy3sqavsww80av7jzczsapq9r3",
-      "deployed_at": "2026-03-25"
     }
   }
 }

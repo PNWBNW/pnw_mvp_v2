@@ -55,11 +55,11 @@ Leo programs forming the source of truth for all payroll and compliance state tr
 | `employer_license_registry.aleo` | License eligibility validation | @noupgrade |
 | `employer_profiles_v2.aleo` | Employer profile commitment anchoring | @admin |
 | `pnw_worker_profiles_v2.aleo` | Worker profile commitment anchoring | @admin |
-| `employer_agreement_v3.aleo` | Employment agreement creation, acceptance, lifecycle | @admin |
-| `payroll_core.aleo` | USDCx payroll execution — consumes employer records, emits worker records | @admin |
+| `employer_agreement_v4.aleo` | Employment agreement creation, acceptance, lifecycle (3-party records) | @admin |
+| `payroll_core_v2.aleo` | USDCx payroll execution — consumes employer records, emits worker records | @admin |
 | `paystub_receipts.aleo` | Private paystub receipt issuance | @admin |
 | `payroll_audit_log.aleo` | Hash-only audit event anchoring | @noupgrade |
-| `pnw_router_v3.aleo` | Multi-program orchestration entry point | @admin |
+| `pnw_router_v4.aleo` | Multi-program orchestration entry point | @admin |
 
 **Architecture note:** The registry/registrar split separates name storage (registry, stable) from payment + business logic (registrar, upgradeable). One `.pnw` name per wallet — worker OR employer, not both.
 
@@ -137,8 +137,8 @@ The portal repos consume `config/testnet.manifest.json` from this repo as their 
 
 | Tool | Pinned Version |
 |---|---|
-| Leo | 3.5.0 |
-| snarkOS | v4.5.5 |
+| Leo | 4.0.0 |
+| snarkOS | v4.6.0 |
 | Node.js | 20 |
 
 ---
