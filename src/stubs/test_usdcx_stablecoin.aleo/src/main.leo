@@ -28,16 +28,15 @@ program test_usdcx_stablecoin.aleo {
     // transfer_public — debit caller's public balance, credit `to`.
     // Used by pnw_name_registry for name registration fees.
     // ---------------------------------------------------------
-    async transition transfer_public(to: address, amount: u128) -> Future {
-        return finalize_transfer_public(self.caller, to, amount);
-    }
-
-    async function finalize_transfer_public(from: address, to: address, amount: u128) {
-        let from_bal: u128 = account.get_or_use(from, 0u128);
-        assert(from_bal >= amount);
-        account.set(from, from_bal - amount);
-        let to_bal: u128 = account.get_or_use(to, 0u128);
-        account.set(to, to_bal + amount);
+    fn transfer_public(to: address, amount: u128) -> Final {
+        let from: address = self.caller;
+        return final {
+            let from_bal: u128 = account.get_or_use(from, 0u128);
+            assert(from_bal >= amount);
+            account.set(from, from_bal - amount);
+            let to_bal: u128 = account.get_or_use(to, 0u128);
+            account.set(to, to_bal + amount);
+        };
     }
 
     // ---------------------------------------------------------
@@ -46,16 +45,15 @@ program test_usdcx_stablecoin.aleo {
     // Unlike transfer_public, this uses self.signer (the original tx signer)
     // so cross-program calls deduct from the user, not the calling program.
     // ---------------------------------------------------------
-    async transition transfer_public_as_signer(to: address, amount: u128) -> Future {
-        return finalize_transfer_public_as_signer(self.signer, to, amount);
-    }
-
-    async function finalize_transfer_public_as_signer(from: address, to: address, amount: u128) {
-        let from_bal: u128 = account.get_or_use(from, 0u128);
-        assert(from_bal >= amount);
-        account.set(from, from_bal - amount);
-        let to_bal: u128 = account.get_or_use(to, 0u128);
-        account.set(to, to_bal + amount);
+    fn transfer_public_as_signer(to: address, amount: u128) -> Final {
+        let from: address = self.signer;
+        return final {
+            let from_bal: u128 = account.get_or_use(from, 0u128);
+            assert(from_bal >= amount);
+            account.set(from, from_bal - amount);
+            let to_bal: u128 = account.get_or_use(to, 0u128);
+            account.set(to, to_bal + amount);
+        };
     }
 
     // Compliance audit record emitted on every private transfer.
@@ -71,11 +69,11 @@ program test_usdcx_stablecoin.aleo {
     // Used by payroll_core for employer → worker private payroll.
     // Actual on-chain signature (as observed from Leo type errors):
     //   transfer_private(from: address, amount: u128, token: Token, to: address)
-    //   -> (ComplianceRecord, Token, Token, Future)
+    //   -> (ComplianceRecord, Token, Token, Final)
     // NOTE: if the 4th arg type or return shape differs from the
     // deployed program, Leo will report a type error — update to match.
     // ---------------------------------------------------------
-    async transition transfer_private(from: address, amount: u128, token: Token, to: address) -> (ComplianceRecord, Token, Token, Future) {
+    fn transfer_private(from: address, amount: u128, token: Token, to: address) -> (ComplianceRecord, Token, Token, Final) {
         assert(token.amount >= amount);
         let compliance: ComplianceRecord = ComplianceRecord {
             owner: from,
@@ -91,12 +89,10 @@ program test_usdcx_stablecoin.aleo {
             owner: token.owner,
             amount: token.amount - amount,
         };
-        return (compliance, recipient, change, finalize_transfer_private(from, to, amount));
+        return (compliance, recipient, change, final {
+            // compliance/audit hook — actual finalize logic determined by on-chain program
+        });
     }
 
-    async function finalize_transfer_private(from: address, to: address, amount: u128) {
-        // compliance/audit hook — actual finalize logic determined by on-chain program
-    }
-
-    @noupgrade async constructor() {}
+    @noupgrade constructor() {}
 }

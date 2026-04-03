@@ -44,7 +44,7 @@ program employer_profiles_v2.aleo {
     // ---------------------------------------------------------
     // Create employer profile
     // ---------------------------------------------------------
-    async transition create_employer_profile(
+    fn create_employer_profile(
         employer_name_hash: field,
         suffix_code: u8,
 
@@ -65,7 +65,7 @@ program employer_profiles_v2.aleo {
         profile_rev: u16,
 
         profile_anchor: [u8; 32]
-    ) -> (EmployerProfile, Future) {
+    ) -> (EmployerProfile, Final) {
 
         // Naming taxonomy must match profile taxonomy (circuit-time)
         assert(industry_code == suffix_code);
@@ -79,10 +79,10 @@ program employer_profiles_v2.aleo {
         assert(profile_rev != 0u16);
 
         // Must be verified to create employer profiles
-        let f1: Future = employer_license_registry.aleo/assert_verified(self.caller);
+        let f1: Final = employer_license_registry.aleo::assert_verified(self.caller);
 
         // Must own the employer name hash + suffix must match
-        let f2: Future = pnw_name_registry_v2.aleo/assert_employer_owner(employer_name_hash, self.caller, suffix_code);
+        let f2: Final = pnw_name_registry_v2.aleo::assert_employer_owner(employer_name_hash, self.caller, suffix_code);
 
         let rec: EmployerProfile = EmployerProfile {
             employer_name_hash: employer_name_hash,
@@ -104,24 +104,22 @@ program employer_profiles_v2.aleo {
             owner: self.caller,
         };
 
-        return (rec, fin_create_employer_profile(f1, f2, profile_anchor));
-    }
+        return (rec, final {
+            f1.run();
+            f2.run();
 
-    async function fin_create_employer_profile(f1: Future, f2: Future, profile_anchor: [u8; 32]) {
-        f1.await();
-        f2.await();
-
-        // anchor_once (inlined)
-        let existing: u32 = profile_anchor_height.get_or_use(profile_anchor, 0u32);
-        if existing == 0u32 {
-            profile_anchor_height.set(profile_anchor, block.height);
-        }
+            // anchor_once (inlined)
+            let existing: u32 = profile_anchor_height.get_or_use(profile_anchor, 0u32);
+            if existing == 0u32 {
+                profile_anchor_height.set(profile_anchor, block.height);
+            }
+        });
     }
 
     // ---------------------------------------------------------
     // Update employer profile (consume + re-mint)
     // ---------------------------------------------------------
-    async transition update_employer_profile(
+    fn update_employer_profile(
         old_profile: EmployerProfile,
 
         legal_name_u128: u128,
@@ -141,7 +139,7 @@ program employer_profiles_v2.aleo {
         new_profile_rev: u16,
 
         new_profile_anchor: [u8; 32]
-    ) -> (EmployerProfile, Future) {
+    ) -> (EmployerProfile, Final) {
 
         // Only owner can update
         assert(old_profile.owner == self.caller);
@@ -156,10 +154,10 @@ program employer_profiles_v2.aleo {
         assert(new_profile_rev > old_profile.profile_rev);
 
         // Must remain verified
-        let f1: Future = employer_license_registry.aleo/assert_verified(self.caller);
+        let f1: Final = employer_license_registry.aleo::assert_verified(self.caller);
 
         // Must still own the employer name hash + suffix
-        let f2: Future = pnw_name_registry_v2.aleo/assert_employer_owner(
+        let f2: Final = pnw_name_registry_v2.aleo::assert_employer_owner(
             old_profile.employer_name_hash, self.caller, old_profile.suffix_code
         );
 
@@ -183,38 +181,37 @@ program employer_profiles_v2.aleo {
             owner: self.caller,
         };
 
-        return (rec, fin_update_employer_profile(f1, f2, new_profile_anchor));
-    }
+        return (rec, final {
+            f1.run();
+            f2.run();
 
-    async function fin_update_employer_profile(f1: Future, f2: Future, new_profile_anchor: [u8; 32]) {
-        f1.await();
-        f2.await();
-
-        // anchor_once (inlined)
-        let existing: u32 = profile_anchor_height.get_or_use(new_profile_anchor, 0u32);
-        if existing == 0u32 {
-            profile_anchor_height.set(new_profile_anchor, block.height);
-        }
+            // anchor_once (inlined)
+            let existing: u32 = profile_anchor_height.get_or_use(new_profile_anchor, 0u32);
+            if existing == 0u32 {
+                profile_anchor_height.set(new_profile_anchor, block.height);
+            }
+        });
     }
 
     // ---------------------------------------------------------
     // Public assertion: anchor exists
     // ---------------------------------------------------------
-    async transition assert_profile_anchored(profile_anchor: [u8; 32]) -> Future {
-        return fin_assert_profile_anchored(profile_anchor);
-    }
-
-    async function fin_assert_profile_anchored(profile_anchor: [u8; 32]) {
-        let h: u32 = profile_anchor_height.get_or_use(profile_anchor, 0u32);
-        assert(h != 0u32);
+    fn assert_profile_anchored(profile_anchor: [u8; 32]) -> Final {
+        return final {
+            let h: u32 = profile_anchor_height.get_or_use(profile_anchor, 0u32);
+            assert(h != 0u32);
+        };
     }
 
     // ---------------------------------------------------------
     // Cross-program assertion: profile anchor for employer exists
     // ---------------------------------------------------------
-    async transition assert_employer_exists(profile_anchor: [u8; 32]) -> Future {
-        return fin_assert_profile_anchored(profile_anchor);
+    fn assert_employer_exists(profile_anchor: [u8; 32]) -> Final {
+        return final {
+            let h: u32 = profile_anchor_height.get_or_use(profile_anchor, 0u32);
+            assert(h != 0u32);
+        };
     }
 
-    @admin(address = "aleo1a2qje865a7ccrrwg37z6e36uyjtqlm5vdj8yzlrhypvg60xhncqqlev4dx") async constructor() {}
+    @admin(address = "aleo1a2qje865a7ccrrwg37z6e36uyjtqlm5vdj8yzlrhypvg60xhncqqlev4dx") constructor() {}
 }

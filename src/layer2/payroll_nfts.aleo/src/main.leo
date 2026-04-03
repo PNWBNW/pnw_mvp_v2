@@ -1,6 +1,18 @@
 import employer_agreement_v2.aleo;
 import payroll_audit_log.aleo;
 
+// ---------------------------------------------------------
+// Status validation helper
+// ---------------------------------------------------------
+fn assert_status_valid(s: u8) {
+    assert(
+        s == 0u8 ||
+        s == 1u8 ||  // STATUS_ACTIVE
+        s == 2u8 ||  // STATUS_REVOKED
+        s == 3u8     // STATUS_SUPERSEDED
+    );
+}
+
 program payroll_nfts.aleo {
 
     // ---------------------------------------------------------
@@ -15,15 +27,6 @@ program payroll_nfts.aleo {
     const STATUS_ACTIVE: u8 = 1u8;
     const STATUS_REVOKED: u8 = 2u8;
     const STATUS_SUPERSEDED: u8 = 3u8;
-
-    inline assert_status_valid(s: u8) {
-        assert(
-            s == 0u8 ||
-            s == STATUS_ACTIVE ||
-            s == STATUS_REVOKED ||
-            s == STATUS_SUPERSEDED
-        );
-    }
 
     record PayrollNFT {
         nft_id: [u8; 32],
@@ -50,24 +53,9 @@ program payroll_nfts.aleo {
     mapping superseded_by: [u8; 32] => [u8; 32];
 
     // ---------------------------------------------------------
-    // Shared finalize for all mint transitions
-    // ---------------------------------------------------------
-    async function finalize_mint_nft(f1: Future, f2: Future, nft_id: [u8; 32]) {
-        f1.await();
-        f2.await();
-
-        let existing: u32 = nft_anchor_height.get_or_use(nft_id, 0u32);
-        assert(existing == 0u32);
-
-        nft_anchor_height.set(nft_id, block.height);
-        nft_status.set(nft_id, STATUS_ACTIVE);
-        superseded_by.set(nft_id, [0u8; 32]);
-    }
-
-    // ---------------------------------------------------------
     // Mint: Per-payroll-cycle
     // ---------------------------------------------------------
-    async transition mint_cycle_nft(
+    fn mint_cycle_nft(
         nft_id: [u8; 32],
         agreement_id: [u8; 32],
         period_start: u32,
@@ -78,15 +66,15 @@ program payroll_nfts.aleo {
         schema_v: u16,
         calc_v: u16,
         policy_v: u16
-    ) -> (PayrollNFT, Future) {
+    ) -> (PayrollNFT, Final) {
         assert(period_start != 0u32);
         assert(period_end >= period_start);
         assert(schema_v != 0u16);
         assert(calc_v != 0u16);
         assert(policy_v != 0u16);
 
-        let f1: Future = employer_agreement_v2.aleo/assert_agreement_active(agreement_id);
-        let f2: Future = payroll_audit_log.aleo/assert_event_anchored(inputs_hash);
+        let f1: Final = employer_agreement_v2.aleo::assert_agreement_active(agreement_id);
+        let f2: Final = payroll_audit_log.aleo::assert_event_anchored(inputs_hash);
 
         let nft: PayrollNFT = PayrollNFT {
             nft_id: nft_id,
@@ -104,13 +92,23 @@ program payroll_nfts.aleo {
             owner: self.caller,
         };
 
-        return (nft, finalize_mint_nft(f1, f2, nft_id));
+        return (nft, final {
+            f1.run();
+            f2.run();
+
+            let existing: u32 = nft_anchor_height.get_or_use(nft_id, 0u32);
+            assert(existing == 0u32);
+
+            nft_anchor_height.set(nft_id, block.height);
+            nft_status.set(nft_id, STATUS_ACTIVE);
+            superseded_by.set(nft_id, [0u8; 32]);
+        });
     }
 
     // ---------------------------------------------------------
     // Mint: Quarterly (Q1-Q4)
     // ---------------------------------------------------------
-    async transition mint_quarter_nft(
+    fn mint_quarter_nft(
         nft_id: [u8; 32],
         agreement_id: [u8; 32],
         period_start: u32,
@@ -121,15 +119,15 @@ program payroll_nfts.aleo {
         schema_v: u16,
         calc_v: u16,
         policy_v: u16
-    ) -> (PayrollNFT, Future) {
+    ) -> (PayrollNFT, Final) {
         assert(period_start != 0u32);
         assert(period_end >= period_start);
         assert(schema_v != 0u16);
         assert(calc_v != 0u16);
         assert(policy_v != 0u16);
 
-        let f1: Future = employer_agreement_v2.aleo/assert_agreement_active(agreement_id);
-        let f2: Future = payroll_audit_log.aleo/assert_event_anchored(inputs_hash);
+        let f1: Final = employer_agreement_v2.aleo::assert_agreement_active(agreement_id);
+        let f2: Final = payroll_audit_log.aleo::assert_event_anchored(inputs_hash);
 
         let nft: PayrollNFT = PayrollNFT {
             nft_id: nft_id,
@@ -147,13 +145,23 @@ program payroll_nfts.aleo {
             owner: self.caller,
         };
 
-        return (nft, finalize_mint_nft(f1, f2, nft_id));
+        return (nft, final {
+            f1.run();
+            f2.run();
+
+            let existing: u32 = nft_anchor_height.get_or_use(nft_id, 0u32);
+            assert(existing == 0u32);
+
+            nft_anchor_height.set(nft_id, block.height);
+            nft_status.set(nft_id, STATUS_ACTIVE);
+            superseded_by.set(nft_id, [0u8; 32]);
+        });
     }
 
     // ---------------------------------------------------------
     // Mint: Year-to-Date
     // ---------------------------------------------------------
-    async transition mint_ytd_nft(
+    fn mint_ytd_nft(
         nft_id: [u8; 32],
         agreement_id: [u8; 32],
         period_start: u32,
@@ -164,15 +172,15 @@ program payroll_nfts.aleo {
         schema_v: u16,
         calc_v: u16,
         policy_v: u16
-    ) -> (PayrollNFT, Future) {
+    ) -> (PayrollNFT, Final) {
         assert(period_start != 0u32);
         assert(period_end >= period_start);
         assert(schema_v != 0u16);
         assert(calc_v != 0u16);
         assert(policy_v != 0u16);
 
-        let f1: Future = employer_agreement_v2.aleo/assert_agreement_active(agreement_id);
-        let f2: Future = payroll_audit_log.aleo/assert_event_anchored(inputs_hash);
+        let f1: Final = employer_agreement_v2.aleo::assert_agreement_active(agreement_id);
+        let f2: Final = payroll_audit_log.aleo::assert_event_anchored(inputs_hash);
 
         let nft: PayrollNFT = PayrollNFT {
             nft_id: nft_id,
@@ -190,13 +198,23 @@ program payroll_nfts.aleo {
             owner: self.caller,
         };
 
-        return (nft, finalize_mint_nft(f1, f2, nft_id));
+        return (nft, final {
+            f1.run();
+            f2.run();
+
+            let existing: u32 = nft_anchor_height.get_or_use(nft_id, 0u32);
+            assert(existing == 0u32);
+
+            nft_anchor_height.set(nft_id, block.height);
+            nft_status.set(nft_id, STATUS_ACTIVE);
+            superseded_by.set(nft_id, [0u8; 32]);
+        });
     }
 
     // ---------------------------------------------------------
     // Mint: End-of-Year
     // ---------------------------------------------------------
-    async transition mint_eoy_nft(
+    fn mint_eoy_nft(
         nft_id: [u8; 32],
         agreement_id: [u8; 32],
         period_start: u32,
@@ -207,15 +225,15 @@ program payroll_nfts.aleo {
         schema_v: u16,
         calc_v: u16,
         policy_v: u16
-    ) -> (PayrollNFT, Future) {
+    ) -> (PayrollNFT, Final) {
         assert(period_start != 0u32);
         assert(period_end >= period_start);
         assert(schema_v != 0u16);
         assert(calc_v != 0u16);
         assert(policy_v != 0u16);
 
-        let f1: Future = employer_agreement_v2.aleo/assert_agreement_active(agreement_id);
-        let f2: Future = payroll_audit_log.aleo/assert_event_anchored(inputs_hash);
+        let f1: Final = employer_agreement_v2.aleo::assert_agreement_active(agreement_id);
+        let f2: Final = payroll_audit_log.aleo::assert_event_anchored(inputs_hash);
 
         let nft: PayrollNFT = PayrollNFT {
             nft_id: nft_id,
@@ -233,55 +251,59 @@ program payroll_nfts.aleo {
             owner: self.caller,
         };
 
-        return (nft, finalize_mint_nft(f1, f2, nft_id));
+        return (nft, final {
+            f1.run();
+            f2.run();
+
+            let existing: u32 = nft_anchor_height.get_or_use(nft_id, 0u32);
+            assert(existing == 0u32);
+
+            nft_anchor_height.set(nft_id, block.height);
+            nft_status.set(nft_id, STATUS_ACTIVE);
+            superseded_by.set(nft_id, [0u8; 32]);
+        });
     }
 
     // ---------------------------------------------------------
     // Revoke
     // ---------------------------------------------------------
-    async transition revoke_nft(nft: PayrollNFT) -> Future {
+    fn revoke_nft(nft: PayrollNFT) -> Final {
         assert(nft.owner == self.caller);
 
         let id: [u8; 32] = nft.nft_id;
-        return finalize_revoke_nft(id);
-    }
-
-    async function finalize_revoke_nft(id: [u8; 32]) {
-        let s: u8 = nft_status.get_or_use(id, 0u8);
-        assert_status_valid(s);
-        assert(s == STATUS_ACTIVE);
-        nft_status.set(id, STATUS_REVOKED);
+        return final {
+            let s: u8 = nft_status.get_or_use(id, 0u8);
+            assert_status_valid(s);
+            assert(s == STATUS_ACTIVE);
+            nft_status.set(id, STATUS_REVOKED);
+        };
     }
 
     // ---------------------------------------------------------
     // Supersede
     // ---------------------------------------------------------
-    async transition mark_superseded(old_nft: PayrollNFT, new_nft_id: [u8; 32]) -> Future {
+    fn mark_superseded(old_nft: PayrollNFT, new_nft_id: [u8; 32]) -> Final {
         assert(old_nft.owner == self.caller);
 
         let old_id: [u8; 32] = old_nft.nft_id;
-        return finalize_mark_superseded(old_id, new_nft_id);
-    }
-
-    async function finalize_mark_superseded(old_id: [u8; 32], new_nft_id: [u8; 32]) {
-        let s: u8 = nft_status.get_or_use(old_id, 0u8);
-        assert_status_valid(s);
-        assert(s == STATUS_ACTIVE);
-        nft_status.set(old_id, STATUS_SUPERSEDED);
-        superseded_by.set(old_id, new_nft_id);
+        return final {
+            let s: u8 = nft_status.get_or_use(old_id, 0u8);
+            assert_status_valid(s);
+            assert(s == STATUS_ACTIVE);
+            nft_status.set(old_id, STATUS_SUPERSEDED);
+            superseded_by.set(old_id, new_nft_id);
+        };
     }
 
     // ---------------------------------------------------------
     // Public assertion utilities
     // ---------------------------------------------------------
-    async transition assert_nft_exists(nft_id: [u8; 32]) -> Future {
-        return finalize_assert_nft_exists(nft_id);
+    fn assert_nft_exists(nft_id: [u8; 32]) -> Final {
+        return final {
+            let h: u32 = nft_anchor_height.get_or_use(nft_id, 0u32);
+            assert(h != 0u32);
+        };
     }
 
-    async function finalize_assert_nft_exists(nft_id: [u8; 32]) {
-        let h: u32 = nft_anchor_height.get_or_use(nft_id, 0u32);
-        assert(h != 0u32);
-    }
-
-    @noupgrade async constructor() {}
+    @noupgrade constructor() {}
 }

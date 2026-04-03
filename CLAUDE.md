@@ -30,9 +30,13 @@ Full technical spec: `ARCHITECTURE.md`
 
 | Tool | Version | Binary name | SHA256 |
 |------|---------|-------------|--------|
-| Leo  | 3.5.0 | `leo` | set via `vars.LEO_SHA256` repo var |
-| snarkOS | v4.5.5 | `snarkos` | `f6f59d6cd783532fee1b805a98ac9d665096b51516ba639fb9bb4b0798ae1074` |
+| Leo  | 4.0.0 | `leo` | set via `vars.LEO_SHA256` repo var |
+| snarkOS | v4.6.0 | `snarkos` | update needed — ConsensusVersion::V14 required for v4 deploys |
 | Node | 20 | `node` | managed by `actions/setup-node` |
+
+> **Note (2026-04-01):** Leo v4.0.0 and snarkOS v4.6.0 are required for new deployments.
+> The network enforces ConsensusVersion::V14 which rejects programs compiled with Leo <4.0.
+> All PNW source files are now v4 syntax. Already-deployed programs retain v3 bytecode on-chain.
 
 Download URLs are in `.github/workflows/deploy.yml` and `.github/workflows/execute_testnet.yml`.
 The snarkOS SHA256 is hardcoded in `deploy.yml` and should also be set as the `SNARKOS_SHA256` GitHub repo variable for `execute_testnet.yml`.
@@ -58,16 +62,22 @@ The snarkOS SHA256 is hardcoded in `deploy.yml` and should also be set as the `S
 | 1 | ✅ Done | Portal workflow definitions (planning-only) |
 | 2 | ✅ Done | Layer 2 NFT programs (payroll, credential, audit) |
 | 3 | ✅ Done | Layer 2 router, type contracts, compile gate |
-| 4 | 🔧 In progress | Adapter execution boundary |
+| 4 | 🔧 In progress | Agreement flow done, payroll UI next |
 | 5 | ⏳ Pending | Testnet correctness validation |
 | 6 | ⏳ Pending | Hardening and release |
 
-### Phase 4 Exit Criteria
+### Phase 4 Progress
 - [x] Adapter generates correct `snarkos developer execute` commands per `step.kind`
-- [x] Leo programs compile (all 3 Layer 2 programs) — verified in Codespace 2026-03-12 (warnings only: self.caller as owner)
-- [ ] One reproducible end-to-end testnet happy path runs
+- [x] Leo programs compile (all 3 Layer 2 programs)
 - [x] CI split: `plan_gate` (PR-safe) + `execute_gate` (protected, manual dispatch only)
 - [x] Manifest validation wired before execute mode
+- [x] All active programs deployed to testnet
+- [x] Leo v4.0 migration — 3 new programs deployed, all source updated (2026-04-01)
+- [x] Employer + worker onboarding via portal ✅
+- [x] Agreement creation + acceptance via portal ✅
+- [x] Encrypted terms vault (AES-256-GCM + Pinata IPFS) ✅
+- [ ] Payroll execution via portal ← NEXT
+- [ ] One reproducible end-to-end testnet happy path runs
 
 ---
 

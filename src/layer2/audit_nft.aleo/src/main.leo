@@ -1,5 +1,12 @@
 import payroll_audit_log.aleo;
 
+// ---------------------------------------------------------
+// Status validation helper
+// ---------------------------------------------------------
+fn assert_audit_status_valid(s: u8) {
+    assert(s == 0u8 || s == 1u8 || s == 2u8 || s == 3u8);
+}
+
 program audit_nft.aleo {
 
     // ---------------------------------------------------------
@@ -55,37 +62,9 @@ program audit_nft.aleo {
     const STATUS_REVOKED: u8 = 2u8;
     const STATUS_EXPIRED: u8 = 3u8;
 
-    inline assert_status_valid(s: u8) {
-        assert(s == 0u8 || s == STATUS_ACTIVE || s == STATUS_REVOKED || s == STATUS_EXPIRED);
-    }
-
     // ---------------------------------------------------------
     // AuditAuthorizationNFT
     // ---------------------------------------------------------
-    //
-    // All fields are private (owned by the auditor).
-    //
-    // scope_hash:              BLAKE3(TLV-encoded AuditScopeRequest)
-    //   Commits to: data_categories (bitmask), period_start_epoch, period_end_epoch,
-    //   worker_id_hash, employer_id_hash, purpose_code, access_duration_epochs.
-    //   The auditor must reveal the pre-image to the portal to receive data.
-    //   The portal serves ONLY records that match the declared scope — nothing else.
-    //
-    // employer_consent_hash:   BLAKE3(TLV-encoded AuditConsentRequest, role=employer)
-    // worker_consent_hash:     BLAKE3(TLV-encoded AuditConsentRequest, role=worker)
-    //   Both commit to the identical scope_hash + access_duration_epochs + expires_epoch.
-    //   Neither party can be tricked into approving a different scope or duration.
-    //
-    // authorization_event_hash: BLAKE3(employer_consent_hash || worker_consent_hash || request_id)
-    //   The combined dual-consent proof. All three hashes are verified anchored in
-    //   Layer 1 (payroll_audit_log) before this NFT is minted.
-    //
-    // access_duration_epochs:  What the auditor originally requested. Stored privately
-    //   for audit trail purposes. expires_epoch = issued_epoch + access_duration_epochs.
-    //
-    // OPTION_B NOTE: employer_consent_hash and worker_consent_hash would be replaced
-    //   by consumed EmployerConsentNFT / WorkerConsentNFT records in the transition
-    //   signature. The field names and semantics here remain identical.
     record AuditAuthorizationNFT {
         auth_id: [u8; 32],
 
@@ -132,22 +111,7 @@ program audit_nft.aleo {
     // ---------------------------------------------------------
     // Mint authorization NFT (Option A: 3-hash dual-consent verification)
     // ---------------------------------------------------------
-    //
-    // Requires all three hashes to be pre-anchored in payroll_audit_log.aleo:
-    //   - employer_consent_hash: employer signed off on this exact scope + duration
-    //   - worker_consent_hash:   worker signed off on this exact scope + duration
-    //   - authorization_event_hash: combined proof derived from both consent hashes
-    //
-    // expires_epoch is enforced as exactly issued_epoch + access_duration_epochs.
-    // access_duration_epochs must be non-zero (zero duration = no access).
-    //
-    // The caller (self.caller) becomes the NFT owner (the auditor's Aleo address).
-    //
-    // OPTION_B UPGRADE: Replace employer_consent_hash + worker_consent_hash params
-    //   with `employer_nft: EmployerConsentNFT` and `worker_nft: WorkerConsentNFT`
-    //   consumed records. Derive consent hashes from their fields. Remove the two
-    //   assert_event_anchored calls for those hashes (NFT consumption is the proof).
-    async transition mint_authorization_nft(
+    fn mint_authorization_nft(
         auth_id: [u8; 32],
         request_id: [u8; 32],
         scope_hash: [u8; 32],
@@ -160,7 +124,7 @@ program audit_nft.aleo {
         access_duration_epochs: u32,
         schema_v: u16,
         policy_v: u16
-    ) -> (AuditAuthorizationNFT, Future) {
+    ) -> (AuditAuthorizationNFT, Final) {
         assert(issued_epoch != 0u32);
         assert(access_duration_epochs != 0u32);
         assert(expires_epoch == issued_epoch + access_duration_epochs);
@@ -168,13 +132,13 @@ program audit_nft.aleo {
         assert(policy_v != 0u16);
 
         // Verify employer consented to this exact scope + duration
-        let f_employer: Future = payroll_audit_log.aleo/assert_event_anchored(employer_consent_hash);
+        let f_employer: Final = payroll_audit_log.aleo::assert_event_anchored(employer_consent_hash);
 
         // Verify worker consented to this exact scope + duration
-        let f_worker: Future = payroll_audit_log.aleo/assert_event_anchored(worker_consent_hash);
+        let f_worker: Final = payroll_audit_log.aleo::assert_event_anchored(worker_consent_hash);
 
         // Verify the combined dual-consent proof is anchored
-        let f_auth: Future = payroll_audit_log.aleo/assert_event_anchored(authorization_event_hash);
+        let f_auth: Final = payroll_audit_log.aleo::assert_event_anchored(authorization_event_hash);
 
         let nft: AuditAuthorizationNFT = AuditAuthorizationNFT {
             auth_id: auth_id,
@@ -193,131 +157,107 @@ program audit_nft.aleo {
             owner: self.caller,
         };
 
-        return (nft, finalize_mint_authorization_nft(f_employer, f_worker, f_auth, auth_id, expires_epoch));
-    }
+        return (nft, final {
+            f_employer.run();
+            f_worker.run();
+            f_auth.run();
 
-    async function finalize_mint_authorization_nft(
-        f_employer: Future,
-        f_worker: Future,
-        f_auth: Future,
-        auth_id: [u8; 32],
-        expires_epoch: u32
-    ) {
-        f_employer.await();
-        f_worker.await();
-        f_auth.await();
+            // Idempotency guard: auth_id must not already be anchored
+            let existing: u32 = auth_anchor_height.get_or_use(auth_id, 0u32);
+            assert(existing == 0u32);
 
-        // Idempotency guard: auth_id must not already be anchored
-        let existing: u32 = auth_anchor_height.get_or_use(auth_id, 0u32);
-        assert(existing == 0u32);
-
-        auth_anchor_height.set(auth_id, block.height);
-        auth_status.set(auth_id, STATUS_ACTIVE);
-        auth_expires_epoch.set(auth_id, expires_epoch);
-        auth_revoked_height.set(auth_id, 0u32);
+            auth_anchor_height.set(auth_id, block.height);
+            auth_status.set(auth_id, STATUS_ACTIVE);
+            auth_expires_epoch.set(auth_id, expires_epoch);
+            auth_revoked_height.set(auth_id, 0u32);
+        });
     }
 
     // ---------------------------------------------------------
     // Revoke authorization NFT (owner-only)
     // ---------------------------------------------------------
-    async transition revoke_authorization_nft(nft: AuditAuthorizationNFT) -> Future {
+    fn revoke_authorization_nft(nft: AuditAuthorizationNFT) -> Final {
         assert(nft.owner == self.caller);
 
         let id: [u8; 32] = nft.auth_id;
-        return finalize_revoke_auth_nft(id);
-    }
-
-    async function finalize_revoke_auth_nft(id: [u8; 32]) {
-        let s: u8 = auth_status.get_or_use(id, 0u8);
-        assert_status_valid(s);
-        assert(s == STATUS_ACTIVE);
-        auth_status.set(id, STATUS_REVOKED);
-        auth_revoked_height.set(id, block.height);
+        return final {
+            let s: u8 = auth_status.get_or_use(id, 0u8);
+            assert_audit_status_valid(s);
+            assert(s == STATUS_ACTIVE);
+            auth_status.set(id, STATUS_REVOKED);
+            auth_revoked_height.set(id, block.height);
+        };
     }
 
     // ---------------------------------------------------------
     // Mark authorization expired (permissionless maintenance)
     // ---------------------------------------------------------
-    async transition mark_authorization_expired(auth_id: [u8; 32], current_epoch: u32) -> Future {
-        return finalize_mark_auth_expired(auth_id, current_epoch);
-    }
+    fn mark_authorization_expired(auth_id: [u8; 32], current_epoch: u32) -> Final {
+        return final {
+            let s: u8 = auth_status.get_or_use(auth_id, 0u8);
+            assert_audit_status_valid(s);
+            assert(s == STATUS_ACTIVE);
 
-    async function finalize_mark_auth_expired(auth_id: [u8; 32], current_epoch: u32) {
-        let s: u8 = auth_status.get_or_use(auth_id, 0u8);
-        assert_status_valid(s);
-        assert(s == STATUS_ACTIVE);
+            let exp: u32 = auth_expires_epoch.get_or_use(auth_id, 0u32);
+            assert(exp != 0u32);
+            assert(current_epoch > exp);
 
-        let exp: u32 = auth_expires_epoch.get_or_use(auth_id, 0u32);
-        assert(exp != 0u32);
-        assert(current_epoch > exp);
-
-        auth_status.set(auth_id, STATUS_EXPIRED);
+            auth_status.set(auth_id, STATUS_EXPIRED);
+        };
     }
 
     // ---------------------------------------------------------
     // Anchor audit attestation bound to an active authorization
     // ---------------------------------------------------------
-    async transition anchor_audit_attestation(
+    fn anchor_audit_attestation(
         auth_id: [u8; 32],
         attestation_hash: [u8; 32],
         current_epoch: u32
-    ) -> Future {
-        return finalize_anchor_audit_attest(auth_id, attestation_hash, current_epoch);
-    }
+    ) -> Final {
+        return final {
+            let s: u8 = auth_status.get_or_use(auth_id, 0u8);
+            assert_audit_status_valid(s);
+            assert(s == STATUS_ACTIVE);
 
-    async function finalize_anchor_audit_attest(
-        auth_id: [u8; 32],
-        attestation_hash: [u8; 32],
-        current_epoch: u32
-    ) {
-        let s: u8 = auth_status.get_or_use(auth_id, 0u8);
-        assert_status_valid(s);
-        assert(s == STATUS_ACTIVE);
+            let exp: u32 = auth_expires_epoch.get_or_use(auth_id, 0u32);
+            assert(exp != 0u32);
+            assert(current_epoch <= exp);
 
-        let exp: u32 = auth_expires_epoch.get_or_use(auth_id, 0u32);
-        assert(exp != 0u32);
-        assert(current_epoch <= exp);
-
-        let existing: u32 = attestation_anchor_height.get_or_use(attestation_hash, 0u32);
-        assert(existing == 0u32);
-        attestation_anchor_height.set(attestation_hash, block.height);
-        attestation_auth_id.set(attestation_hash, auth_id);
+            let existing: u32 = attestation_anchor_height.get_or_use(attestation_hash, 0u32);
+            assert(existing == 0u32);
+            attestation_anchor_height.set(attestation_hash, block.height);
+            attestation_auth_id.set(attestation_hash, auth_id);
+        };
     }
 
     // ---------------------------------------------------------
-    // Public verification utilities (async; read via REST API off-chain)
+    // Public verification utilities
     // ---------------------------------------------------------
-    async transition assert_authorization_exists(auth_id: [u8; 32]) -> Future {
-        return finalize_assert_auth_exists(auth_id);
+    fn assert_authorization_exists(auth_id: [u8; 32]) -> Final {
+        return final {
+            let h: u32 = auth_anchor_height.get_or_use(auth_id, 0u32);
+            assert(h != 0u32);
+        };
     }
 
-    async function finalize_assert_auth_exists(auth_id: [u8; 32]) {
-        let h: u32 = auth_anchor_height.get_or_use(auth_id, 0u32);
-        assert(h != 0u32);
+    fn assert_authorization_active(auth_id: [u8; 32], current_epoch: u32) -> Final {
+        return final {
+            let s: u8 = auth_status.get_or_use(auth_id, 0u8);
+            assert_audit_status_valid(s);
+            assert(s == STATUS_ACTIVE);
+
+            let exp: u32 = auth_expires_epoch.get_or_use(auth_id, 0u32);
+            assert(exp != 0u32);
+            assert(current_epoch <= exp);
+        };
     }
 
-    async transition assert_authorization_active(auth_id: [u8; 32], current_epoch: u32) -> Future {
-        return finalize_assert_auth_active(auth_id, current_epoch);
+    fn assert_attestation_anchored(attestation_hash: [u8; 32]) -> Final {
+        return final {
+            let h: u32 = attestation_anchor_height.get_or_use(attestation_hash, 0u32);
+            assert(h != 0u32);
+        };
     }
 
-    async function finalize_assert_auth_active(auth_id: [u8; 32], current_epoch: u32) {
-        let s: u8 = auth_status.get_or_use(auth_id, 0u8);
-        assert_status_valid(s);
-        assert(s == STATUS_ACTIVE);
-
-        let exp: u32 = auth_expires_epoch.get_or_use(auth_id, 0u32);
-        assert(exp != 0u32);
-        assert(current_epoch <= exp);
-    }
-
-    async transition assert_attestation_anchored(attestation_hash: [u8; 32]) -> Future {
-        return finalize_assert_attest_anchor(attestation_hash);
-    }
-
-    async function finalize_assert_attest_anchor(attestation_hash: [u8; 32]) {
-        let h: u32 = attestation_anchor_height.get_or_use(attestation_hash, 0u32);
-        assert(h != 0u32);
-    }
-
-    @noupgrade async constructor() {}
+    @noupgrade constructor() {}
 }

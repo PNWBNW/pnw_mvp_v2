@@ -23,28 +23,24 @@ program employer_license_registry.aleo {
     // ---------------------------------------------------------
     // Admin: set / update verification status
     // ---------------------------------------------------------
-    async transition set_verified(wallet: address, license_hash: field, verified: bool) -> Future {
+    fn set_verified(wallet: address, license_hash: field, verified: bool) -> Final {
         assert(self.caller == AUTHORITY);
-        return finalize_set_verified(wallet, license_hash, verified);
-    }
-
-    async function finalize_set_verified(wallet: address, license_hash: field, verified: bool) {
-        is_verified.set(wallet, verified);
-        license_hash_of.set(wallet, license_hash);
+        return final {
+            is_verified.set(wallet, verified);
+            license_hash_of.set(wallet, license_hash);
+        };
     }
 
     // ---------------------------------------------------------
     // Cross-program assertion: assert wallet is verified
     // Called by pnw_name_registry, employer_agreement, etc.
     // ---------------------------------------------------------
-    async transition assert_verified(wallet: address) -> Future {
-        return finalize_assert_verified(wallet);
+    fn assert_verified(wallet: address) -> Final {
+        return final {
+            let ok: bool = is_verified.get_or_use(wallet, false);
+            assert(ok);
+        };
     }
 
-    async function finalize_assert_verified(wallet: address) {
-        let ok: bool = is_verified.get_or_use(wallet, false);
-        assert(ok);
-    }
-
-    @noupgrade async constructor() {}
+    @noupgrade constructor() {}
 }
