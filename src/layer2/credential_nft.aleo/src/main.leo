@@ -1,3 +1,10 @@
+// ---------------------------------------------------------
+// Status validation helper
+// ---------------------------------------------------------
+fn assert_cred_status_valid(s: u8) {
+    assert(s == 0u8 || s == 1u8 || s == 2u8);
+}
+
 program credential_nft.aleo {
 
     // ---------------------------------------------------------
@@ -14,10 +21,6 @@ program credential_nft.aleo {
 
     const STATUS_ACTIVE: u8 = 1u8;
     const STATUS_REVOKED: u8 = 2u8;
-
-    inline assert_status_valid(s: u8) {
-        assert(s == 0u8 || s == STATUS_ACTIVE || s == STATUS_REVOKED);
-    }
 
     record CredentialNFT {
         credential_id: [u8; 32],
@@ -52,7 +55,7 @@ program credential_nft.aleo {
     // ---------------------------------------------------------
     // Mint credential NFT
     // ---------------------------------------------------------
-    async transition mint_credential_nft(
+    fn mint_credential_nft(
         credential_id: [u8; 32],
         subject_hash: [u8; 32],
         issuer_hash: [u8; 32],
@@ -61,7 +64,7 @@ program credential_nft.aleo {
         root: [u8; 32],
         schema_v: u16,
         policy_v: u16
-    ) -> (CredentialNFT, Future) {
+    ) -> (CredentialNFT, Final) {
         assert(schema_v != 0u16);
         assert(policy_v != 0u16);
 
@@ -78,61 +81,53 @@ program credential_nft.aleo {
             owner: self.caller,
         };
 
-        return (nft, finalize_mint_credential_nft(credential_id, scope_hash));
-    }
+        return (nft, final {
+            let existing: u32 = credential_anchor_height.get_or_use(credential_id, 0u32);
+            assert(existing == 0u32);
 
-    async function finalize_mint_credential_nft(credential_id: [u8; 32], scope_hash: [u8; 32]) {
-        let existing: u32 = credential_anchor_height.get_or_use(credential_id, 0u32);
-        assert(existing == 0u32);
+            credential_anchor_height.set(credential_id, block.height);
+            credential_status.set(credential_id, STATUS_ACTIVE);
+            credential_revoked_height.set(credential_id, 0u32);
 
-        credential_anchor_height.set(credential_id, block.height);
-        credential_status.set(credential_id, STATUS_ACTIVE);
-        credential_revoked_height.set(credential_id, 0u32);
-
-        let scope_existing: u32 = scope_anchor_height.get_or_use(scope_hash, 0u32);
-        if scope_existing == 0u32 {
-            scope_anchor_height.set(scope_hash, block.height);
-        }
+            let scope_existing: u32 = scope_anchor_height.get_or_use(scope_hash, 0u32);
+            if scope_existing == 0u32 {
+                scope_anchor_height.set(scope_hash, block.height);
+            }
+        });
     }
 
     // ---------------------------------------------------------
     // Revoke credential NFT (owner-only)
     // ---------------------------------------------------------
-    async transition revoke_credential_nft(nft: CredentialNFT) -> Future {
+    fn revoke_credential_nft(nft: CredentialNFT) -> Final {
         assert(nft.owner == self.caller);
 
         let id: [u8; 32] = nft.credential_id;
-        return finalize_revoke_credential_nft(id);
-    }
-
-    async function finalize_revoke_credential_nft(id: [u8; 32]) {
-        let s: u8 = credential_status.get_or_use(id, 0u8);
-        assert_status_valid(s);
-        assert(s == STATUS_ACTIVE);
-        credential_status.set(id, STATUS_REVOKED);
-        credential_revoked_height.set(id, block.height);
+        return final {
+            let s: u8 = credential_status.get_or_use(id, 0u8);
+            assert_cred_status_valid(s);
+            assert(s == STATUS_ACTIVE);
+            credential_status.set(id, STATUS_REVOKED);
+            credential_revoked_height.set(id, block.height);
+        };
     }
 
     // ---------------------------------------------------------
-    // Public verification utilities (async; read via REST API off-chain)
+    // Public verification utilities
     // ---------------------------------------------------------
-    async transition assert_credential_exists(credential_id: [u8; 32]) -> Future {
-        return finalize_assert_cred_exists(credential_id);
+    fn assert_credential_exists(credential_id: [u8; 32]) -> Final {
+        return final {
+            let h: u32 = credential_anchor_height.get_or_use(credential_id, 0u32);
+            assert(h != 0u32);
+        };
     }
 
-    async function finalize_assert_cred_exists(credential_id: [u8; 32]) {
-        let h: u32 = credential_anchor_height.get_or_use(credential_id, 0u32);
-        assert(h != 0u32);
+    fn assert_scope_anchored(scope_hash: [u8; 32]) -> Final {
+        return final {
+            let h: u32 = scope_anchor_height.get_or_use(scope_hash, 0u32);
+            assert(h != 0u32);
+        };
     }
 
-    async transition assert_scope_anchored(scope_hash: [u8; 32]) -> Future {
-        return finalize_assert_scope_anchored(scope_hash);
-    }
-
-    async function finalize_assert_scope_anchored(scope_hash: [u8; 32]) {
-        let h: u32 = scope_anchor_height.get_or_use(scope_hash, 0u32);
-        assert(h != 0u32);
-    }
-
-    @noupgrade async constructor() {}
+    @noupgrade constructor() {}
 }

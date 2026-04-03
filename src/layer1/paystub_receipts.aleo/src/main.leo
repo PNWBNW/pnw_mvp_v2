@@ -66,7 +66,7 @@ program paystub_receipts.aleo {
     // ---------------------------------------------------------
     // Mint paystub receipts (worker + employer)
     // ---------------------------------------------------------
-    async transition mint_paystub_receipts(
+    fn mint_paystub_receipts(
         worker_owner: address,
         employer_owner: address,
         worker_name_hash: field,
@@ -81,7 +81,7 @@ program paystub_receipts.aleo {
         receipt_anchor: [u8; 32],
         pair_hash: [u8; 32],
         utc_time_hash: [u8; 32]
-    ) -> (WorkerPaystubReceipt, EmployerPaystubReceipt, Future) {
+    ) -> (WorkerPaystubReceipt, EmployerPaystubReceipt, Final) {
 
         assert(epoch_id != 0u32);
         assert(gross_amount >= net_amount);
@@ -123,19 +123,17 @@ program paystub_receipts.aleo {
             owner: employer_owner,
         };
 
-        return (worker_receipt, employer_receipt, finalize_anchor_unique(receipt_anchor));
-    }
-
-    async function finalize_anchor_unique(receipt_anchor: [u8; 32]) {
-        let existing: u32 = receipt_anchor_height.get_or_use(receipt_anchor, 0u32);
-        assert(existing == 0u32);
-        receipt_anchor_height.set(receipt_anchor, block.height);
+        return (worker_receipt, employer_receipt, final {
+            let existing: u32 = receipt_anchor_height.get_or_use(receipt_anchor, 0u32);
+            assert(existing == 0u32);
+            receipt_anchor_height.set(receipt_anchor, block.height);
+        });
     }
 
     // ---------------------------------------------------------
     // Mint reversal/correction receipts (append-only)
     // ---------------------------------------------------------
-    async transition mint_reversal_receipts(
+    fn mint_reversal_receipts(
         worker_owner: address,
         employer_owner: address,
         worker_name_hash: field,
@@ -150,7 +148,7 @@ program paystub_receipts.aleo {
         reversal_anchor: [u8; 32],
         pair_hash: [u8; 32],
         utc_time_hash: [u8; 32]
-    ) -> (WorkerPaystubReceipt, EmployerPaystubReceipt, Future) {
+    ) -> (WorkerPaystubReceipt, EmployerPaystubReceipt, Final) {
 
         assert(epoch_id != 0u32);
         assert(gross_amount >= net_amount);
@@ -192,20 +190,22 @@ program paystub_receipts.aleo {
             owner: employer_owner,
         };
 
-        return (worker_receipt, employer_receipt, finalize_anchor_unique(reversal_anchor));
+        return (worker_receipt, employer_receipt, final {
+            let existing: u32 = receipt_anchor_height.get_or_use(reversal_anchor, 0u32);
+            assert(existing == 0u32);
+            receipt_anchor_height.set(reversal_anchor, block.height);
+        });
     }
 
     // ---------------------------------------------------------
     // Public assertion: anchor exists
     // ---------------------------------------------------------
-    async transition assert_receipt_anchored(receipt_anchor: [u8; 32]) -> Future {
-        return finalize_assert_receipt_anchor(receipt_anchor);
+    fn assert_receipt_anchored(receipt_anchor: [u8; 32]) -> Final {
+        return final {
+            let h: u32 = receipt_anchor_height.get_or_use(receipt_anchor, 0u32);
+            assert(h != 0u32);
+        };
     }
 
-    async function finalize_assert_receipt_anchor(receipt_anchor: [u8; 32]) {
-        let h: u32 = receipt_anchor_height.get_or_use(receipt_anchor, 0u32);
-        assert(h != 0u32);
-    }
-
-    @admin(address = "aleo1a2qje865a7ccrrwg37z6e36uyjtqlm5vdj8yzlrhypvg60xhncqqlev4dx") async constructor() {}
+    @admin(address = "aleo1a2qje865a7ccrrwg37z6e36uyjtqlm5vdj8yzlrhypvg60xhncqqlev4dx") constructor() {}
 }

@@ -1,5 +1,20 @@
 import pnw_name_registry_v2.aleo;
 
+// -----------------------------
+// Gender codes (strict enum)
+// -----------------------------
+const GENDER_MALE: u8 = 1u8;
+const GENDER_FEMALE: u8 = 2u8;
+const GENDER_PREFER_NOT: u8 = 3u8;
+
+fn assert_gender(code: u8) {
+    assert(
+        code == GENDER_MALE ||
+        code == GENDER_FEMALE ||
+        code == GENDER_PREFER_NOT
+    );
+}
+
 program pnw_worker_profiles_v2.aleo {
 
     // ---------------------------------------------------------
@@ -8,21 +23,6 @@ program pnw_worker_profiles_v2.aleo {
     // Privacy-first, PNW-native identity system.
     // - All sensitive identity fields are PRIVATE inside records.
     // - Only hash anchors are published on-chain (anchor -> first-seen height).
-
-    // -----------------------------
-    // Gender codes (strict enum)
-    // -----------------------------
-    const GENDER_MALE: u8 = 1u8;
-    const GENDER_FEMALE: u8 = 2u8;
-    const GENDER_PREFER_NOT: u8 = 3u8;
-
-    function assert_gender(code: u8) {
-        assert(
-            code == GENDER_MALE ||
-            code == GENDER_FEMALE ||
-            code == GENDER_PREFER_NOT
-        );
-    }
 
     // -----------------------------
     // Worker profile record (private)
@@ -73,7 +73,7 @@ program pnw_worker_profiles_v2.aleo {
     // ---------------------------------------------------------
     // Create worker profile
     // ---------------------------------------------------------
-    async transition create_worker_profile(
+    fn create_worker_profile(
         worker_name_hash: field,
 
         first_name_u128: u128,
@@ -95,7 +95,7 @@ program pnw_worker_profiles_v2.aleo {
         profile_rev: u16,
 
         profile_anchor: [u8; 32]
-    ) -> (WorkerProfile, Future) {
+    ) -> (WorkerProfile, Final) {
 
         // Guards (circuit-time)
         assert_gender(gender);
@@ -108,7 +108,7 @@ program pnw_worker_profiles_v2.aleo {
         assert(profile_rev != 0u16);
 
         // Must own the name hash claimed for this profile
-        let f_owner: Future = pnw_name_registry_v2.aleo/assert_is_owner(worker_name_hash, self.caller);
+        let f_owner: Final = pnw_name_registry_v2.aleo::assert_is_owner(worker_name_hash, self.caller);
 
         let rec: WorkerProfile = WorkerProfile {
             worker_name_hash: worker_name_hash,
@@ -130,23 +130,21 @@ program pnw_worker_profiles_v2.aleo {
             owner: self.caller,
         };
 
-        return (rec, finalize_create_worker_profile(f_owner, profile_anchor));
-    }
+        return (rec, final {
+            f_owner.run();
 
-    async function finalize_create_worker_profile(f_owner: Future, profile_anchor: [u8; 32]) {
-        f_owner.await();
-
-        // anchor_once (inlined): write first-seen height
-        let existing: u32 = profile_anchor_height.get_or_use(profile_anchor, 0u32);
-        if existing == 0u32 {
-            profile_anchor_height.set(profile_anchor, block.height);
-        }
+            // anchor_once (inlined): write first-seen height
+            let existing: u32 = profile_anchor_height.get_or_use(profile_anchor, 0u32);
+            if existing == 0u32 {
+                profile_anchor_height.set(profile_anchor, block.height);
+            }
+        });
     }
 
     // ---------------------------------------------------------
     // Update worker profile (consume + re-mint)
     // ---------------------------------------------------------
-    async transition update_worker_profile(
+    fn update_worker_profile(
         old_profile: WorkerProfile,
 
         first_name_u128: u128,
@@ -168,7 +166,7 @@ program pnw_worker_profiles_v2.aleo {
         new_profile_rev: u16,
 
         new_profile_anchor: [u8; 32]
-    ) -> (WorkerProfile, Future) {
+    ) -> (WorkerProfile, Final) {
 
         // Record owner must be self.caller
         assert(old_profile.owner == self.caller);
@@ -184,7 +182,7 @@ program pnw_worker_profiles_v2.aleo {
         assert(new_profile_rev > old_profile.profile_rev);
 
         // Must still own the name hash
-        let f_owner: Future = pnw_name_registry_v2.aleo/assert_is_owner(old_profile.worker_name_hash, self.caller);
+        let f_owner: Final = pnw_name_registry_v2.aleo::assert_is_owner(old_profile.worker_name_hash, self.caller);
 
         let rec: WorkerProfile = WorkerProfile {
             worker_name_hash: old_profile.worker_name_hash,
@@ -206,37 +204,36 @@ program pnw_worker_profiles_v2.aleo {
             owner: self.caller,
         };
 
-        return (rec, finalize_update_worker_profile(f_owner, new_profile_anchor));
-    }
+        return (rec, final {
+            f_owner.run();
 
-    async function finalize_update_worker_profile(f_owner: Future, new_profile_anchor: [u8; 32]) {
-        f_owner.await();
-
-        // anchor_once (inlined)
-        let existing: u32 = profile_anchor_height.get_or_use(new_profile_anchor, 0u32);
-        if existing == 0u32 {
-            profile_anchor_height.set(new_profile_anchor, block.height);
-        }
+            // anchor_once (inlined)
+            let existing: u32 = profile_anchor_height.get_or_use(new_profile_anchor, 0u32);
+            if existing == 0u32 {
+                profile_anchor_height.set(new_profile_anchor, block.height);
+            }
+        });
     }
 
     // ---------------------------------------------------------
     // Public assertion: anchor exists
     // ---------------------------------------------------------
-    async transition assert_profile_anchored(profile_anchor: [u8; 32]) -> Future {
-        return finalize_assert_prof_anchored(profile_anchor);
-    }
-
-    async function finalize_assert_prof_anchored(profile_anchor: [u8; 32]) {
-        let h: u32 = profile_anchor_height.get_or_use(profile_anchor, 0u32);
-        assert(h != 0u32);
+    fn assert_profile_anchored(profile_anchor: [u8; 32]) -> Final {
+        return final {
+            let h: u32 = profile_anchor_height.get_or_use(profile_anchor, 0u32);
+            assert(h != 0u32);
+        };
     }
 
     // ---------------------------------------------------------
     // Cross-program assertion: profile anchor for worker name exists
     // ---------------------------------------------------------
-    async transition assert_worker_exists(profile_anchor: [u8; 32]) -> Future {
-        return finalize_assert_prof_anchored(profile_anchor);
+    fn assert_worker_exists(profile_anchor: [u8; 32]) -> Final {
+        return final {
+            let h: u32 = profile_anchor_height.get_or_use(profile_anchor, 0u32);
+            assert(h != 0u32);
+        };
     }
 
-    @admin(address = "aleo1a2qje865a7ccrrwg37z6e36uyjtqlm5vdj8yzlrhypvg60xhncqqlev4dx") async constructor() {}
+    @admin(address = "aleo1a2qje865a7ccrrwg37z6e36uyjtqlm5vdj8yzlrhypvg60xhncqqlev4dx") constructor() {}
 }
