@@ -1,18 +1,18 @@
 {
   "program": "payroll_nfts.aleo",
   "version": "0.1.0",
-  "description": "Layer 2 (on-chain) payroll-only NFTs for PNW MVP v2. Stores commitment-only artifacts (doc_hash/root/inputs_hash) for paystub/payroll summaries across cycle, quarterly, YTD, and EOY scopes. No raw payroll amounts or identities are published.",
+  "description": "Layer 2 (on-chain) payroll-only NFTs for PNW MVP v2. Stores commitment-only artifacts (doc_hash/root/inputs_hash) for paystub/payroll summaries across cycle, quarterly, YTD, and EOY scopes. No raw payroll amounts or identities are published. NOTE: On-chain deployed version uses employer_agreement_v2; this source targets v4 for future redeployment.",
   "license": "PROPRIETARY",
   "dependencies": [
     {
-      "name": "employer_agreement_v2.aleo",
+      "name": "employer_agreement_v4.aleo",
       "location": "network",
-      "path": null
+      "network": "testnet"
     },
     {
       "name": "payroll_audit_log.aleo",
       "location": "network",
-      "path": null
+      "network": "testnet"
     }
   ]
 }
