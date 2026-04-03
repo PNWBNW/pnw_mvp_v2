@@ -1,0 +1,28 @@
+{
+  "program": "payroll_core_v2.aleo",
+  "version": "0.1.0",
+  "description": "Layer 1 payroll execution — Leo v4.0. Imports employer_agreement_v4 for agreement status checks.",
+  "license": "PROPRIETARY",
+  "dependencies": [
+    {
+      "name": "test_usdcx_stablecoin.aleo",
+      "location": "network",
+      "network": "testnet"
+    },
+    {
+      "name": "employer_agreement_v4.aleo",
+      "location": "network",
+      "network": "testnet"
+    },
+    {
+      "name": "paystub_receipts.aleo",
+      "location": "network",
+      "network": "testnet"
+    },
+    {
+      "name": "payroll_audit_log.aleo",
+      "location": "network",
+      "network": "testnet"
+    }
+  ]
+}
