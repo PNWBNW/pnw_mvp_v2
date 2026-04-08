@@ -197,11 +197,11 @@ python3 scripts/validate_phaseA_scenario.py config/scenarios/testnet/min_spend.o
 scripts/verify_provable_cli.sh
 
 # Execute env check (requires ENDPOINT set):
-# ENDPOINT=https://api.explorer.provable.com/v1/testnet ... scripts/require_phase4_execute_env.sh
+# ENDPOINT=https://api.explorer.provable.com/v2/testnet ... scripts/require_phase4_execute_env.sh
 ```
 
 > **Canonical endpoint** (Provable Explorer v1, network-qualified):
-> `ENDPOINT=https://api.explorer.provable.com/v1/testnet`
+> `ENDPOINT=https://api.explorer.provable.com/v2/testnet`
 > Copy `.env.example` to `.env` and fill in credentials. Never commit `.env`.
 >
 > **For `leo deploy` / `leo execute`:** Leo CLI reads `PRIVATE_KEY` (not `ALEO_PRIVATE_KEY`).

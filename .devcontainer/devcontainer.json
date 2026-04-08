@@ -7,7 +7,7 @@
   },
   "postCreateCommand": "bash .devcontainer/setup.sh",
   "remoteEnv": {
-    "ENDPOINT": "https://api.explorer.provable.com/v1/testnet",
+    "ENDPOINT": "https://api.explorer.provable.com/v2/testnet",
     "PNW_NETWORK": "testnet",
     "MANIFEST_PATH": "config/testnet.manifest.json"
   },

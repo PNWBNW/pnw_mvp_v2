@@ -264,7 +264,7 @@ if execute_broadcast == "true":
             if "failed to parse json error response" in merged_err or "line 1 column 1" in merged_err:
                 hint = (
                     " hint=submit endpoint likely returned non-JSON; verify ENDPOINT uses explicit testnet URI "
-                    "(e.g. https://api.explorer.provable.com/v1/testnet)"
+                    "(e.g. https://api.explorer.provable.com/v2/testnet)"
                 )
             raise SystemExit(
                 f"ERROR: broadcast command failed ({name}) exit={proc.returncode} "

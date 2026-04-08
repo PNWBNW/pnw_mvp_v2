@@ -122,7 +122,7 @@ jobs:
             ARGS_SOURCE="artifacts/onboarding_mint_args.secret.json"
             printf '%s\n' "$PHASE4_ONBOARDING_MINT_ARGS_JSON" > "$ARGS_SOURCE"
             if [[ -z "$ENDPOINT" ]]; then
-              echo "ERROR: ENDPOINT is empty (set ENDPOINT secret to e.g. https://api.explorer.provable.com/v1/testnet)" >&2
+              echo "ERROR: ENDPOINT is empty (set ENDPOINT secret to e.g. https://api.explorer.provable.com/v2/testnet)" >&2
               exit 1
             fi
             SUBMIT_PREFIX="snarkos developer execute --endpoint \"${ENDPOINT}\" --broadcast --private-key \"\$ALEO_PRIVATE_KEY\" credential_nft.aleo mint_credential_nft"

@@ -246,7 +246,7 @@ async function testRetryOnThrownExecutionError(): Promise<void> {
 
   const adapter = new Layer2CliAdapter("execute", executor, {
     private_key: "APrivateKey1zkpDummyTestKeyForRetryTest000000000000000000",
-    node_url: "https://api.explorer.provable.com/v1/testnet",
+    node_url: "https://api.explorer.provable.com/v2/testnet",
     retry_policy: { max_attempts: 2, retry_delay_ms: 0 },
   });
 
@@ -268,7 +268,7 @@ async function testExecuteFailureRaisesTypedExecutionError(): Promise<void> {
 
   const adapter = new Layer2CliAdapter("execute", executor, {
     private_key: "APrivateKey1zkpDummyTestKeyForExecuteErrorTest0000000000",
-    node_url: "https://api.explorer.provable.com/v1/testnet",
+    node_url: "https://api.explorer.provable.com/v2/testnet",
     retry_policy: { max_attempts: 1, retry_delay_ms: 0 },
   });
 
