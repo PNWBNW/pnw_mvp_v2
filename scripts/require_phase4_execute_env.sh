@@ -35,7 +35,7 @@ if [[ "$ENDPOINT" != http://* && "$ENDPOINT" != https://* ]]; then
 fi
 
 if [[ "$PNW_NETWORK" == "testnet" && "$ENDPOINT" != *"/testnet"* ]]; then
-  echo "execute env check: WARN - ENDPOINT does not include '/testnet'. Expected form: https://api.explorer.provable.com/v1/testnet" >&2
+  echo "execute env check: WARN - ENDPOINT does not include '/testnet'. Expected form: https://api.explorer.provable.com/v2/testnet" >&2
 fi
 
 if ! python3 - <<'PY'

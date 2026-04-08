@@ -6,7 +6,7 @@
 #
 # USAGE:
 #   ALEO_VIEW_KEY=AViewKey1... \
-#   ENDPOINT=https://api.explorer.provable.com/v1/testnet \
+#   ENDPOINT=https://api.explorer.provable.com/v2/testnet \
 #     scripts/scan_usdcx_records.sh
 #
 # OPTIONAL ENV:
@@ -36,7 +36,7 @@ SCAN_END_BLOCK="${SCAN_END_BLOCK:-}"
 MIN_AMOUNT="${MIN_AMOUNT:-0}"
 
 if [[ -z "$ENDPOINT" ]]; then
-  echo "ERROR: ENDPOINT is required (e.g. https://api.explorer.provable.com/v1/testnet)" >&2
+  echo "ERROR: ENDPOINT is required (e.g. https://api.explorer.provable.com/v2/testnet)" >&2
   exit 1
 fi
 

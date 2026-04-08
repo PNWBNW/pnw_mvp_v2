@@ -228,7 +228,7 @@ export default config;
 ### `.env.example`
 ```bash
 # Aleo RPC endpoint
-NEXT_PUBLIC_ALEO_ENDPOINT=https://api.explorer.provable.com/v1/testnet
+NEXT_PUBLIC_ALEO_ENDPOINT=https://api.explorer.provable.com/v2/testnet
 NEXT_PUBLIC_NETWORK=testnet
 
 # Session variables (never committed — entered by user at runtime)

@@ -4,7 +4,7 @@
 //
 // USAGE PATTERN:
 //   const record = await fetchBestUsdcxRecord({
-//     endpoint: "https://api.explorer.provable.com/v1/testnet",
+//     endpoint: "https://api.explorer.provable.com/v2/testnet",
 //     program_id: "test_usdcx_stablecoin.aleo",      // or the real testnet ID
 //     view_key: process.env.ALEO_VIEW_KEY!,
 //     minimum_amount: worker1.net_amount + worker2.net_amount,
@@ -24,7 +24,7 @@
 import type { UsdcxRecord } from "../types/aleo_records";
 
 export type UsdcxFetcherOptions = {
-  /** Full endpoint URL including network path, e.g. https://api.explorer.provable.com/v1/testnet */
+  /** Full endpoint URL including network path, e.g. https://api.explorer.provable.com/v2/testnet */
   endpoint: string;
   /** The deployed program ID for the USDCx token. Check testnet.manifest.json -> external.usdcx */
   program_id: string;
