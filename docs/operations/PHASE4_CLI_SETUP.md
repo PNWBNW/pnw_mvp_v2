@@ -70,7 +70,7 @@ Broadcast mode is hardcoded ON in this lane (`EXECUTE_BROADCAST=true`) with stri
 >
 > Provide `PHASE4_BROADCAST_COMMANDS_JSON` as a protected environment secret containing real submit commands that emit real tx ids.
 >
-> Keep `RPC_URL` explicitly set to your intended node endpoint (for testnet, e.g. `https://api.provable.com/v2/testnet`) so endpoint intent is captured in execute verification metadata.
+> Keep `RPC_URL` explicitly set to your intended node endpoint (for testnet, e.g. `https://api.explorer.provable.com/v2`) so endpoint intent is captured in execute verification metadata.
 > Set `SNARKOS_ENDPOINT` to the snarkOS REST endpoint used by `snarkos developer execute --endpoint ...` (provider/CLI combos may expect either `.../v2` or `.../v2/testnet`).
 
 
@@ -79,7 +79,7 @@ For `onboarding_smoke`, generate this secret payload from deterministic codec in
 ```bash
 python3 scripts/build_onboarding_broadcast_commands.py \
   --args-file config/scenarios/testnet/onboarding_mint_args.sample.json \
-  --submit-prefix 'snarkos developer execute --endpoint "https://api.explorer.provable.com/v2/testnet" --broadcast --private-key "$ALEO_PRIVATE_KEY" credential_nft.aleo mint_credential_nft' \
+  --submit-prefix 'snarkos developer execute --endpoint "https://api.explorer.provable.com/v2" --network 1 --broadcast --private-key "$ALEO_PRIVATE_KEY" credential_nft.aleo mint_credential_nft' \
   --out artifacts/phase4_broadcast_commands.required.json
 ```
 
@@ -101,7 +101,7 @@ Broadcast mode is hardcoded ON in this lane (`EXECUTE_BROADCAST=true`) with stri
 > 2. for `onboarding_smoke`, `PHASE4_ONBOARDING_MINT_ARGS_JSON` (typed args JSON) and the workflow will generate broadcast commands on the fly.
 > Optional override: set `PHASE4_SUBMIT_ENDPOINT` if your submit endpoint differs from `RPC_URL`.
 >
-> Keep `RPC_URL` explicitly set to your intended node endpoint (for testnet, e.g. `https://api.provable.com/v2/testnet`) so endpoint intent is captured in execute verification metadata.
+> Keep `RPC_URL` explicitly set to your intended node endpoint (for testnet, e.g. `https://api.explorer.provable.com/v2`) so endpoint intent is captured in execute verification metadata.
 > Set `SNARKOS_ENDPOINT` for tooling that requires it. Onboarding submit generation in `execute_testnet.yml` defaults to `RPC_URL` for `snarkos developer execute --endpoint ...` (override with `PHASE4_SUBMIT_ENDPOINT` when needed).
 
 
@@ -110,7 +110,7 @@ For `onboarding_smoke`, generate this secret payload from deterministic codec in
 ```bash
 python3 scripts/build_onboarding_broadcast_commands.py \
   --args-file config/scenarios/testnet/onboarding_mint_args.sample.json \
-  --submit-prefix 'snarkos developer execute --endpoint "https://api.explorer.provable.com/v2/testnet" --broadcast --private-key "$ALEO_PRIVATE_KEY" credential_nft.aleo mint_credential_nft' \
+  --submit-prefix 'snarkos developer execute --endpoint "https://api.explorer.provable.com/v2" --network 1 --broadcast --private-key "$ALEO_PRIVATE_KEY" credential_nft.aleo mint_credential_nft' \
   --out artifacts/phase4_broadcast_commands.required.json
 ```
 
@@ -221,7 +221,7 @@ Run the end-to-end testnet happy-path wrapper:
 ```bash
 MANIFEST_PATH=config/testnet.manifest.json \
 PNW_NETWORK=testnet \
-RPC_URL="https://api.provable.com/v2/testnet" \
+RPC_URL="https://api.explorer.provable.com/v2" \
 USDCX_PROGRAM_ID="test_usdcx_stablecoin.aleo" \
 ALEO_PRIVATE_KEY="<private-key>" \
 ALEO_VIEW_KEY="<view-key>" \

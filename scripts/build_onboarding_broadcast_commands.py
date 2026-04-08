@@ -52,7 +52,7 @@ def main() -> None:
         required=True,
         help=(
             "Shell command prefix used to submit transition (must include executable/flags/program/transition). "
-            "Example: \"snarkos developer execute --endpoint 'https://api.explorer.provable.com/v2/testnet' --broadcast --private-key '$ALEO_PRIVATE_KEY' credential_nft.aleo mint_credential_nft\""
+            "Example: \"snarkos developer execute --endpoint 'https://api.explorer.provable.com/v2' --broadcast --private-key '$ALEO_PRIVATE_KEY' credential_nft.aleo mint_credential_nft\""
         ),
     )
     ap.add_argument("--name", default="submit_onboarding", help="Command entry name")
@@ -103,7 +103,7 @@ def main() -> None:
     if "/testnet" not in parsed.path:
         print(
             "WARNING: endpoint does not include '/testnet'. Some environments require a network-qualified URI "
-            "(for example https://api.explorer.provable.com/v2/testnet).",
+            "(for example https://api.explorer.provable.com/v2).",
             flush=True,
         )
 
