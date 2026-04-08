@@ -377,11 +377,22 @@ type CliCommandPair = {
   display: string;
 };
 
+/** Map Network name to snarkOS --network numeric ID. */
+function networkFlag(network: Network): string {
+  return network === "mainnet" ? "0" : "1";
+}
+
+/** Strip trailing /testnet or /mainnet from an endpoint URL so snarkOS can append it via --network. */
+function baseEndpoint(url: string): string {
+  return url.replace(/\/(testnet|mainnet)\/?$/, "");
+}
+
 function buildCliCommand(
   meta: Layer2TxMeta,
   step: Layer2CallPlanStep,
   private_key: string,
   node_url: string,
+  network: Network,
 ): CliCommandPair {
   const codec = STEP_CODEC_MAP[step.kind];
   const encoded_args = codec(step).map(shellQuote);
@@ -397,10 +408,12 @@ function buildCliCommand(
   ];
 
   // Flags after inputs.
-  // --endpoint: the node URL (including network path, e.g. https://api.provable.com/v2/testnet)
-  // --broadcast: standalone flag — snarkOS routes broadcast through --endpoint automatically.
-  //              Do NOT pass a URL argument; validate_phase4_broadcast_commands.py rejects it.
-  const flags = ["--endpoint", shellQuote(node_url), "--broadcast"];
+  // --endpoint: base URL only (e.g. https://api.explorer.provable.com/v2).
+  //             snarkOS appends the network path via --network.
+  // --network:  0 = mainnet, 1 = testnet.
+  // --broadcast: standalone flag — no URL argument.
+  const base = baseEndpoint(node_url);
+  const flags = ["--endpoint", shellQuote(base), "--network", networkFlag(network), "--broadcast"];
 
   return {
     exec: [...positional, "--private-key", shellQuote(private_key), ...flags].join(" "),
@@ -493,7 +506,7 @@ export class Layer2CliAdapter implements Layer2Adapter {
       let attempts_for_trace = 0;
 
       try {
-        const built = buildCliCommand(endpoint, step, this.private_key, this.node_url);
+        const built = buildCliCommand(endpoint, step, this.private_key, this.node_url, network);
         command = built.display;
         exec_command = built.exec;
 
