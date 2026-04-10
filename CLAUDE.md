@@ -62,22 +62,44 @@ The snarkOS SHA256 is hardcoded in `deploy.yml` and should also be set as the `S
 | 1 | ✅ Done | Portal workflow definitions (planning-only) |
 | 2 | ✅ Done | Layer 2 NFT programs (payroll, credential, audit) |
 | 3 | ✅ Done | Layer 2 router, type contracts, compile gate |
-| 4 | 🔧 In progress | Agreement flow done, payroll UI next |
-| 5 | ⏳ Pending | Testnet correctness validation |
-| 6 | ⏳ Pending | Hardening and release |
+| 4 | ✅ Done | End-to-end private payroll on testnet (2026-04-10) |
+| 5 | 🔧 In progress | Multi-worker, double-pay protection, mobile polish |
+| 6 | ⏳ Pending | Hardening and mainnet release |
 
-### Phase 4 Progress
+### Phase 4 Progress — COMPLETE
 - [x] Adapter generates correct `snarkos developer execute` commands per `step.kind`
-- [x] Leo programs compile (all 3 Layer 2 programs)
+- [x] Leo programs compile (all Layer 2 programs)
 - [x] CI split: `plan_gate` (PR-safe) + `execute_gate` (protected, manual dispatch only)
 - [x] Manifest validation wired before execute mode
 - [x] All active programs deployed to testnet
 - [x] Leo v4.0 migration — 3 new programs deployed, all source updated (2026-04-01)
-- [x] Employer + worker onboarding via portal ✅
-- [x] Agreement creation + acceptance via portal ✅
-- [x] Encrypted terms vault (AES-256-GCM + Pinata IPFS) ✅
-- [ ] Payroll execution via portal ← NEXT
-- [ ] One reproducible end-to-end testnet happy path runs
+- [x] Employer + worker onboarding via portal
+- [x] Agreement creation + acceptance via portal
+- [x] Encrypted terms vault (AES-256-GCM + Pinata IPFS)
+- [x] **Payroll execution via portal — 4-step sequential flow (2026-04-10)**
+  - Step 1: `employer_agreement_v4::assert_agreement_active`
+  - Step 2: `test_usdcx_stablecoin::transfer_private` (Sealance Merkle proof, depth 16)
+  - Step 3: `paystub_receipts::mint_paystub_receipts` (worker + employer records)
+  - Step 4: `payroll_audit_log::anchor_event`
+- [x] **End-to-end testnet happy path runs** ✅ First successful run: 2026-04-10
+  - Verify agreement: `at1mydsktdsr8pk7d4utzrp6n2rvtgkkpavthukyt4kpdadgyx5lg8sgljea3`
+  - USDCx transfer: `at1yphn8n9zejqnnsktuev7rl9vkv8styq00rjpffa0h7rxnccssyyqdk9ltw`
+  - Mint receipts: `at1w86wy80c9sgv0e2ukwlzja4r4km0vkld2tna586t9447q6pjvvrqhuvnw4`
+  - Anchor event: `at1jp6mertn92hpn79uak8vdy9t4ha2t0f4fwq877uy6rmjl20g0syqdzygp3`
+- [x] **Payroll anchor NFT mint** ✅ First successful mint: 2026-04-10
+  - `at1d8ht598hqqjgmqfxjwvt0cf47aqafgynzjhazhtreze6j22hzcrq5992r5` (`payroll_nfts_v2::mint_cycle_nft`)
+- [x] **`payroll_nfts_v2.aleo` deployed** (replaces legacy `payroll_nfts.aleo` which was stuck on `employer_agreement_v2`)
+  - Deploy tx: `at14yh96gmylgched07c756y5y230wj0x8wrnk4q7r3g85etsmuzqysm3fmqq`
+- [x] **On-chain payroll history scanner** — portal reconstructs run history from `EmployerPaystubReceipt` records via wallet's `requestRecords`, no localStorage dependency
+
+### Phase 5 — Hardening Next Steps
+- [ ] Multi-worker payroll (`execute_payroll_batch_2` path not yet tested via sequential flow)
+- [ ] Double-pay protection — `paid_epoch` finalize write was lost when we split `execute_payroll` into 4 transactions. Add portal-side guard or deploy a standalone `mark_epoch_paid` transition
+- [ ] Step failure recovery — if step 2/3/4 fails, earlier steps are already committed. UI should show "resume from step N" instead of restarting
+- [ ] Local PDF storage via IndexedDB (not IPFS) + BLAKE3 hash as private `doc_hash` in the PayrollNFT record
+- [ ] `payroll_nfts.aleo` (v1, legacy) — can probably stay deprecated but keep listed in wallet programs for read compatibility
+- [ ] Mobile/responsive polish for employer portal
+- [ ] Worker portal: view paystub receipts, download worker-side PDFs
 
 ---
 
