@@ -5,18 +5,45 @@
 
 ---
 
-## Fix Priority Order
+## 🎉 MILESTONE: E10 Complete — End-to-End Private Payroll (2026-04-10)
+
+First successful private payroll + anchor NFT on testnet. Full TX chain:
+
+1. `at1mydsktdsr8pk7d4utzrp6n2rvtgkkpavthukyt4kpdadgyx5lg8sgljea3` — `employer_agreement_v4::assert_agreement_active`
+2. `at1yphn8n9zejqnnsktuev7rl9vkv8styq00rjpffa0h7rxnccssyyqdk9ltw` — `test_usdcx_stablecoin::transfer_private`
+3. `at1w86wy80c9sgv0e2ukwlzja4r4km0vkld2tna586t9447q6pjvvrqhuvnw4` — `paystub_receipts::mint_paystub_receipts`
+4. `at1jp6mertn92hpn79uak8vdy9t4ha2t0f4fwq877uy6rmjl20g0syqdzygp3` — `payroll_audit_log::anchor_event`
+5. `at1d8ht598hqqjgmqfxjwvt0cf47aqafgynzjhazhtreze6j22hzcrq5992r5` — `payroll_nfts_v2::mint_cycle_nft`
+
+**Key architectural decisions from this milestone:**
+
+- **Sequential 4-step payroll instead of monolithic `execute_payroll`**: Shield wallet's browser WASM prover silently drops multi-program proofs. Splitting into 4 independent transactions (verify → transfer → receipts → audit) lets each proof build reliably. The `payroll_core_v2::execute_payroll` function is kept as a fallback but the sequential path is now the default (see `pnw_employment_portal_v1/src/coordinator/settlement_coordinator.ts::executeSequentialPayroll`).
+
+- **`privateFee: false` is required** for all Shield wallet `executeTransaction` calls. Without it, proof generation silently fails.
+
+- **Sealance Merkle proofs via `@provablehq/sdk`**: `transfer_private` requires a real Poseidon4-based exclusion proof with `TREE_DEPTH = 16` to match the on-chain `MerkleProof { siblings: [field; 16] }` struct. Built client-side via `SealanceMerkleTree`.
+
+- **On-chain payroll history** (no localStorage): history is reconstructed from `EmployerPaystubReceipt` records via wallet `requestRecords`. See `src/records/payroll_history_scanner.ts`. The `audit_event_hash` needed for anchor minting is recomputed deterministically from `payroll_inputs_hash` + `receipt_anchor` using the same formula as the manifest compiler.
+
+- **`payroll_nfts_v2.aleo` replaces legacy `payroll_nfts.aleo`**: The v1 was `@noupgrade` with `employer_agreement_v2` imports, so it couldn't anchor any v4 agreements. v2 imports `employer_agreement_v4` instead. Deploy tx: `at14yh96gmylgched07c756y5y230wj0x8wrnk4q7r3g85etsmuzqysm3fmqq`.
+
+- **REST endpoint is `/v2`**: base URL is `https://api.explorer.provable.com/v2` (not `/v1`), and `snarkos developer execute`/`deploy` require `--network 1` for testnet.
+
+---
+
+## Fix Priority Order — Phase 5 Hardening
 
 ```
-1. Leo programs: async transition + caller fix + consume fix (Issues #3, #4, #4b, #4c, #4d)
-2. Adapter CLI flags fix (Issue #1b)
-3. Onboarding scenario invalid address (Issue #10)
-4. Execute gate on-push trigger removed (Issue #7)
-5. SNARKOS_ENDPOINT alignment (Issue #6) ✅ FIXED
-6. Receipt verification order (Issue #8)
-7. Deploy programs, update manifest with real IDs (Issue #5)
-8. Step traces real execution wiring (Issue #9)
+1. Double-pay protection (paid_epoch lost in sequential flow)
+2. Step failure recovery (resume from step N on partial commit)
+3. Multi-worker payroll (batch_2 via sequential loop)
+4. Local PDF storage + doc_hash in PayrollNFT
+5. Mobile/responsive polish
+6. Worker portal paystub viewer
+7. Strip debug console.logs before demo
 ```
+
+All original Phase 4 issues below are resolved. Kept for historical context.
 
 ---
 
