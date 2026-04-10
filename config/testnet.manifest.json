@@ -15,7 +15,7 @@
       "payroll_audit_log": "payroll_audit_log.aleo"
     },
     "layer2": {
-      "payroll_nfts": "payroll_nfts.aleo",
+      "payroll_nfts": "payroll_nfts_v2.aleo",
       "credential_nft": "credential_nft.aleo",
       "audit_nft": "audit_nft.aleo"
     },
@@ -85,10 +85,17 @@
       "deployed_at": "2026-04-01"
     },
     "payroll_nfts.aleo": {
-      "status": "active",
+      "status": "legacy",
+      "notes": "@noupgrade, imports employer_agreement_v2 — cannot anchor v4 agreements. Superseded by payroll_nfts_v2.aleo.",
       "transaction_id": "at1hhd5ahu0zkg5gn37ldvjlht3mkk7yykxvuyuz8fzsxg07ep9kq8qjuk0p2",
       "fee_transaction_id": "at1dzmgs8lva64shlqgyz5krvrmd555gzqx7ua3yg7583rdf0jf2szqdzq04g",
       "deployed_at": "2026-03-12"
+    },
+    "payroll_nfts_v2.aleo": {
+      "status": "active",
+      "notes": "@noupgrade, imports employer_agreement_v4. Replaces payroll_nfts.aleo.",
+      "transaction_id": "at14yh96gmylgched07c756y5y230wj0x8wrnk4q7r3g85etsmuzqysm3fmqq",
+      "deployed_at": "2026-04-10"
     },
     "credential_nft.aleo": {
       "status": "active",
