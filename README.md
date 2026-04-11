@@ -123,12 +123,12 @@ The portal repos consume `config/testnet.manifest.json` from this repo as their 
 | Where to start | File |
 |---|---|
 | Session context + bug list + phase status | [`CLAUDE.md`](./CLAUDE.md) |
-| Full issue tracker + fix order | [`NOTES.md`](./NOTES.md) |
-| Technical architecture spec | [`ARCHITECTURE.md`](./ARCHITECTURE.md) |
-| Complete file directory | [`DIRECTORY.md`](./DIRECTORY.md) |
-| Employment portal product spec | [`docs/EMPLOYMENT_PORTAL.md`](./docs/EMPLOYMENT_PORTAL.md) |
+| Full issue tracker + fix order | [`docs/NOTES.md`](./docs/NOTES.md) |
+| Technical architecture spec | [`docs/ARCHITECTURE.md`](./docs/ARCHITECTURE.md) |
+| Complete file directory | [`docs/DIRECTORY.md`](./docs/DIRECTORY.md) |
+| Employment portal (separate repo) | [`pnw_employment_portal_v1`](https://github.com/PNWBNW/pnw_employment_portal_v1) |
 | Three-repo interoperability plan | [`docs/MULTI_REPO_PLAN.md`](./docs/MULTI_REPO_PLAN.md) |
-| Phase 4 CLI setup (local + Codespace) | [`docs/operations/PHASE4_CLI_SETUP.md`](./docs/operations/PHASE4_CLI_SETUP.md) |
+| Phase 4 CLI setup (Leo v4 / snarkOS v4.6) | [`docs/operations/PHASE4_CLI_SETUP.md`](./docs/operations/PHASE4_CLI_SETUP.md) |
 | Testnet deployment gameplan | [`docs/operations/PHASE4_TESTNET_GAMEPLAN.md`](./docs/operations/PHASE4_TESTNET_GAMEPLAN.md) |
 
 ---
