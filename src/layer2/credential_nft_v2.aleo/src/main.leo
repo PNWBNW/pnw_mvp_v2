@@ -230,6 +230,9 @@ program credential_nft_v2.aleo {
         };
     }
 
-    @admin(address = "aleo1s8t86aza932zah3mv5knclvnn5zy4gedpl5a4wn5h2yrt08mxqzsw5amdd")
+    // Admin = deploy wallet. Must match the `program_owner` at deploy
+    // time or the constructor assertion fails and the deploy is rejected
+    // (fee still charged). Matches payroll_core_v2's pattern.
+    @admin(address = "aleo1a2qje865a7ccrrwg37z6e36uyjtqlm5vdj8yzlrhypvg60xhncqqlev4dx")
     constructor() {}
 }
