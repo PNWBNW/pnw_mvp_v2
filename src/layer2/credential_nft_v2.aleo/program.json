@@ -1,0 +1,7 @@
+{
+  "program": "credential_nft_v2.aleo",
+  "version": "0.2.0",
+  "description": "Layer 2 (on-chain) credential NFTs for PNW MVP v2 — dual-record edition. Each mint emits two CredentialNFT records from a single transition: one owned by the employer (authoritative record) and one owned by the worker (visible in their wallet for scanning and display). Both copies share the same credential_id; public status/anchor mappings are the single source of truth. Replaces credential_nft.aleo (v1) which was @noupgrade and only emitted a single employer-owned record, leaving workers with no wallet-level visibility into credentials issued to them.",
+  "license": "PROPRIETARY",
+  "dependencies": []
+}
