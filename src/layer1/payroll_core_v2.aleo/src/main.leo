@@ -65,7 +65,7 @@ program payroll_core_v2.aleo {
             test_usdcx_stablecoin.aleo::Token,
             test_usdcx_stablecoin.aleo::Token,
             Final
-        ) = test_usdcx_stablecoin.aleo::transfer_private(employer_addr, w.net_amount, employer_usdcx, merkle_proofs);
+        ) = test_usdcx_stablecoin.aleo::transfer_private(w.worker_addr, w.net_amount, employer_usdcx, merkle_proofs);
 
         let (worker_receipt, employer_receipt, f_receipt): (
             paystub_receipts.aleo::WorkerPaystubReceipt,
@@ -148,14 +148,14 @@ program payroll_core_v2.aleo {
             test_usdcx_stablecoin.aleo::Token,
             test_usdcx_stablecoin.aleo::Token,
             Final
-        ) = test_usdcx_stablecoin.aleo::transfer_private(employer_addr, w1.net_amount, employer_usdcx, w1_merkle_proofs);
+        ) = test_usdcx_stablecoin.aleo::transfer_private(w1.worker_addr, w1.net_amount, employer_usdcx, w1_merkle_proofs);
 
         let (compliance2, worker2_usdcx, remaining_usdcx, f_transfer2): (
             test_usdcx_stablecoin.aleo::ComplianceRecord,
             test_usdcx_stablecoin.aleo::Token,
             test_usdcx_stablecoin.aleo::Token,
             Final
-        ) = test_usdcx_stablecoin.aleo::transfer_private(employer_addr, w2.net_amount, remainder1, w2_merkle_proofs);
+        ) = test_usdcx_stablecoin.aleo::transfer_private(w2.worker_addr, w2.net_amount, remainder1, w2_merkle_proofs);
 
         let (w1_worker_receipt, w1_employer_receipt, f_receipt1): (
             paystub_receipts.aleo::WorkerPaystubReceipt,
