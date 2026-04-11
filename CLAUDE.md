@@ -1,7 +1,7 @@
 # CLAUDE.md — PNW MVP v2 Session Context
 
 > Read this file first at the start of every session. It survives context compression.
-> The companion file `NOTES.md` has the full issue tracker and order of operations.
+> The companion file `docs/NOTES.md` has the full issue tracker and order of operations.
 
 ---
 
@@ -9,7 +9,7 @@
 
 **PNW MVP v2** — Proven National Workers. A privacy-first payroll and compliance framework on Aleo using USDCx for settlement. Employers execute payroll privately; workers receive private paystub receipts; audits happen via scoped, time-limited disclosure. Nothing sensitive hits public on-chain state.
 
-Full technical spec: `ARCHITECTURE.md`
+Full technical spec: `docs/ARCHITECTURE.md`
 
 ---
 
@@ -105,7 +105,7 @@ The snarkOS SHA256 is hardcoded in `deploy.yml` and should also be set as the `S
 
 ## Known Bugs — Current Status
 
-See `NOTES.md` for full details and fix priority. Summary:
+See `docs/NOTES.md` for full details and fix priority. Summary:
 
 ### CRITICAL (block compilation / testnet execution)
 | # | Bug | File | Status |
@@ -173,7 +173,7 @@ See `NOTES.md` for full details and fix priority. Summary:
 - `config/scenarios/testnet/onboarding_mint_args.sample.json` — sample args (**all placeholders**)
 
 ### Reference Docs (keep, don't merge)
-- `ARCHITECTURE.md` — full technical spec
+- `docs/ARCHITECTURE.md` — full technical spec
 - `docs/operations/PHASE4_CLI_SETUP.md` — operator setup: install Leo/snarkOS, run happy path
 - `docs/operations/PHASE4_TESTNET_GAMEPLAN.md` — PR sequence A→D and Phase 5/6 plan
 
@@ -242,4 +242,5 @@ scripts/verify_provable_cli.sh
 - `2026-03-01` — Canonical Phase A scenario contract as shared input surface for test + app dispatch
 - `2026-03-02` — Accept raw-name inputs with deterministic local hash derivation in scenarios
 - `2026-03-02` — No cumulative public spend counters (salary leakage risk); hash-only audit anchors only
-- `2026-03-09` — Consolidate all working context into `CLAUDE.md` + `NOTES.md` to survive compression
+- `2026-03-09` — Consolidate all working context into `CLAUDE.md` + `docs/NOTES.md` to survive compression
+- `2026-04-10` — Move ARCHITECTURE/DIRECTORY/NOTES into `docs/`; delete stale `employer_portal/` mirror and v1 program READMEs superseded by v2/v4 versions

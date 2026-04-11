@@ -1,8 +1,9 @@
 # Multi-Repo Architecture Plan
 
-> Version: 0.1
-> Last updated: 2026-03-12
-> Status: Design — no portal repos created yet
+> Version: 0.2
+> Last updated: 2026-04-10
+> Status: Operational — pnw_employment_portal_v1 exists and is running E11 hardening.
+> pnw_auditing_portal_v1 is still pending (see `src/layer2/audit_nft.aleo/audit_repo.md`).
 
 ---
 

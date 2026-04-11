@@ -10,14 +10,15 @@ Pin and verify CLI tooling before wiring execution adapters:
 
 ## 0) Pinned versions for this repo
 
-Use these pins for Phase 4:
+Use these pins (updated 2026-04-01 for Leo v4 migration — ConsensusVersion::V14
+enforced on testnet; v3-compiled programs are rejected by new deploys):
 
-- `LEO_VERSION=3.5.0`
-- `SNARKOS_VERSION=v4.5.0`
+- `LEO_VERSION=4.0.0`
+- `SNARKOS_VERSION=v4.6.0`
 
 Reference artifacts:
-- Leo: `https://github.com/ProvableHQ/leo/releases/download/v3.5.0/leo-release-3.5-x86_64-unknown-linux-gnu.zip`
-- snarkOS: `https://github.com/ProvableHQ/snarkOS/releases/download/v4.5.0/aleo-v4.5.0-x86_64-unknown-linux-gnu.zip`
+- Leo: `https://github.com/ProvableHQ/leo/releases/download/v4.0.0/leo-release-4.0-x86_64-unknown-linux-gnu.zip`
+- snarkOS: `https://github.com/ProvableHQ/snarkOS/releases/download/v4.6.0/aleo-v4.6.0-x86_64-unknown-linux-gnu.zip`
 
 ## CI workflow bootstrap (GitHub Actions)
 
