@@ -619,6 +619,67 @@ program employer_agreement_v4.aleo {
         };
     }
 
+    // -----------------------------
+    // 9) Strong employer authorization (added 2026-04-12)
+    // -----------------------------
+    // Proves the caller is authorized to act as the employer for a
+    // specific agreement, without requiring the cross-program caller
+    // to consume or re-emit the private FinalAgreement record (Leo
+    // forbids external programs from creating records of types they
+    // don't own).
+    //
+    // The authorization happens in two layers:
+    //
+    //   1) The parties commitment check below — a commitment over
+    //      (parties_key || employer_name_hash || worker_name_hash)
+    //      was written to `agreement_parties_commitment` at the time
+    //      the offer was created. Reproducing that commitment on-chain
+    //      proves the caller knows the private `parties_key`, which
+    //      only the three parties to the agreement (employer, worker,
+    //      DAO) ever see, because it lives inside their private
+    //      FinalAgreement records.
+    //
+    //   2) The calling program is expected to separately verify that
+    //      `self.caller` is the actual employer (not the worker or DAO)
+    //      by calling `pnw_name_registry_v2::assert_is_owner`
+    //      (employer_name_hash, self.caller) BEFORE invoking this
+    //      transition. This binds the commitment proof to the employer
+    //      role specifically.
+    //
+    // Combined, these checks make it impossible for a random attacker
+    // to impersonate the employer for this agreement — they would need
+    // to both steal the employer's `.pnw` name ownership AND read the
+    // private `parties_key` out of the employer's FinalAgreement record,
+    // which requires the employer's private Aleo view key.
+    //
+    // Also asserts the agreement is currently in ACTIVE state, so
+    // paused/terminated/superseded agreements can't authorize new
+    // operations downstream.
+    fn assert_employer_authorized(
+        agreement_id: [u8; 32],
+        parties_key: [u8; 32],
+        employer_name_hash: field,
+        worker_name_hash: field
+    ) -> Final {
+        let commitment: field = compute_parties_commitment(
+            parties_key,
+            employer_name_hash,
+            worker_name_hash
+        );
+        return final {
+            let h: u32 = agreement_anchor_height.get_or_use(agreement_id, 0u32);
+            assert(h != 0u32);
+
+            let stored: field = agreement_parties_commitment.get_or_use(agreement_id, 0field);
+            assert(stored != 0field);
+            assert(stored == commitment);
+
+            let s: u8 = agreement_status.get_or_use(agreement_id, 255u8);
+            assert_status_valid(s);
+            assert(s == STATUS_ACTIVE);
+        };
+    }
+
     @admin(address = "aleo1a2qje865a7ccrrwg37z6e36uyjtqlm5vdj8yzlrhypvg60xhncqqlev4dx")
     constructor() {}
 }

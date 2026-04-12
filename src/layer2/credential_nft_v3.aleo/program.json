@@ -1,0 +1,18 @@
+{
+  "program": "credential_nft_v3.aleo",
+  "version": "0.3.0",
+  "description": "Layer 2 (on-chain) credential NFTs for PNW MVP v2 — v3 adds hard on-chain authorization. Every mint_credential_nft call must present the employer's FinalAgreement record for the target worker as input. The Aleo VM enforces that only the record's owner can consume it, proving the caller is the employer of record, the credential target matches the agreement's worker, and the agreement is currently ACTIVE (cross-program call to employer_agreement_v4::assert_agreement_active). The agreement record is re-emitted unchanged so the employer keeps it. Unauthorized mints revert at the contract level — attackers cannot fabricate credentials for workers they have no agreement with, period. Inherits v2's dual-record mint (employer-owned + worker-owned) so workers still see credentials in their own wallet.",
+  "license": "PROPRIETARY",
+  "dependencies": [
+    {
+      "name": "employer_agreement_v4.aleo",
+      "location": "network",
+      "network": "testnet"
+    },
+    {
+      "name": "pnw_name_registry_v2.aleo",
+      "location": "network",
+      "network": "testnet"
+    }
+  ]
+}
