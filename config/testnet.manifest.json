@@ -16,7 +16,7 @@
     },
     "layer2": {
       "payroll_nfts": "payroll_nfts_v2.aleo",
-      "credential_nft": "credential_nft.aleo",
+      "credential_nft": "credential_nft_v2.aleo",
       "audit_nft": "audit_nft.aleo"
     },
     "external": {
@@ -98,10 +98,18 @@
       "deployed_at": "2026-04-10"
     },
     "credential_nft.aleo": {
-      "status": "active",
+      "status": "legacy",
+      "notes": "v1, @noupgrade, single-record mint to caller (employer only). Superseded by credential_nft_v2.aleo which emits dual records so workers see credentials in their own wallet.",
       "transaction_id": "at1t0zlpphuqfvghjnjjzjt7sjea7kk2yv740r3pefw9ajddklx85qqw84ms2",
       "fee_transaction_id": "at109gaa5nnzc7jf5663tjvyrp39zspzxzpw8ksfw2u6uysjdgcyyxqsvy0p6",
       "deployed_at": "2026-03-12"
+    },
+    "credential_nft_v2.aleo": {
+      "status": "active",
+      "notes": "@admin, dual-record mint: emits one CredentialNFT owned by the employer (authoritative) and one owned by the worker (visible in their wallet on scan). Split revoke paths: revoke_by_issuer (public mapping flip), revoke_by_owner (consume record), burn_view (worker discards their copy).",
+      "transaction_id": "at17ujvtfuw83dzy7hcev3yym6qqy54mz7cerwg9ar7uj5fa23kruysdf5msl",
+      "fee_transaction_id": "at1sd7spz7ea8p32ac0stfvytzy4ylwcp5szfad2z8tse68k25a2qzs7egatw",
+      "deployed_at": "2026-04-11"
     },
     "audit_nft.aleo": {
       "status": "active",
