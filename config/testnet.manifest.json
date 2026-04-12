@@ -16,7 +16,7 @@
     },
     "layer2": {
       "payroll_nfts": "payroll_nfts_v2.aleo",
-      "credential_nft": "credential_nft_v2.aleo",
+      "credential_nft": "credential_nft_v3.aleo",
       "audit_nft": "audit_nft.aleo"
     },
     "external": {
@@ -105,11 +105,17 @@
       "deployed_at": "2026-03-12"
     },
     "credential_nft_v2.aleo": {
-      "status": "active",
-      "notes": "@admin, dual-record mint: emits one CredentialNFT owned by the employer (authoritative) and one owned by the worker (visible in their wallet on scan). Split revoke paths: revoke_by_issuer (public mapping flip), revoke_by_owner (consume record), burn_view (worker discards their copy).",
+      "status": "legacy",
+      "notes": "@admin, dual-record mint but NO on-chain authorization check on mint — permissionless, anyone could fabricate credentials. Superseded by credential_nft_v3.aleo which adds employer_agreement_v4::assert_employer_authorized + two pnw_name_registry ownership checks on every mint.",
       "transaction_id": "at17ujvtfuw83dzy7hcev3yym6qqy54mz7cerwg9ar7uj5fa23kruysdf5msl",
       "fee_transaction_id": "at1sd7spz7ea8p32ac0stfvytzy4ylwcp5szfad2z8tse68k25a2qzs7egatw",
       "deployed_at": "2026-04-11"
+    },
+    "credential_nft_v3.aleo": {
+      "status": "active",
+      "notes": "@admin, dual-record mint + hard on-chain authorization. mint_credential_nft takes 13 inputs including agreement_id + parties_key + employer_name_hash + worker_name_hash as auth material. Cross-program calls: pnw_name_registry_v2::assert_is_owner(employer_name_hash, self.caller), pnw_name_registry_v2::assert_is_owner(worker_name_hash, worker_addr), and employer_agreement_v4::assert_employer_authorized (parties commitment + ACTIVE status). Unauthorized mints revert at the contract level. Depends on the 2026-04-12 upgrade of employer_agreement_v4.aleo (tx at15424d6swsselyrkmdv7gr2d2cql93rqjq0y3j25v3fzf4p79asgqzssqch) which added assert_employer_authorized.",
+      "transaction_id": "at1tkg4ksvxclq990keygl983h0vx07n6pt30jy203d5pzmf5nasczq6feccf",
+      "deployed_at": "2026-04-12"
     },
     "audit_nft.aleo": {
       "status": "active",
