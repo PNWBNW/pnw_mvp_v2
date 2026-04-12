@@ -1,0 +1,23 @@
+{
+  "program": "credential_nft_v4.aleo",
+  "version": "0.4.0",
+  "description": "Layer 2 (on-chain) credential NFTs — v4 adds employer license verification to the v3 authorization model. Every mint now checks 4 cross-program assertions: (1) employer_license_registry::assert_verified (license not revoked), (2) pnw_name_registry_v2::assert_is_owner for employer, (3) pnw_name_registry_v2::assert_is_owner for worker, (4) employer_agreement_v4::assert_employer_authorized (parties commitment + ACTIVE status). Inherits v3's dual-record mint, split revoke paths, and public state layouts.",
+  "license": "PROPRIETARY",
+  "dependencies": [
+    {
+      "name": "employer_agreement_v4.aleo",
+      "location": "network",
+      "network": "testnet"
+    },
+    {
+      "name": "pnw_name_registry_v2.aleo",
+      "location": "network",
+      "network": "testnet"
+    },
+    {
+      "name": "employer_license_registry.aleo",
+      "location": "network",
+      "network": "testnet"
+    }
+  ]
+}
