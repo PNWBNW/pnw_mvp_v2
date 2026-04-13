@@ -1,77 +1,71 @@
 # PNW MVP v2
+
 **Proven National Workers — Privacy-First Payroll and Compliance on Aleo**
 
 ---
 
 ## What This Is
 
-PNW MVP v2 is a privacy-first payroll and compliance framework built natively on **Aleo**, using **USDCx** for stable-value settlement. It enables employers to execute payroll privately, workers to receive cryptographically verifiable paystub receipts, and auditors to verify compliance — all without exposing identities, wages, or business data on public chain state.
+PNW MVP v2 is the on-chain foundation for a privacy-first payroll, credential, and employment infrastructure framework built on Aleo. It contains all Leo programs, TypeScript adapters, deployment manifests, and CI/CD infrastructure. The portal applications that consume this layer live in [`pnw_employment_portal_v1`](https://github.com/PNWBNW/pnw_employment_portal_v1). The master project repo is [`pnw`](https://github.com/PNWBNW/pnw).
 
-**The core promise:** USDCx proves the funds are clean. PNW proves the payroll relationship is legitimate. Neither requires the other to expose sensitive data to do its job.
-
-This repository (`pnw_mvp_v2`) is the **foundation layer** — Leo programs, TypeScript adapters, CI/CD infrastructure, and manifests. The portal applications are built in separate repos that consume from this one.
+**The core promise:** USDCx proves the funds are clean. PNW proves the payroll relationship is legitimate. Neither requires the other to expose sensitive data.
 
 ---
 
-## Architecture at a Glance
+## Architecture
 
 ```
 ┌──────────────────────────────────────────────────────────────────┐
 │                         Aleo Testnet                             │
 │                                                                  │
 │  Layer 1 (Canonical Logic)          Layer 2 (NFT Anchors)        │
-│  ├─ pnw_name_registry               ├─ payroll_nfts              │
-│  ├─ employer_license_registry       ├─ credential_nft            │
-│  ├─ employer_profiles               └─ audit_nft                 │
-│  ├─ worker_profiles                                              │
-│  ├─ employer_agreement                                           │
-│  ├─ payroll_core  ← USDCx settlement                             │      ← this repo
+│  ├─ pnw_name_registry_v2            ├─ payroll_nfts_v2           │
+│  ├─ pnw_name_registrar_v5          ├─ credential_nft_v3         │
+│  ├─ employer_license_registry       ├─ credential_nft_v4 (staged)│
+│  ├─ employer_agreement_v4           └─ audit_nft                 │
+│  ├─ payroll_core_v2  ← USDCx settlement                         │
 │  ├─ paystub_receipts                                             │
 │  ├─ payroll_audit_log                                            │
-│  └─ pnw_router                                                   │
+│  └─ pnw_router_v4                                                │
 └─────────────────────────────┬────────────────────────────────────┘
-                              │ snarkos developer execute
+                              │ wallet executeTransaction
                     ┌─────────┴─────────┐
-                    │   pnw_mvp_v2      │     ← this repo
-                    │  adapters + CI    │
+                    │  Portal adapter   │
+                    │  layer (synced    │
+                    │  from this repo)  │
                     └────────┬──────────┘
-               exports manifest + adapter types
-               ┌─────────────┴──────────────┐
-               ▼                            ▼
-  pnw_employment_portal_v1     pnw_auditing_portal_v1      ← future repos
-  (employer + worker UI)       (auditor UI)
+                             ▼
+                pnw_employment_portal_v1
+                (employer + worker dApp)
 ```
 
 ### Layer 1 — Canonical On-Chain Logic
 
-Leo programs forming the source of truth for all payroll and compliance state transitions. They handle identity commitments, employment agreements, USDCx payroll execution, private receipt issuance, and hash-only audit anchoring. They never expose identities, wages, or aggregated statistics.
-
-**Active programs (current testnet deployment):**
+Leo programs forming the source of truth for all payroll and compliance state transitions.
 
 | Program | Purpose | Constructor |
 |---|---|---|
-| `pnw_name_registry_v2.aleo` | Name hash registry with reverse resolver | @admin |
-| `pnw_name_registrar_v5.aleo` | Registration orchestrator (USDCx payment, name_plaintext storage) | @admin |
-| `employer_license_registry.aleo` | License eligibility validation | @noupgrade |
-| `employer_profiles_v2.aleo` | Employer profile commitment anchoring | @admin |
-| `pnw_worker_profiles_v2.aleo` | Worker profile commitment anchoring | @admin |
-| `employer_agreement_v4.aleo` | Employment agreement creation, acceptance, lifecycle (3-party records) | @admin |
-| `payroll_core_v2.aleo` | USDCx payroll execution — consumes employer records, emits worker records | @admin |
-| `paystub_receipts.aleo` | Private paystub receipt issuance | @admin |
-| `payroll_audit_log.aleo` | Hash-only audit event anchoring | @noupgrade |
+| `pnw_name_registry_v2.aleo` | Name hash registry with ownership assertions + reverse resolver | @admin |
+| `pnw_name_registrar_v5.aleo` | Registration orchestrator (USDCx payment, plaintext storage) | @admin |
+| `employer_license_registry.aleo` | License eligibility gate (AUTHORITY-controlled) | @noupgrade |
+| `employer_profiles_v2.aleo` | Employer profile commitment anchoring (license-gated, suffix-bound) | @admin |
+| `pnw_worker_profiles_v2.aleo` | Worker profile commitment anchoring with hash-only anchor index | @admin |
+| `employer_agreement_v4.aleo` | Agreement lifecycle (offer → accept → pause/terminate/resume) + `assert_employer_authorized` for credential auth | @admin |
+| `payroll_core_v2.aleo` | Monolithic payroll execution — agreement verification, USDCx transfer, receipt mint, audit anchor in one ZK proof. `paid_epoch` double-pay guard. | @admin |
+| `paystub_receipts.aleo` | Dual private receipt issuance (WorkerPaystubReceipt + EmployerPaystubReceipt) | @admin |
+| `payroll_audit_log.aleo` | Hash-only audit event anchoring with block-height timestamps | @noupgrade |
 | `pnw_router_v4.aleo` | Multi-program orchestration entry point | @admin |
-
-**Architecture note:** The registry/registrar split separates name storage (registry, stable) from payment + business logic (registrar, upgradeable). One `.pnw` name per wallet — worker OR employer, not both.
 
 ### Layer 2 — Commitment NFT Anchors
 
-Three Leo programs providing on-chain commitment anchors for reporting and audit. They are **not** a ledger or custody mechanism — they anchor hashes only.
+On-chain commitment anchors for reporting, credentials, and audit. They anchor hashes only — they never move funds.
 
 | Program | Purpose |
 |---|---|
-| `payroll_nfts.aleo` | Payroll cycle, quarter, YTD, and EOY commitment NFTs |
-| `credential_nft.aleo` | Employment credential authorization NFTs |
-| `audit_nft.aleo` | Audit authorization NFTs with block-height expiry |
+| `payroll_nfts_v2.aleo` | Payroll cycle NFT batch anchor (imports employer_agreement_v4) |
+| `credential_nft_v3.aleo` | Dual-record credential mint with 3 cross-program authorization checks (employer name ownership, worker name ownership, parties_key commitment + ACTIVE status). Unauthorized mints revert on-chain. |
+| `credential_nft_v4.aleo` | Adds employer license verification to v3's checks. Staged for post-buildathon activation. |
+| `audit_nft.aleo` | Dual-consent audit authorization with block-height expiry + attestation anchoring |
 
 ### Privacy Rules (Non-Negotiable)
 
@@ -79,21 +73,22 @@ Three Leo programs providing on-chain commitment anchors for reporting and audit
 - Public mappings hold hashes and commitment anchors only
 - No cumulative spend counters (salary leakage via delta inference)
 - Layer 2 NFTs are commitment anchors — they never move funds
-- No pooled custody — employer USDCx records are consumed → worker records emitted directly
+- No pooled custody — employer USDCx records consumed → worker records emitted directly
 
 ---
 
-## Three-Repo Structure
+## How The Repos Connect
 
-This project is built across three repositories designed to stay independent with clean interoperability contracts.
+This repo exports to the portal:
 
-| Repo | Contents | Status |
-|---|---|---|
-| `pnw_mvp_v2` | Leo programs, adapters, CI, manifests | Active — this repo |
-| `pnw_employment_portal_v1` | Employer + Worker two-sided portal | Planned — post Phase 5 |
-| `pnw_auditing_portal_v1` | Auditor portal | Planned — post Phase 5 |
+| Export | Consumed by portal at |
+|---|---|
+| `config/testnet.manifest.json` | `src/config/programs.ts` — canonical program ID registry |
+| `portal/src/adapters/*.ts` | `src/lib/pnw-adapter/*.ts` — execution boundary, program/transition mapping |
+| `portal/src/router/*.ts` | `src/lib/pnw-adapter/layer1_router.ts`, `layer2_router.ts` — call plan types |
+| `portal/src/commitments/*.ts` | `src/lib/pnw-adapter/canonical_encoder.ts`, `hash.ts`, `merkle.ts` — deterministic hashing |
 
-The portal repos consume `config/testnet.manifest.json` from this repo as their canonical program ID source. No portal ever hardcodes a program ID. See [`docs/MULTI_REPO_PLAN.md`](./docs/MULTI_REPO_PLAN.md) for the full interoperability plan.
+The portal copies these files with sync headers. No portal ever hardcodes a program ID — all IDs flow from `testnet.manifest.json`. See [`docs/MULTI_REPO_PLAN.md`](./docs/MULTI_REPO_PLAN.md) for the full interoperability plan.
 
 ---
 
@@ -105,31 +100,16 @@ The portal repos consume `config/testnet.manifest.json` from this repo as their 
 | 1 | Portal workflow definitions (planning layer) | ✅ Done |
 | 2 | Layer 2 NFT programs | ✅ Done |
 | 3 | Layer 2 router, type contracts, compile gate | ✅ Done |
-| 4 | Adapter execution boundary + CI split | 🔧 In progress |
-| 5 | Testnet correctness validation | ⏳ Pending |
-| 6 | Hardening, tax exports, release | ⏳ Pending |
+| 4 | End-to-end testnet execution (E10) | ✅ Done (2026-04-10) |
+| 5 | Hardening: multi-worker, credentials, paystubs | ✅ Done (2026-04-12) |
+| 6 | Mainnet preparation | ⏳ Pending |
 
-**Phase 4 exit criteria:**
-- [x] Adapter generates correct `snarkos developer execute` commands per step kind
-- [ ] Leo programs compile (`leo build`) — fixes applied, needs Codespace verification
-- [ ] One reproducible end-to-end testnet happy path run
-- [x] CI split: `plan_gate` (PR-safe, no secrets) + `execute_gate` (protected, manual dispatch)
-- [x] Manifest validation wired before execute mode
+### Key Milestones
 
----
-
-## Repository Navigation
-
-| Where to start | File |
-|---|---|
-| Session context + bug list + phase status | [`CLAUDE.md`](./CLAUDE.md) |
-| Full issue tracker + fix order | [`docs/NOTES.md`](./docs/NOTES.md) |
-| Technical architecture spec | [`docs/ARCHITECTURE.md`](./docs/ARCHITECTURE.md) |
-| Complete file directory | [`docs/DIRECTORY.md`](./docs/DIRECTORY.md) |
-| Employment portal (separate repo) | [`pnw_employment_portal_v1`](https://github.com/PNWBNW/pnw_employment_portal_v1) |
-| Three-repo interoperability plan | [`docs/MULTI_REPO_PLAN.md`](./docs/MULTI_REPO_PLAN.md) |
-| Phase 4 CLI setup (Leo v4 / snarkOS v4.6) | [`docs/operations/PHASE4_CLI_SETUP.md`](./docs/operations/PHASE4_CLI_SETUP.md) |
-| Testnet deployment gameplan | [`docs/operations/PHASE4_TESTNET_GAMEPLAN.md`](./docs/operations/PHASE4_TESTNET_GAMEPLAN.md) |
+- **E10 (2026-04-10):** First end-to-end private payroll + anchor on testnet — 5 transactions confirmed
+- **E11 (2026-04-11):** Multi-worker payroll (3 workers), USDCx double-spend fix, filling progress bar
+- **Credentials (2026-04-12):** `credential_nft_v3` deployed with hard on-chain authorization, dual-record mint, generative topographic art. `employer_agreement_v4` upgraded with `assert_employer_authorized`.
+- **`credential_nft_v4` (2026-04-12):** Deployed with additional employer license check, staged for post-buildathon
 
 ---
 
@@ -141,22 +121,30 @@ The portal repos consume `config/testnet.manifest.json` from this repo as their 
 | snarkOS | v4.6.0 |
 | Node.js | 20 |
 
----
-
-## CI / CD
-
-**`deploy.yml` (plan gate)** — runs on every PR and push to `main`. No secrets required. Typechecks the TypeScript adapter and router layers, runs codec tests, validates the testnet manifest schema, and enforces Layer 1 public-state leakage guards.
-
-**`execute_testnet.yml` (execute gate)** — manual dispatch only (or push to `work` branch). Requires secrets. Runs a full testnet scenario against real deployed programs with broadcast enabled and receipt verification required.
+> Leo v4.0.0 and snarkOS v4.6.0 are required. The network enforces ConsensusVersion::V14 which rejects programs compiled with Leo <4.0.
 
 ---
 
 ## USDCx Note
 
-USDCx is treated as a native Aleo asset (`test_usdcx_stablecoin.aleo` on testnet). The protocol never wraps, mirrors, or custodies USDCx — employer records are consumed and worker records are emitted directly in the same payroll transaction. Token program ID is configurable via `config/testnet.manifest.json`.
+USDCx is treated as a native Aleo asset (`test_usdcx_stablecoin.aleo` on testnet). The protocol never wraps, mirrors, or custodies USDCx — employer records are consumed and worker records are emitted directly in the same payroll transition. Token program ID is configurable via `config/testnet.manifest.json`.
+
+---
+
+## Documentation
+
+| Document | Purpose |
+|---|---|
+| [`docs/ARCHITECTURE.md`](./docs/ARCHITECTURE.md) | Deep technical architecture and trust model |
+| [`docs/NOTES.md`](./docs/NOTES.md) | Issue tracker and fix priority |
+| [`docs/DIRECTORY.md`](./docs/DIRECTORY.md) | Repo file map with per-file descriptions |
+| [`docs/MULTI_REPO_PLAN.md`](./docs/MULTI_REPO_PLAN.md) | Three-repo interoperability plan |
+| [`docs/IDEA_BOARD.md`](./docs/IDEA_BOARD.md) | Payroll speedup brainstorming |
+| [`docs/operations/PHASE4_CLI_SETUP.md`](./docs/operations/PHASE4_CLI_SETUP.md) | Leo v4 / snarkOS v4.6 setup |
+| [`docs/operations/PHASE4_TESTNET_GAMEPLAN.md`](./docs/operations/PHASE4_TESTNET_GAMEPLAN.md) | Deployment roadmap |
 
 ---
 
 ## License
 
-**PROPRIETARY.** No rights granted for reuse, redistribution, or deployment without explicit written authorization.
+Proprietary — PNW Smart Contract License v1.7. See the master repo [`LICENSE.md`](https://github.com/PNWBNW/pnw/blob/main/LICENSE.md).
