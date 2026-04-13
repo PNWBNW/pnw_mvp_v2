@@ -48,6 +48,8 @@ Leo programs forming the source of truth for all payroll and compliance state tr
 | `pnw_name_registry_v2.aleo` | Name hash registry with ownership assertions + reverse resolver | @admin |
 | `pnw_name_registrar_v5.aleo` | Registration orchestrator (USDCx payment, plaintext storage) | @admin |
 | `employer_license_registry.aleo` | License eligibility gate (AUTHORITY-controlled) | @noupgrade |
+| `employer_profiles_v2.aleo` | Employer profile commitment anchoring (license-gated, suffix-bound) | @admin |
+| `pnw_worker_profiles_v2.aleo` | Worker profile commitment anchoring with hash-only anchor index | @admin |
 | `employer_agreement_v4.aleo` | Agreement lifecycle (offer → accept → pause/terminate/resume) + `assert_employer_authorized` for credential auth | @admin |
 | `payroll_core_v2.aleo` | Monolithic payroll execution — agreement verification, USDCx transfer, receipt mint, audit anchor in one ZK proof. `paid_epoch` double-pay guard. | @admin |
 | `paystub_receipts.aleo` | Dual private receipt issuance (WorkerPaystubReceipt + EmployerPaystubReceipt) | @admin |
