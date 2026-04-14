@@ -1,8 +1,44 @@
+# Secrets — never commit
 .env
+.env.local
+.env.*.local
+*.pem
+*.key
+
+# OS
+.DS_Store
+Thumbs.db
+desktop.ini
+
+# Editors / IDEs
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+
+# Claude Code local settings (never commit)
+.claude/settings.local.json
+
+# Node
 node_modules/
-artifacts/
-*.zip
+
+# Python
+__pycache__/
+*.pyc
+
+# Logs
+*.log
+npm-debug.log*
+pnpm-debug.log*
+
+# Leo / snarkOS binaries + build artifacts
 leo-bin/
 snarkos-bin/
-.tmp_phase4_tests/
+artifacts/
 **/build/
+**/outputs/
+*.zip
+
+# Phase 4 test temp
+.tmp_phase4_tests/
