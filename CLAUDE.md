@@ -15,7 +15,7 @@ Full technical spec: `docs/ARCHITECTURE.md`
 
 ## Active Branch
 
-`claude/project-review-Bjwsc` — all development goes here.
+`main` is stable. Feature work on `feature/...` or `claude/...` branches.
 
 ---
 
@@ -63,8 +63,8 @@ The snarkOS SHA256 is hardcoded in `deploy.yml` and should also be set as the `S
 | 2 | ✅ Done | Layer 2 NFT programs (payroll, credential, audit) |
 | 3 | ✅ Done | Layer 2 router, type contracts, compile gate |
 | 4 | ✅ Done | End-to-end private payroll on testnet (2026-04-10) |
-| 5 | 🔧 In progress | Multi-worker, double-pay protection, mobile polish |
-| 6 | ⏳ Pending | Hardening and mainnet release |
+| 5 | ✅ Done | Multi-worker (3 workers), credential_nft_v3/v4, payroll_nfts_v2, generative art |
+| 6 | 🔧 In progress | Mainnet preparation, security audit, state tax expansion |
 
 ### Phase 4 Progress — COMPLETE
 - [x] Adapter generates correct `snarkos developer execute` commands per `step.kind`
@@ -92,14 +92,22 @@ The snarkOS SHA256 is hardcoded in `deploy.yml` and should also be set as the `S
   - Deploy tx: `at14yh96gmylgched07c756y5y230wj0x8wrnk4q7r3g85etsmuzqysm3fmqq`
 - [x] **On-chain payroll history scanner** — portal reconstructs run history from `EmployerPaystubReceipt` records via wallet's `requestRecords`, no localStorage dependency
 
-### Phase 5 — Hardening Next Steps
-- [ ] Multi-worker payroll (`execute_payroll_batch_2` path not yet tested via sequential flow)
-- [ ] Double-pay protection — `paid_epoch` finalize write was lost when we split `execute_payroll` into 4 transactions. Add portal-side guard or deploy a standalone `mark_epoch_paid` transition
-- [ ] Step failure recovery — if step 2/3/4 fails, earlier steps are already committed. UI should show "resume from step N" instead of restarting
-- [ ] Local PDF storage via IndexedDB (not IPFS) + BLAKE3 hash as private `doc_hash` in the PayrollNFT record
-- [ ] `payroll_nfts.aleo` (v1, legacy) — can probably stay deprecated but keep listed in wallet programs for read compatibility
-- [ ] Mobile/responsive polish for employer portal
-- [ ] Worker portal: view paystub receipts, download worker-side PDFs
+### Phase 5 — COMPLETE (2026-04-12)
+- [x] Multi-worker payroll — 3 workers sequential with USDCx remainder-record handling ✅
+- [x] `payroll_nfts_v2.aleo` deployed (replaces v1 stuck on agreement_v2) ✅
+- [x] `credential_nft_v3.aleo` deployed with 3 cross-program auth checks ✅
+- [x] `credential_nft_v4.aleo` deployed with employer license check (staged) ✅
+- [x] `employer_agreement_v4.aleo` upgraded with `assert_employer_authorized` ✅
+- [x] Worker portal: paystub viewer, credential gallery, W-4 form, timesheet ✅
+- [x] Client-side federal tax engine (IRS annualization method) ✅
+- [x] Generative topographic credential art (BLAKE3-seeded, 4 palettes) ✅
+
+### Phase 6 — Mainnet Preparation (In Progress)
+- [ ] Double-pay protection — `paid_epoch` guard lost in 4-step split. Portal-side or standalone transition
+- [ ] Step failure recovery — resume from step N instead of restarting
+- [ ] External security audit of all Leo programs
+- [ ] State tax engine expansion
+- [ ] Mobile responsive polish
 
 ---
 
@@ -141,9 +149,12 @@ See `docs/NOTES.md` for full details and fix priority. Summary:
 ## File Map (What Does What)
 
 ### Layer 2 Leo Programs (on-chain)
-- `src/layer2/payroll_nfts.aleo/main.leo` — payroll cycle/quarter/YTD/EOY NFT mint + revoke + supersede
-- `src/layer2/credential_nft.aleo/main.leo` — credential NFT mint + revoke + scope anchoring
+- `src/layer2/payroll_nfts_v2.aleo/main.leo` — payroll cycle NFT (imports employer_agreement_v4)
+- `src/layer2/credential_nft_v3.aleo/main.leo` — dual-record credential mint + 3 cross-program auth checks
+- `src/layer2/credential_nft_v4.aleo/main.leo` — adds employer license verification (staged)
 - `src/layer2/audit_nft.aleo/main.leo` — audit authorization NFT + expiry + attestation anchoring
+- `src/layer2/payroll_nfts.aleo/main.leo` — LEGACY (v1, superseded by v2)
+- `src/layer2/credential_nft.aleo/main.leo` — LEGACY (v1, superseded by v3)
 
 ### Portal TypeScript (off-chain)
 - `portal/src/adapters/aleo_cli_adapter.ts` — **THE execution boundary**; builds `snarkos` commands

@@ -110,6 +110,8 @@ The portal copies these files with sync headers. No portal ever hardcodes a prog
 - **E11 (2026-04-11):** Multi-worker payroll (3 workers), USDCx double-spend fix, filling progress bar
 - **Credentials (2026-04-12):** `credential_nft_v3` deployed with hard on-chain authorization, dual-record mint, generative topographic art. `employer_agreement_v4` upgraded with `assert_employer_authorized`.
 - **`credential_nft_v4` (2026-04-12):** Deployed with additional employer license check, staged for post-buildathon
+- **Worker Features (2026-04-15):** Client-side federal tax engine, W-4 form with parties_key encryption, timesheet, paystub viewer, pay rates in agreements
+- **Inline W-4 (2026-04-20):** Removed PDF upload friction — W-4 fillable directly in portal for zero-friction mobile experience
 
 ---
 
