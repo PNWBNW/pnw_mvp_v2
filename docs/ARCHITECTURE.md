@@ -279,20 +279,20 @@ All commitment artifacts include:
 - Stores employer profile anchors (hash-only commitments)
 - Provides existence and anchored-state assertions
 
-### 8.5 `employer_agreement_v2.aleo`
+### 8.5 `employer_agreement_v4.aleo`
 - Defines agreement lifecycle (offer → active → pause/terminate → resume)
 - Anchors agreement terms (doc commitments)
 - Provides `ACTIVE` status checks for payroll gating
+- 3-party `FinalAgreement` records (employer, worker, DAO each get a copy)
+- `assert_employer_authorized` transition for cross-program credential authorization (verifies parties_key commitment + ACTIVE status)
 
-### 8.6 `payroll_core.aleo`
-- Executes payroll settlement via **USDCx records**
-- Validates:
-  - worker profile exists
-  - employer profile exists
-  - agreement exists and status == `ACTIVE`
-- Prevents double-pay per `(agreement_id, epoch_id)`
+### 8.6 `payroll_core_v2.aleo`
+- Executes payroll settlement via **USDCx records** (imports employer_agreement_v4)
+- Validates agreement exists and status == `ACTIVE`
+- Prevents double-pay per `(agreement_id, epoch_id)` via `paid_epoch` mapping
 - Mints private paystub receipts (worker + employer)
 - Anchors immutable payroll audit events
+- **Portal execution:** Split into 4 independent transactions for Shield wallet WASM prover compatibility (verify agreement → transfer USDCx → mint receipts → anchor event)
 
 ### 8.7 `paystub_receipts.aleo`
 - Defines private receipt record formats used by Layer 2 reporting
@@ -331,14 +331,23 @@ Stores:
 - schema/calc/policy versions and block height
 - revocation and supersede status
 
-### 9.2 Credential NFTs (`credential_nft.aleo`)
+### 9.2 Credential NFTs (`credential_nft_v3.aleo`)
 Used for:
-- employer verification credential (future governance repo)
-- employment relationship credential (optional)
-- auditor/tax agent credentials (optional)
+- employer verification credentials
+- employment relationship credentials
+- performance and compliance credentials
+
+Enforces **3 cross-program authorization checks** before minting:
+1. `pnw_name_registry_v2::assert_is_owner` (employer name ownership)
+2. `pnw_name_registry_v2::assert_is_owner` (worker name ownership)
+3. `employer_agreement_v4::assert_employer_authorized` (active agreement + parties_key commitment)
+
+**Dual-record mint:** Each transition emits two `CredentialNFT` records — one owned by the employer (authoritative) and one owned by the worker (visible in wallet). Unauthorized mints revert on-chain.
+
+`credential_nft_v4.aleo` adds a 4th check: `employer_license_registry::assert_verified`. Staged for post-buildathon activation.
 
 Stores:
-- identity hashes
+- identity hashes, credential type code
 - scope or agreement commitments
 - issuer commitments
 - revocation fields
