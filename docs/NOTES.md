@@ -35,6 +35,10 @@ First successful private payroll + anchor NFT on testnet. Full TX chain:
 
 ```
 1. Double-pay protection (paid_epoch lost in sequential flow)
+   ✅ 2026-06-12 — portal-side guard live (schema_v 2 run_kind/run_memo in
+   payroll_inputs_hash + receipt-scan check in pnw_employment_portal_v1);
+   on-chain payroll_guard.aleo source staged in src/layer1/ — deploy with
+   Leo 4.2.0 / snarkOS v4.7.4 (ConsensusVersion::V15), then wire as step 0
 2. Step failure recovery (resume from step N on partial commit)
 3. Multi-worker payroll (batch_2 via sequential loop)
 4. Local PDF storage + doc_hash in PayrollNFT

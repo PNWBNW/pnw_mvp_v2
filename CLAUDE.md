@@ -30,13 +30,18 @@ Full technical spec: `docs/ARCHITECTURE.md`
 
 | Tool | Version | Binary name | SHA256 |
 |------|---------|-------------|--------|
-| Leo  | 4.0.0 | `leo` | set via `vars.LEO_SHA256` repo var |
-| snarkOS | v4.6.0 | `snarkos` | update needed — ConsensusVersion::V14 required for v4 deploys |
+| Leo  | 4.2.0 (tag `leo-lang-v4.2.0`) | `leo` | `e0c5d8fc774b7d299f6adad6f508d9fbd037ac023197372b541c2c56ec83215d` |
+| snarkOS | v4.7.4 | `snarkos` | `e0fb31a30e7d0a0ae6b23df04ca99ccf15d197f6efad77fce8d634d8bbecfb72` |
 | Node | 20 | `node` | managed by `actions/setup-node` |
 
-> **Note (2026-04-01):** Leo v4.0.0 and snarkOS v4.6.0 are required for new deployments.
-> The network enforces ConsensusVersion::V14 which rejects programs compiled with Leo <4.0.
-> All PNW source files are now v4 syntax. Already-deployed programs retain v3 bytecode on-chain.
+> **Note (2026-06-12):** Leo v4.2.0 and snarkOS v4.7.4 are required for new deployments.
+> The network now enforces ConsensusVersion::V15 (testnet activation height 16,886,000;
+> mainnet 19,264,000) — V14-era clients (snarkOS ≤4.6.x) produce rejected transactions.
+> Leo 4.1/4.2 made no source-syntax changes (4.2 only changed `.abi.json`, which nothing
+> in this repo consumes), so all PNW v4-syntax source compiles unchanged. Already-deployed
+> programs retain their existing bytecode on-chain.
+> The `LEO_SHA256`/`SNARKOS_SHA256` GitHub repo vars (used by `execute_testnet.yml`)
+> must be updated to the values above; `deploy.yml` pins them inline.
 
 Download URLs are in `.github/workflows/deploy.yml` and `.github/workflows/execute_testnet.yml`.
 The snarkOS SHA256 is hardcoded in `deploy.yml` and should also be set as the `SNARKOS_SHA256` GitHub repo variable for `execute_testnet.yml`.
@@ -103,7 +108,12 @@ The snarkOS SHA256 is hardcoded in `deploy.yml` and should also be set as the `S
 - [x] Generative topographic credential art (BLAKE3-seeded, 4 palettes) ✅
 
 ### Phase 6 — Mainnet Preparation (In Progress)
-- [ ] Double-pay protection — `paid_epoch` guard lost in 4-step split. Portal-side or standalone transition
+- [x] Double-pay protection (portal-side) ✅ (2026-06-12) — `run_kind`/`run_memo` in inputs-hash preimage
+  (manifest schema_v 2) + receipt-scan guard in `pnw_employment_portal_v1/src/coordinator/double_pay_guard.ts`
+- [x] Double-pay protection (on-chain source) ✅ (2026-06-12) — `payroll_guard.aleo::claim_payment_slot(payment_key)`
+  written (`src/layer1/payroll_guard.aleo/`), keyed by schema_v 2 `payroll_inputs_hash`; single-program
+  transition for Shield compatibility. Staged in manifest — **deploy pending**, then wire as step 0 of the
+  portal's sequential flow
 - [ ] Step failure recovery — resume from step N instead of restarting
 - [ ] External security audit of all Leo programs
 - [ ] State tax engine expansion

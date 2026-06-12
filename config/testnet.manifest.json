@@ -12,7 +12,8 @@
       "employer_agreement": "employer_agreement_v4.aleo",
       "payroll_core": "payroll_core_v2.aleo",
       "paystub_receipts": "paystub_receipts.aleo",
-      "payroll_audit_log": "payroll_audit_log.aleo"
+      "payroll_audit_log": "payroll_audit_log.aleo",
+      "payroll_guard": "payroll_guard.aleo"
     },
     "layer2": {
       "payroll_nfts": "payroll_nfts_v2.aleo",
@@ -122,6 +123,10 @@
       "transaction_id": "at1gvhfmt56t6dc7alg6pgqp6mq4kryxwjtvfyxe2zyt50e2qq845yqk3n3ea",
       "fee_transaction_id": "at1rxm9ufpyr70t4s8hx205nnjh9rqyr02pex88zxrt8qgpa5zauvqswq6w8z",
       "deployed_at": "2026-03-12"
+    },
+    "payroll_guard.aleo": {
+      "status": "staged",
+      "notes": "@noupgrade, standalone double-pay guard — step 0 of sequential payroll flow. Source ready; awaiting testnet deploy (Leo 4.0.0 / snarkOS v4.6.0)."
     }
   }
 }

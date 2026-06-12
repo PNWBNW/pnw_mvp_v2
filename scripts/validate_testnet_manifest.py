@@ -18,6 +18,7 @@ REQUIRED = {
         "payroll_core",
         "paystub_receipts",
         "payroll_audit_log",
+        "payroll_guard",
     ],
     "layer2": [
         "payroll_nfts",

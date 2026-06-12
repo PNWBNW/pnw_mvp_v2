@@ -239,6 +239,21 @@ function anchor_unique(event_hash: [u8; 32])
 ```
 
 ---
+## payroll_guard.aleo
+
+### Double-pay semantics
+- `payment_key` is the portal-computed `payroll_inputs_hash` (manifest `schema_v >= 2`), committing to agreement, epoch, amounts, `run_kind`, and `run_memo`.
+- `claim_payment_slot` runs as step 0 of the sequential payroll flow; a byte-identical payment resubmission reverts, while intentional repeat payments (different amount/kind/memo) derive a new key.
+- Public state is `payment_key => first-claimed block height` only.
+
+### Transitions
+```
+transition claim_payment_slot(payment_key: [u8; 32])
+
+transition assert_payment_claimed(payment_key: [u8; 32])
+```
+
+---
 ## payroll_core.aleo
 
 ### Settlement semantics

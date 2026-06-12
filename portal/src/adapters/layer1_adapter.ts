@@ -148,6 +148,14 @@ export function resolveLayer1Endpoint(network: Network, step: CallPlanStep): TxM
       return { program: "payroll_audit_log.aleo", transition: "get_event_height", network };
 
     // -----------------------------
+    // payroll_guard.aleo
+    // -----------------------------
+    case "guard_claim_payment_slot":
+      return { program: "payroll_guard.aleo", transition: "claim_payment_slot", network };
+    case "guard_assert_payment_claimed":
+      return { program: "payroll_guard.aleo", transition: "assert_payment_claimed", network };
+
+    // -----------------------------
     // payroll_core.aleo
     // -----------------------------
     case "execute_payroll":
