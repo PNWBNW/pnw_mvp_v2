@@ -1,0 +1,6 @@
+{
+  "program": "payroll_guard.aleo",
+  "version": "0.1.0",
+  "description": "Layer 1 standalone double-pay guard for PNW MVP v2. Claims a one-time payment slot keyed by the portal-computed payroll_inputs_hash (schema_v 2: commits to agreement, epoch, amounts, run_kind, run_memo). Runs as step 0 of the sequential payroll flow so a byte-identical payment resubmission reverts on-chain; intentional repeat payments derive a new key. Single-program transition, compatible with Shield wallet's in-browser prover.",
+  "license": "PROPRIETARY"
+}

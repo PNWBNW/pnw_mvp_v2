@@ -319,6 +319,17 @@ export type CallPlanStep =
       event_hash: Bytes32;
     }
   | {
+      kind: "guard_claim_payment_slot";
+      /** payroll_inputs_hash (schema_v >= 2) — commits to agreement, epoch,
+       *  amounts, run_kind, and run_memo. Step 0 of the sequential payroll
+       *  flow; reverts on-chain if this exact payment was already claimed. */
+      payment_key: Bytes32;
+    }
+  | {
+      kind: "guard_assert_payment_claimed";
+      payment_key: Bytes32;
+    }
+  | {
       kind: "execute_payroll";
       args: {
         employer_usdcx: UsdcxRecord;
@@ -400,6 +411,14 @@ export class Layer1Router {
    */
   planExecutePayroll(args: CallPlanStep & { kind: "execute_payroll" }["args"]): CallPlanStep[] {
     return [{ kind: "execute_payroll", args }];
+  }
+
+  /**
+   * Double-pay guard claim — step 0 of the sequential payroll flow.
+   * payment_key is the per-worker payroll_inputs_hash (schema_v >= 2).
+   */
+  planClaimPaymentSlot(payment_key: Bytes32): CallPlanStep[] {
+    return [{ kind: "guard_claim_payment_slot", payment_key }];
   }
 
   /**

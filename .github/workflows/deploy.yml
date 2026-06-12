@@ -11,12 +11,12 @@ jobs:
     runs-on: ubuntu-24.04
 
     env:
-      LEO_VERSION: 4.0.0
-      SNARKOS_VERSION: v4.6.0
-      LEO_URL: https://github.com/ProvableHQ/leo/releases/download/v4.0.0/leo-master-x86_64-unknown-linux-gnu.zip
-      SNARKOS_URL: https://github.com/ProvableHQ/snarkOS/releases/download/v4.6.0/aleo-v4.6.0-x86_64-unknown-linux-gnu.zip
-      LEO_SHA256: "${{ vars.LEO_SHA256 }}"
-      SNARKOS_SHA256: "a7e1fdb4329b8ee45b1372aa5867d56f84a442caffe3c55bca8b20ca34f2bb25"
+      LEO_VERSION: 4.2.0
+      SNARKOS_VERSION: v4.7.4
+      LEO_URL: https://github.com/ProvableHQ/leo/releases/download/leo-lang-v4.2.0/leo-master-x86_64-unknown-linux-gnu.zip
+      SNARKOS_URL: https://github.com/ProvableHQ/snarkOS/releases/download/v4.7.4/aleo-v4.7.4-x86_64-unknown-linux-gnu.zip
+      LEO_SHA256: "e0c5d8fc774b7d299f6adad6f508d9fbd037ac023197372b541c2c56ec83215d"
+      SNARKOS_SHA256: "e0fb31a30e7d0a0ae6b23df04ca99ccf15d197f6efad77fce8d634d8bbecfb72"
       STRICT_VERSION_CHECK: "false"
 
     steps:
@@ -28,16 +28,18 @@ jobs:
         with:
           node-version: '20'
 
-      - name: 🛠️ Install Leo CLI (v4.0.0)
+      - name: 🛠️ Install Leo CLI (pinned)
         run: |
-          curl -L "https://github.com/ProvableHQ/leo/releases/download/v4.0.0/leo-master-x86_64-unknown-linux-gnu.zip" -o leo.zip
+          curl -fsSL "$LEO_URL" -o leo.zip
+          echo "${LEO_SHA256}  leo.zip" | sha256sum -c -
           unzip leo.zip -d /tmp
           sudo mv /tmp/leo /usr/local/bin/leo
           sudo chmod +x /usr/local/bin/leo
           leo --version
-      - name: ⚙️ Install snarkOS (v4.6.0)
+      - name: ⚙️ Install snarkOS (pinned)
         run: |
-          curl -L "https://github.com/ProvableHQ/snarkOS/releases/download/v4.6.0/aleo-v4.6.0-x86_64-unknown-linux-gnu.zip" -o snarkos.zip
+          curl -fsSL "$SNARKOS_URL" -o snarkos.zip
+          echo "${SNARKOS_SHA256}  snarkos.zip" | sha256sum -c -
           unzip snarkos.zip -d /tmp
           sudo mv /tmp/snarkos /usr/local/bin/snarkos
           sudo chmod +x /usr/local/bin/snarkos
