@@ -1,4 +1,6 @@
 import pnw_name_registry_v2.aleo;
+// Kept from the previous edition though nothing calls it: an upgrade may not drop an import.
+import employer_license_registry.aleo;
 
 // ---------------------------------------------------------
 // Employer Agreement v4 — Leo v4.0 syntax

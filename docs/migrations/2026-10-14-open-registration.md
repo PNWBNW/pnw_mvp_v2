@@ -9,7 +9,7 @@ Two `@admin` programs upgraded in place (edition bump, same program ids, same ad
 | Program | Before | After |
 |---|---|---|
 | `pnw_name_registrar_v5.aleo` | `register_worker_name` / `register_employer_name` took 1 USDCx (`transfer_public_as_signer`) and the employer one asserted `employer_license_registry::assert_verified(signer)` | Both free, no approval. `base_price` recorded as 0, so a sellback refunds nothing (`fulfill_empl_sellback` asserts `refund == 0`). Imports: only `pnw_name_registry_v2`. |
-| `employer_agreement_v4.aleo` | `create_job_offer`, `pause_agreement_employer`, `terminate_agreement_employer`, `approve_resume_employer` asserted `assert_verified(caller)` | Only `pnw_name_registry_v2::assert_is_owner(employer_name_hash, caller)` remains: the caller must own the business name on the agreement. Import of `employer_license_registry` dropped. |
+| `employer_agreement_v4.aleo` | `create_job_offer`, `pause_agreement_employer`, `terminate_agreement_employer`, `approve_resume_employer` asserted `assert_verified(caller)` | Only `pnw_name_registry_v2::assert_is_owner(employer_name_hash, caller)` remains: the caller must own the business name on the agreement. The `employer_license_registry` import stays, unused. |
 
 Unchanged: `pnw_name_registry_v2` (still authorizes the registrar as caller), `employer_license_registry`
 (`@noupgrade`; simply no longer called by these two), one-name-per-wallet, suffix 1..40, every record
@@ -32,8 +32,10 @@ that upgraded `employer_agreement_v4` in April):
 From a laptop instead: `cd src/layer1/<program> && leo upgrade --network testnet --endpoint
 https://api.explorer.provable.com/v1 --broadcast` with `PRIVATE_KEY` in `.env`.
 
-If the network rejects an edition because the import list changed, restore the removed import lines
-(unused) and run again.
+Imports: the first check run failed with "Cannot add program … because its import
+'employer_license_registry.aleo' must be added first", so both programs keep every import they had
+(unused). Checked offline with Leo 4.0.0: both compile, the imports stay in the bytecode, and neither
+calls `assert_verified` or a USDCx transfer.
 
 ## Checks after deploy (must fail / must pass)
 

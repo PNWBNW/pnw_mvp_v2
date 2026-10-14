@@ -1,3 +1,6 @@
+// Kept from edition 1 though nothing calls them: an upgrade may not drop an import.
+import employer_license_registry.aleo;
+import test_usdcx_stablecoin.aleo;
 import pnw_name_registry_v2.aleo;
 
 // Suffix validation
