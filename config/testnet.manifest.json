@@ -36,7 +36,7 @@
     },
     "pnw_name_registrar_v5.aleo": {
       "status": "active",
-      "notes": "@admin, flat 1 USDCx pricing, reverse resolver",
+      "notes": "@admin, reverse resolver; edition 2 (2026-10-14) free and no license approval — see docs/migrations/2026-10-14-open-registration.md",
       "deployed_at": "2026-03-28"
     },
     "employer_license_registry.aleo": {

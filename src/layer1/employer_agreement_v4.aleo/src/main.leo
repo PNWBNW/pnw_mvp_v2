@@ -1,5 +1,4 @@
 import pnw_name_registry_v2.aleo;
-import employer_license_registry.aleo;
 
 // ---------------------------------------------------------
 // Employer Agreement v4 — Leo v4.0 syntax
@@ -178,7 +177,6 @@ program employer_agreement_v4.aleo {
         }
         assert(review_epoch >= start_epoch);
 
-        let f1: Final = employer_license_registry.aleo::assert_verified(self.caller);
         let f2: Final = pnw_name_registry_v2.aleo::assert_is_owner(employer_name_hash, self.caller);
 
         let commitment: field = compute_parties_commitment(parties_key, employer_name_hash, worker_name_hash);
@@ -206,7 +204,6 @@ program employer_agreement_v4.aleo {
         };
 
         return (offer, final {
-            f1.run();
             f2.run();
 
             let existing: u32 = agreement_anchor_height.get_or_use(agreement_id, 0u32);
@@ -342,11 +339,9 @@ program employer_agreement_v4.aleo {
         employer_name_hash: field,
         worker_name_hash: field
     ) -> Final {
-        let f1: Final = employer_license_registry.aleo::assert_verified(self.caller);
         let f2: Final = pnw_name_registry_v2.aleo::assert_is_owner(employer_name_hash, self.caller);
         let commitment: field = compute_parties_commitment(parties_key, employer_name_hash, worker_name_hash);
         return final {
-            f1.run();
             f2.run();
             let h: u32 = agreement_anchor_height.get_or_use(agreement_id, 0u32);
             assert(h != 0u32);
@@ -415,11 +410,9 @@ program employer_agreement_v4.aleo {
         employer_name_hash: field,
         worker_name_hash: field
     ) -> Final {
-        let f1: Final = employer_license_registry.aleo::assert_verified(self.caller);
         let f2: Final = pnw_name_registry_v2.aleo::assert_is_owner(employer_name_hash, self.caller);
         let commitment: field = compute_parties_commitment(parties_key, employer_name_hash, worker_name_hash);
         return final {
-            f1.run();
             f2.run();
             let h: u32 = agreement_anchor_height.get_or_use(agreement_id, 0u32);
             assert(h != 0u32);
@@ -488,11 +481,9 @@ program employer_agreement_v4.aleo {
         employer_name_hash: field,
         worker_name_hash: field
     ) -> Final {
-        let f1: Final = employer_license_registry.aleo::assert_verified(self.caller);
         let f2: Final = pnw_name_registry_v2.aleo::assert_is_owner(employer_name_hash, self.caller);
         let commitment: field = compute_parties_commitment(parties_key, employer_name_hash, worker_name_hash);
         return final {
-            f1.run();
             f2.run();
             let h: u32 = agreement_anchor_height.get_or_use(agreement_id, 0u32);
             assert(h != 0u32);
