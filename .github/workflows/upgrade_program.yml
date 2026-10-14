@@ -68,6 +68,7 @@ jobs:
           PRIVATE_KEY: ${{ secrets.ADMIN_PRIVATE_KEY || secrets.ALEO_PRIVATE_KEY }}
         run: |
           set -o pipefail
+          mkdir -p "$HOME/.aleo"   # Leo's program registry; it won't create it itself
           flags=(--network testnet --endpoint "$ENDPOINT" --yes --disable-update-check)
           if [ "$BROADCAST" = "true" ]; then
             flags+=(--broadcast)
