@@ -1,5 +1,4 @@
 import pnw_name_registry_v2.aleo;
-// Kept from the previous edition though nothing calls it: an upgrade may not drop an import.
 import employer_license_registry.aleo;
 
 // ---------------------------------------------------------
@@ -179,6 +178,7 @@ program employer_agreement_v4.aleo {
         }
         assert(review_epoch >= start_epoch);
 
+        let f1: Final = employer_license_registry.aleo::assert_verified(self.caller);
         let f2: Final = pnw_name_registry_v2.aleo::assert_is_owner(employer_name_hash, self.caller);
 
         let commitment: field = compute_parties_commitment(parties_key, employer_name_hash, worker_name_hash);
@@ -206,6 +206,7 @@ program employer_agreement_v4.aleo {
         };
 
         return (offer, final {
+            f1.run();
             f2.run();
 
             let existing: u32 = agreement_anchor_height.get_or_use(agreement_id, 0u32);
@@ -341,9 +342,11 @@ program employer_agreement_v4.aleo {
         employer_name_hash: field,
         worker_name_hash: field
     ) -> Final {
+        let f1: Final = employer_license_registry.aleo::assert_verified(self.caller);
         let f2: Final = pnw_name_registry_v2.aleo::assert_is_owner(employer_name_hash, self.caller);
         let commitment: field = compute_parties_commitment(parties_key, employer_name_hash, worker_name_hash);
         return final {
+            f1.run();
             f2.run();
             let h: u32 = agreement_anchor_height.get_or_use(agreement_id, 0u32);
             assert(h != 0u32);
@@ -412,9 +415,11 @@ program employer_agreement_v4.aleo {
         employer_name_hash: field,
         worker_name_hash: field
     ) -> Final {
+        let f1: Final = employer_license_registry.aleo::assert_verified(self.caller);
         let f2: Final = pnw_name_registry_v2.aleo::assert_is_owner(employer_name_hash, self.caller);
         let commitment: field = compute_parties_commitment(parties_key, employer_name_hash, worker_name_hash);
         return final {
+            f1.run();
             f2.run();
             let h: u32 = agreement_anchor_height.get_or_use(agreement_id, 0u32);
             assert(h != 0u32);
@@ -483,9 +488,11 @@ program employer_agreement_v4.aleo {
         employer_name_hash: field,
         worker_name_hash: field
     ) -> Final {
+        let f1: Final = employer_license_registry.aleo::assert_verified(self.caller);
         let f2: Final = pnw_name_registry_v2.aleo::assert_is_owner(employer_name_hash, self.caller);
         let commitment: field = compute_parties_commitment(parties_key, employer_name_hash, worker_name_hash);
         return final {
+            f1.run();
             f2.run();
             let h: u32 = agreement_anchor_height.get_or_use(agreement_id, 0u32);
             assert(h != 0u32);
@@ -670,6 +677,157 @@ program employer_agreement_v4.aleo {
             let s: u8 = agreement_status.get_or_use(agreement_id, 255u8);
             assert_status_valid(s);
             assert(s == STATUS_ACTIVE);
+        };
+    }
+
+    // ---------------------------------------------------------
+    // Edition (2026-10-14): open employer functions.
+    // Copies of create_job_offer, pause_agreement_employer,
+    // terminate_agreement_employer and approve_resume_employer without the
+    // employer_license_registry approval. Each still requires the caller to
+    // own the business name. The originals above are unchanged (an upgrade
+    // may not change what a finalize takes in) and stay gated.
+    // ---------------------------------------------------------
+    fn create_offer_open(
+        agreement_id: [u8; 32],
+        parties_key: [u8; 32],
+        employer_name_hash: field,
+        worker_name_hash: field,
+        worker_address: address,
+        industry_code: u8,
+        pay_frequency_code: u8,
+        start_epoch: u32,
+        end_epoch: u32,
+        review_epoch: u32,
+        agreement_rev: u16,
+        schema_v: u16,
+        policy_v: u16,
+        terms_doc_hash: [u8; 32],
+        terms_root: [u8; 32],
+        offer_time_hash: [u8; 32]
+    ) -> (PendingAgreement, Final) {
+
+        // assert_pay_frequency, inlined: calling the helper twice would turn it into a closure and change the deployed functions' bytecode
+        assert(
+            pay_frequency_code == PAY_DAILY ||
+            pay_frequency_code == PAY_WEEKLY ||
+            pay_frequency_code == PAY_BIWEEKLY ||
+            pay_frequency_code == PAY_MONTHLY ||
+            pay_frequency_code == PAY_QUARTERLY
+        );
+        assert(agreement_rev != 0u16);
+        assert(schema_v != 0u16);
+        assert(policy_v != 0u16);
+        if end_epoch != 0u32 {
+            assert(end_epoch > start_epoch);
+        }
+        assert(review_epoch >= start_epoch);
+
+        let f2: Final = pnw_name_registry_v2.aleo::assert_is_owner(employer_name_hash, self.caller);
+
+        let commitment: field = compute_parties_commitment(parties_key, employer_name_hash, worker_name_hash);
+
+        let offer: PendingAgreement = PendingAgreement {
+            agreement_id: agreement_id,
+            parties_key: parties_key,
+            employer_name_hash: employer_name_hash,
+            worker_name_hash: worker_name_hash,
+            industry_code: industry_code,
+            pay_frequency_code: pay_frequency_code,
+            start_epoch: start_epoch,
+            end_epoch: end_epoch,
+            review_epoch: review_epoch,
+            agreement_rev: agreement_rev,
+            schema_v: schema_v,
+            policy_v: policy_v,
+            terms_doc_hash: terms_doc_hash,
+            terms_root: terms_root,
+            offer_height: 0u32,
+            offer_time_hash: offer_time_hash,
+            employer_address: self.caller,
+            worker_address: worker_address,
+            owner: worker_address,
+        };
+
+        return (offer, final {
+            f2.run();
+
+            let existing: u32 = agreement_anchor_height.get_or_use(agreement_id, 0u32);
+            assert(existing == 0u32);
+
+            agreement_anchor_height.set(agreement_id, block.height);
+            agreement_parties_commitment.set(agreement_id, commitment);
+            agreement_status.set(agreement_id, STATUS_PENDING);
+            resume_approvals.set(agreement_id, 0u8);
+        });
+    }
+
+    fn pause_employer_open(
+        agreement_id: [u8; 32],
+        parties_key: [u8; 32],
+        employer_name_hash: field,
+        worker_name_hash: field
+    ) -> Final {
+        let f2: Final = pnw_name_registry_v2.aleo::assert_is_owner(employer_name_hash, self.caller);
+        let commitment: field = compute_parties_commitment(parties_key, employer_name_hash, worker_name_hash);
+        return final {
+            f2.run();
+            let h: u32 = agreement_anchor_height.get_or_use(agreement_id, 0u32);
+            assert(h != 0u32);
+            let stored: field = agreement_parties_commitment.get_or_use(agreement_id, 0field);
+            assert(stored != 0field);
+            assert(stored == commitment);
+            let s: u8 = agreement_status.get_or_use(agreement_id, 255u8);
+            assert_status_valid(s);
+            assert(s == STATUS_ACTIVE);
+            agreement_status.set(agreement_id, STATUS_PAUSED);
+            resume_approvals.set(agreement_id, 0u8);
+        };
+    }
+
+    fn terminate_employer_open(
+        agreement_id: [u8; 32],
+        parties_key: [u8; 32],
+        employer_name_hash: field,
+        worker_name_hash: field
+    ) -> Final {
+        let f2: Final = pnw_name_registry_v2.aleo::assert_is_owner(employer_name_hash, self.caller);
+        let commitment: field = compute_parties_commitment(parties_key, employer_name_hash, worker_name_hash);
+        return final {
+            f2.run();
+            let h: u32 = agreement_anchor_height.get_or_use(agreement_id, 0u32);
+            assert(h != 0u32);
+            let stored: field = agreement_parties_commitment.get_or_use(agreement_id, 0field);
+            assert(stored != 0field);
+            assert(stored == commitment);
+            let s: u8 = agreement_status.get_or_use(agreement_id, 255u8);
+            assert_status_valid(s);
+            assert(s != STATUS_TERMINATED);
+            agreement_status.set(agreement_id, STATUS_TERMINATED);
+            resume_approvals.set(agreement_id, 0u8);
+        };
+    }
+
+    fn resume_employer_open(
+        agreement_id: [u8; 32],
+        parties_key: [u8; 32],
+        employer_name_hash: field,
+        worker_name_hash: field
+    ) -> Final {
+        let f2: Final = pnw_name_registry_v2.aleo::assert_is_owner(employer_name_hash, self.caller);
+        let commitment: field = compute_parties_commitment(parties_key, employer_name_hash, worker_name_hash);
+        return final {
+            f2.run();
+            let h: u32 = agreement_anchor_height.get_or_use(agreement_id, 0u32);
+            assert(h != 0u32);
+            let stored: field = agreement_parties_commitment.get_or_use(agreement_id, 0field);
+            assert(stored != 0field);
+            assert(stored == commitment);
+            let s: u8 = agreement_status.get_or_use(agreement_id, 255u8);
+            assert_status_valid(s);
+            assert(s == STATUS_PAUSED);
+            let m: u8 = resume_approvals.get_or_use(agreement_id, 0u8);
+            resume_approvals.set(agreement_id, m | RESUME_EMPLOYER_BIT);
         };
     }
 

@@ -6,14 +6,28 @@ Two `@admin` programs upgraded in place (edition bump, same program ids, same ad
 
 ## What changes
 
-| Program | Before | After |
-|---|---|---|
-| `pnw_name_registrar_v5.aleo` | `register_worker_name` / `register_employer_name` took 1 USDCx (`transfer_public_as_signer`) and the employer one asserted `employer_license_registry::assert_verified(signer)` | Both free, no approval. `base_price` recorded as 0, so a sellback refunds nothing (`fulfill_empl_sellback` asserts `refund == 0`). Imports: only `pnw_name_registry_v2`. |
-| `employer_agreement_v4.aleo` | `create_job_offer`, `pause_agreement_employer`, `terminate_agreement_employer`, `approve_resume_employer` asserted `assert_verified(caller)` | Only `pnw_name_registry_v2::assert_is_owner(employer_name_hash, caller)` remains: the caller must own the business name on the agreement. The `employer_license_registry` import stays, unused. |
+An upgrade can change what a function does but not what its finalize takes in, so the gated
+functions can't simply lose their approval and payment calls (the second check run failed with
+"the finalize inputs to the function 'register_worker_name' do not match"). Instead every existing
+function stays byte-for-byte as deployed and open copies are appended:
 
-Unchanged: `pnw_name_registry_v2` (still authorizes the registrar as caller), `employer_license_registry`
-(`@noupgrade`; simply no longer called by these two), one-name-per-wallet, suffix 1..40, every record
-and mapping. A price can come back later by reintroducing the transfer in the registrar.
+| Program | New function | Same as | Without |
+|---|---|---|---|
+| `pnw_name_registrar_v5.aleo` | `register_worker_free` | `register_worker_name` | the 1 USDCx transfer |
+| | `register_employer_free` | `register_employer_name` | the 1 USDCx transfer and `assert_verified`; `base_price` 0 |
+| `employer_agreement_v4.aleo` | `create_offer_open` | `create_job_offer` | `assert_verified` |
+| | `pause_employer_open` | `pause_agreement_employer` | `assert_verified` |
+| | `terminate_employer_open` | `terminate_agreement_employer` | `assert_verified` |
+| | `resume_employer_open` | `approve_resume_employer` | `assert_verified` |
+
+Each agreement copy keeps `pnw_name_registry_v2::assert_is_owner(employer_name_hash, caller)`.
+Helpers the copies need (`assert_pay_frequency`, `is_valid_suffix`) are inlined in the copies:
+calling a helper twice makes Leo emit it as a closure, which would change the deployed bytecode.
+
+Checked offline with Leo 4.0.0 against the repo's own dependency sources: the new bytecode is the
+deployed bytecode with only the new functions appended (no existing line changed), the imports are
+unchanged, and the new functions contain no `assert_verified` and no USDCx call. Hewn calls the new
+names; the old gated functions stay on chain unused.
 
 ## Deploy (Joshua, admin key) — from the phone
 
@@ -33,21 +47,19 @@ From a laptop instead: `cd src/layer1/<program> && leo upgrade --network testnet
 https://api.explorer.provable.com/v1 --broadcast` with `PRIVATE_KEY` in `.env`.
 
 Imports: the first check run failed with "Cannot add program … because its import
-'employer_license_registry.aleo' must be added first", so both programs keep every import they had
-(unused). Checked offline with Leo 4.0.0: both compile, the imports stay in the bytecode, and neither
-calls `assert_verified` or a USDCx transfer.
+'employer_license_registry.aleo' must be added first"; both programs keep every import they had.
 
 ## Checks after deploy (must fail / must pass)
 
 Run with a fresh test wallet holding only ALEO for fees:
 
-- `register_employer_name(hash("newco"), u128("newco"), 9u8)` from an **unapproved** wallet → **accepted** (was rejected).
-- Same wallet, `register_worker_name(...)` → **rejected** (one name per wallet).
-- Any wallet, `register_employer_name(hash("newco"), …)` again → **rejected** (name taken).
-- `register_employer_name(…, 0u8)` or `41u8` → **rejected** (suffix).
-- A wallet with **no** name calling `create_job_offer(…)` → **rejected** (`assert_is_owner`).
-- "newco" wallet calling `create_job_offer` with its own name hash, unapproved, zero USDCx → **accepted**.
-- `fulfill_empl_sellback` with `refund != 0` → **rejected**.
+- `register_employer_free(hash("newco"), u128("newco"), 9u8)` from an **unapproved** wallet with no USDCx → **accepted**.
+- The old `register_employer_name` from the same kind of wallet → still **rejected** (unchanged).
+- Same wallet, `register_worker_free(...)` → **rejected** (one name per wallet).
+- Any wallet, `register_employer_free(hash("newco"), …)` again → **rejected** (name taken).
+- `register_employer_free(…, 0u8)` or `41u8` → **rejected** (suffix).
+- A wallet with **no** name calling `create_offer_open(…)` → **rejected** (`assert_is_owner`).
+- "newco" wallet calling `create_offer_open` with its own name hash, unapproved, zero USDCx → **accepted**.
 
 Then: `config/testnet.manifest.json` notes, and in Hewn drop the "needs approval" branch and the
 1 USDCx note (`apps/business/src/chain/business_registry.ts`, `RegisterBusiness.tsx`).
