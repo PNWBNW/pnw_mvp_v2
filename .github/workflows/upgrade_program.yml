@@ -22,10 +22,10 @@ on:
         type: boolean
         default: false
       leo_release:
-        description: "Leo release to use (blank = latest). The network's consensus moves; old Leo builds fee proofs it rejects."
-        required: false
+        description: "Leo version (built from crates.io, cached after the first run)"
+        required: true
         type: string
-        default: ""
+        default: "4.4.5"
 
 jobs:
   upgrade:
@@ -45,29 +45,24 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v4.2.2
 
+      # Leo no longer publishes downloadable binaries, so it is built from crates.io
+      # (about 16 minutes) and cached per version.
+      - name: Cache Leo
+        id: leo-cache
+        uses: actions/cache@v4
+        with:
+          path: ~/cargo-leo
+          key: leo-crates-${{ inputs.leo_release }}-${{ runner.os }}
+
       - name: Install Leo
         env:
           LEO_RELEASE: ${{ inputs.leo_release }}
         run: |
-          # Bootstrap with a pinned 4.0.0, then let Leo update itself (it knows its own release assets).
-          curl -fsSL "https://github.com/ProvableHQ/leo/releases/download/v4.0.0/leo-master-x86_64-unknown-linux-gnu.zip" -o leo.zip
-          unzip -q leo.zip -d /tmp/leo
-          install -m 0755 /tmp/leo/leo "$HOME/leo" && export PATH="$HOME:$PATH"
-          echo "$HOME" >> "$GITHUB_PATH"
-          leo update --list 2>&1 | head -8 || true
-          ok=no
-          if [ -n "$LEO_RELEASE" ]; then
-            if leo update --name "$LEO_RELEASE"; then ok=yes; fi
-          else
-            if leo update; then ok=yes; fi
+          if [ ! -x "$HOME/cargo-leo/bin/leo" ]; then
+            cargo install leo-lang --locked --version "${LEO_RELEASE#v}" --root "$HOME/cargo-leo"
           fi
-          if [ "$ok" != "yes" ] || leo --version | grep -q "leo 4.0.0"; then
-            # No downloadable release: build it from crates.io instead (about 10-15 minutes).
-            echo "leo update found no release to install; building from crates.io."
-            cargo install leo-lang --locked ${LEO_RELEASE:+--version "${LEO_RELEASE#v}"} --root "$HOME/cargo-leo"
-            install -m 0755 "$HOME/cargo-leo/bin/leo" "$HOME/leo"
-          fi
-          leo --version
+          echo "$HOME/cargo-leo/bin" >> "$GITHUB_PATH"
+          "$HOME/cargo-leo/bin/leo" --version
 
       - name: Check the key is the admin key
         env:
@@ -85,12 +80,17 @@ jobs:
           echo "Key matches the admin address."
 
       - name: Upgrade ${{ inputs.program }}
-        working-directory: src/layer1/${{ inputs.program }}
         env:
           PRIVATE_KEY: ${{ secrets.ADMIN_PRIVATE_KEY || secrets.ALEO_PRIVATE_KEY }}
         run: |
           set -o pipefail
           mkdir -p "$HOME/.aleo"   # Leo's program registry; it won't create it itself
+          # Leo 4.4 reads any path ending in .aleo as a bytecode file, and our package
+          # folders are named <program>.aleo: build from a copy without the suffix.
+          pkg="$RUNNER_TEMP/pkg/${PROGRAM%.aleo}"
+          mkdir -p "$RUNNER_TEMP/pkg"
+          cp -r "src/layer1/$PROGRAM" "$pkg"
+          cd "$pkg"
           flags=(--network testnet --endpoint "$ENDPOINT" --yes --disable-update-check)
           if [ "$BROADCAST" = "true" ]; then
             flags+=(--broadcast)
