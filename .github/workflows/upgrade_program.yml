@@ -55,7 +55,18 @@ jobs:
           install -m 0755 /tmp/leo/leo "$HOME/leo" && export PATH="$HOME:$PATH"
           echo "$HOME" >> "$GITHUB_PATH"
           leo update --list 2>&1 | head -8 || true
-          if [ -n "$LEO_RELEASE" ]; then leo update --name "$LEO_RELEASE"; else leo update; fi
+          ok=no
+          if [ -n "$LEO_RELEASE" ]; then
+            if leo update --name "$LEO_RELEASE"; then ok=yes; fi
+          else
+            if leo update; then ok=yes; fi
+          fi
+          if [ "$ok" != "yes" ] || leo --version | grep -q "leo 4.0.0"; then
+            # No downloadable release: build it from crates.io instead (about 10-15 minutes).
+            echo "leo update found no release to install; building from crates.io."
+            cargo install leo-lang --locked ${LEO_RELEASE:+--version "${LEO_RELEASE#v}"} --root "$HOME/cargo-leo"
+            install -m 0755 "$HOME/cargo-leo/bin/leo" "$HOME/leo"
+          fi
           leo --version
 
       - name: Check the key is the admin key
