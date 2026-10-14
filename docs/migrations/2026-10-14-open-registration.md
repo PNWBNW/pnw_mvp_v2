@@ -15,20 +15,25 @@ Unchanged: `pnw_name_registry_v2` (still authorizes the registrar as caller), `e
 (`@noupgrade`; simply no longer called by these two), one-name-per-wallet, suffix 1..40, every record
 and mapping. A price can come back later by reintroducing the transfer in the registrar.
 
-## Deploy (Joshua, admin key)
+## Deploy (Joshua, admin key) — from the phone
 
-```bash
-cd src/layer1/pnw_name_registrar_v5.aleo && leo build && leo deploy --network testnet   # upgrade: same id, edition +1
-cd ../employer_agreement_v4.aleo       && leo build && leo deploy --network testnet
-```
+Workflow `.github/workflows/upgrade_program.yml` (runs `leo upgrade`, Leo 4.0.0, the same toolchain
+that upgraded `employer_agreement_v4` in April):
 
-Leo 4.x, snarkOS ≥ 4.6, `PRIVATE_KEY` = the admin key in `.env`. Two things to watch:
+1. Once: GitHub → repo Settings → Environments → `testnet-staging` → add secret
+   `ADMIN_PRIVATE_KEY` = the private key of `aleo1a2qje865a7ccrrwg37z6e36uyjtqlm5vdj8yzlrhypvg60xhncqqlev4dx`.
+   (If the existing `ALEO_PRIVATE_KEY` there already is that key, this step can be skipped; the run
+   checks and stops if the key belongs to anyone else.)
+2. Actions → upgrade-admin-program → Run workflow → program `pnw_name_registrar_v5.aleo`,
+   broadcast **off**. Green = it builds against the live network and the key is right.
+3. Same again with broadcast **on**.
+4. Repeat 2–3 for `employer_agreement_v4.aleo`.
 
-1. **Imports changed.** The upgrade keeps every record and mapping identical, which is what the
-   network checks; if the network rejects the edition for a changed import list, restore the two
-   import lines (unused) and deploy again.
-2. **Unused-import warnings** are fine; an error on them means the import lines must go (they are
-   already gone here).
+From a laptop instead: `cd src/layer1/<program> && leo upgrade --network testnet --endpoint
+https://api.explorer.provable.com/v1 --broadcast` with `PRIVATE_KEY` in `.env`.
+
+If the network rejects an edition because the import list changed, restore the removed import lines
+(unused) and run again.
 
 ## Checks after deploy (must fail / must pass)
 
