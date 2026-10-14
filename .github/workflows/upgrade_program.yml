@@ -21,6 +21,11 @@ on:
         required: true
         type: boolean
         default: false
+      leo_release:
+        description: "Leo release to use (blank = latest). The network's consensus moves; old Leo builds fee proofs it rejects."
+        required: false
+        type: string
+        default: ""
 
 jobs:
   upgrade:
@@ -40,11 +45,17 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v4.2.2
 
-      - name: Install Leo 4.0.0
+      - name: Install Leo
+        env:
+          LEO_RELEASE: ${{ inputs.leo_release }}
         run: |
+          # Bootstrap with a pinned 4.0.0, then let Leo update itself (it knows its own release assets).
           curl -fsSL "https://github.com/ProvableHQ/leo/releases/download/v4.0.0/leo-master-x86_64-unknown-linux-gnu.zip" -o leo.zip
           unzip -q leo.zip -d /tmp/leo
-          sudo install -m 0755 /tmp/leo/leo /usr/local/bin/leo
+          install -m 0755 /tmp/leo/leo "$HOME/leo" && export PATH="$HOME:$PATH"
+          echo "$HOME" >> "$GITHUB_PATH"
+          leo update --list 2>&1 | head -8 || true
+          if [ -n "$LEO_RELEASE" ]; then leo update --name "$LEO_RELEASE"; else leo update; fi
           leo --version
 
       - name: Check the key is the admin key

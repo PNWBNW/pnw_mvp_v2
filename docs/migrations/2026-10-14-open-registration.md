@@ -31,8 +31,11 @@ names; the old gated functions stay on chain unused.
 
 ## Deploy (Joshua, admin key) — from the phone
 
-Workflow `.github/workflows/upgrade_program.yml` (runs `leo upgrade`, Leo 4.0.0, the same toolchain
-that upgraded `employer_agreement_v4` in April):
+Workflow `.github/workflows/upgrade_program.yml` (runs `leo upgrade` with the latest Leo; it
+bootstraps 4.0.0 and runs `leo update`). Leo 4.0.0 alone builds and passes the upgrade checks but
+only knows consensus up to version 14, so the network rejects its fee proof ("Fee verification
+failed … verify_batch"). The check run's "Consensus Version" line should show the network's current
+version before broadcasting.
 
 1. Once: GitHub → repo Settings → Environments → `testnet-staging` → add secret
    `ADMIN_PRIVATE_KEY` = the private key of `aleo1a2qje865a7ccrrwg37z6e36uyjtqlm5vdj8yzlrhypvg60xhncqqlev4dx`.
