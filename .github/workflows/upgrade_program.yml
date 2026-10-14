@@ -45,24 +45,37 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v4.2.2
 
-      # Leo no longer publishes downloadable binaries, so it is built from crates.io
-      # (about 16 minutes) and cached per version.
-      - name: Cache Leo
+      # Two Leos. 4.0.0 compiles our sources (they use its syntax, and its output is the
+      # bytecode checked against the deployed edition). The newer one, built from crates.io
+      # because Leo no longer publishes binaries, signs and sends under today's consensus.
+      - name: Restore Leo ${{ inputs.leo_release }}
         id: leo-cache
-        uses: actions/cache@v4
+        uses: actions/cache/restore@v4
         with:
           path: ~/cargo-leo
           key: leo-crates-${{ inputs.leo_release }}-${{ runner.os }}
 
-      - name: Install Leo
+      - name: Build Leo ${{ inputs.leo_release }} (first run only, about 16 minutes)
+        if: steps.leo-cache.outputs.cache-hit != 'true'
         env:
           LEO_RELEASE: ${{ inputs.leo_release }}
+        run: cargo install leo-lang --locked --version "${LEO_RELEASE#v}" --root "$HOME/cargo-leo"
+
+      - name: Save Leo ${{ inputs.leo_release }}
+        if: steps.leo-cache.outputs.cache-hit != 'true'
+        uses: actions/cache/save@v4
+        with:
+          path: ~/cargo-leo
+          key: leo-crates-${{ inputs.leo_release }}-${{ runner.os }}
+
+      - name: Install both Leos
         run: |
-          if [ ! -x "$HOME/cargo-leo/bin/leo" ]; then
-            cargo install leo-lang --locked --version "${LEO_RELEASE#v}" --root "$HOME/cargo-leo"
-          fi
           echo "$HOME/cargo-leo/bin" >> "$GITHUB_PATH"
           "$HOME/cargo-leo/bin/leo" --version
+          curl -fsSL "https://github.com/ProvableHQ/leo/releases/download/v4.0.0/leo-master-x86_64-unknown-linux-gnu.zip" -o leo400.zip
+          unzip -q leo400.zip -d /tmp/leo400
+          install -m 0755 /tmp/leo400/leo "$HOME/leo400"
+          "$HOME/leo400" --version
 
       - name: Check the key is the admin key
         env:
@@ -79,19 +92,26 @@ jobs:
           fi
           echo "Key matches the admin address."
 
-      - name: Upgrade ${{ inputs.program }}
+      - name: Compile ${{ inputs.program }} with Leo 4.0.0
+        run: |
+          mkdir -p "$HOME/.aleo"   # Leo's program registry; it won't create it itself
+          # Leo 4.4 reads any path ending in .aleo as a bytecode file; build from a copy without the suffix.
+          pkg="$RUNNER_TEMP/pkg/${PROGRAM%.aleo}"
+          mkdir -p "$RUNNER_TEMP/pkg" "$RUNNER_TEMP/bytecode"
+          cp -r "src/layer1/$PROGRAM" "$pkg"
+          (cd "$pkg" && "$HOME/leo400" build --disable-update-check --network testnet --endpoint "$ENDPOINT")
+          cp "$pkg/build/main.aleo" "$RUNNER_TEMP/bytecode/$PROGRAM"
+          echo "Functions in the compiled program:"
+          grep -E '^(function|closure|constructor)' "$RUNNER_TEMP/bytecode/$PROGRAM"
+          sha256sum "$RUNNER_TEMP/bytecode/$PROGRAM"
+
+      - name: Upgrade ${{ inputs.program }} from its bytecode
         env:
           PRIVATE_KEY: ${{ secrets.ADMIN_PRIVATE_KEY || secrets.ALEO_PRIVATE_KEY }}
         run: |
           set -o pipefail
-          mkdir -p "$HOME/.aleo"   # Leo's program registry; it won't create it itself
-          # Leo 4.4 reads any path ending in .aleo as a bytecode file, and our package
-          # folders are named <program>.aleo: build from a copy without the suffix.
-          pkg="$RUNNER_TEMP/pkg/${PROGRAM%.aleo}"
-          mkdir -p "$RUNNER_TEMP/pkg"
-          cp -r "src/layer1/$PROGRAM" "$pkg"
-          cd "$pkg"
-          flags=(--network testnet --endpoint "$ENDPOINT" --yes --disable-update-check)
+          leo upgrade --help | sed -n '1,12p'
+          flags=(--path "$RUNNER_TEMP/bytecode/$PROGRAM" --network testnet --endpoint "$ENDPOINT" --yes --disable-update-check)
           if [ "$BROADCAST" = "true" ]; then
             flags+=(--broadcast)
             echo "Sending the upgrade of $PROGRAM."
