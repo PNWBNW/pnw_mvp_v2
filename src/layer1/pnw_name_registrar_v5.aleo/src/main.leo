@@ -1,4 +1,3 @@
-// Kept from edition 1 though nothing calls them: an upgrade may not drop an import.
 import employer_license_registry.aleo;
 import test_usdcx_stablecoin.aleo;
 import pnw_name_registry_v2.aleo;
@@ -13,10 +12,11 @@ program pnw_name_registrar_v5.aleo {
     // ---------------------------------------------------------
     // PNW Name Registrar v5 — One Name Per Wallet + Reverse Resolver
     // ---------------------------------------------------------
-    // Rules (edition 2, 2026-10-14: open registration):
-    //   - Each wallet gets exactly ONE name
+    // Same rules as v4:
+    //   - Each wallet gets exactly ONE .pnw name
     //   - Name is either WORKER or EMPLOYER type, not both
-    //   - Free: no payment and no license approval (a price returns later)
+    //   - Flat pricing: 1 USDCx for any name type (testnet)
+    //   - Employer names require license verification
     //   - Worker names are soulbound (no sellback)
     //   - Employer names can be sold back
     //
@@ -26,12 +26,12 @@ program pnw_name_registrar_v5.aleo {
     //   - Names are public identities (like domain names)
     // ---------------------------------------------------------
 
-    // Treasury routing (sellback refunds only)
+    // Treasury routing
     const PRESIDING_DAO_TREASURY: address =
         aleo1s8t86aza932zah3mv5knclvnn5zy4gedpl5a4wn5h2yrt08mxqzsw5amdd;
 
-    // Free registration. base_price 0 means a sellback refunds nothing.
-    const NAME_PRICE: u128 = 0u128;
+    // Flat pricing: 1 USDCx for any name (testnet)
+    const NAME_PRICE: u128 = 1_000_000u128;
 
     // ---------------------------------------------------------
     // Reverse resolver: name_hash → encoded plaintext name
@@ -46,11 +46,16 @@ program pnw_name_registrar_v5.aleo {
         name_hash: field,
         name_encoded: u128
     ) -> Final {
-        // Store name in registry v2 (free)
+        // Payment from the SIGNER (the user)
+        let pay_f: Final =
+            test_usdcx_stablecoin.aleo::transfer_public_as_signer(PRESIDING_DAO_TREASURY, NAME_PRICE);
+
+        // Store name in registry v2
         let reg_f: Final =
             pnw_name_registry_v2.aleo::register_worker_name(name_hash, self.signer);
 
         return final {
+            pay_f.run();
             reg_f.run();
             // Store plaintext for reverse resolution
             name_plaintext.set(name_hash, name_encoded);
@@ -67,12 +72,22 @@ program pnw_name_registrar_v5.aleo {
     ) -> Final {
         assert(is_valid_suffix(suffix_code));
 
-        // Store name in registry v2 (free, no license approval)
+        // Verify employer license
+        let verified_f: Final =
+            employer_license_registry.aleo::assert_verified(self.signer);
+
+        // Payment from the SIGNER (the user)
+        let pay_f: Final =
+            test_usdcx_stablecoin.aleo::transfer_public_as_signer(PRESIDING_DAO_TREASURY, NAME_PRICE);
+
+        // Store name in registry v2
         // count=0 (first and only name), base_price=NAME_PRICE for sellback calc
         let reg_f: Final =
             pnw_name_registry_v2.aleo::register_employer_name(name_hash, suffix_code, 0u8, NAME_PRICE, self.signer);
 
         return final {
+            verified_f.run();
+            pay_f.run();
             reg_f.run();
             // Store plaintext for reverse resolution
             name_plaintext.set(name_hash, name_encoded);
@@ -88,14 +103,53 @@ program pnw_name_registrar_v5.aleo {
         refund: u128
     ) -> Final {
         assert(self.caller == PRESIDING_DAO_TREASURY);
-        // Names are free, so there is nothing to refund: the registry only releases the name.
-        assert(refund == 0u128);
+
+        let pay_f: Final =
+            test_usdcx_stablecoin.aleo::transfer_public_as_signer(seller, refund);
 
         let reg_f: Final =
             pnw_name_registry_v2.aleo::fulfill_empl_sellback(name_hash, seller, refund);
 
         return final {
+            pay_f.run();
             reg_f.run();
+        };
+    }
+
+    // ---------------------------------------------------------
+    // Edition 2 (2026-10-14): open registration.
+    // The two functions above keep their exact interface (an upgrade may not
+    // change what a finalize takes in) and stay on chain, gated and paid.
+    // These two are free and need no license approval.
+    // ---------------------------------------------------------
+    fn register_worker_free(
+        name_hash: field,
+        name_encoded: u128
+    ) -> Final {
+        let reg_f: Final =
+            pnw_name_registry_v2.aleo::register_worker_name(name_hash, self.signer);
+
+        return final {
+            reg_f.run();
+            name_plaintext.set(name_hash, name_encoded);
+        };
+    }
+
+    fn register_employer_free(
+        name_hash: field,
+        name_encoded: u128,
+        suffix_code: u8
+    ) -> Final {
+        // is_valid_suffix, inlined: calling it twice would turn it into a closure and change the deployed functions' bytecode
+        assert(suffix_code >= 1u8 && suffix_code <= 40u8);
+
+        // count=0 (first and only name), base_price=0 (free; a sellback refunds nothing)
+        let reg_f: Final =
+            pnw_name_registry_v2.aleo::register_employer_name(name_hash, suffix_code, 0u8, 0u128, self.signer);
+
+        return final {
+            reg_f.run();
+            name_plaintext.set(name_hash, name_encoded);
         };
     }
 
