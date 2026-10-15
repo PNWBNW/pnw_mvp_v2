@@ -21,6 +21,11 @@ on:
         required: true
         type: boolean
         default: false
+      endpoint:
+        description: "Explorer API base (Leo appends /testnet/...)"
+        required: true
+        type: string
+        default: "https://api.explorer.provable.com/v2"
       leo_release:
         description: "Leo version (built from crates.io, cached after the first run)"
         required: true
@@ -38,7 +43,7 @@ jobs:
       contents: read
     env:
       ADMIN_ADDRESS: aleo1a2qje865a7ccrrwg37z6e36uyjtqlm5vdj8yzlrhypvg60xhncqqlev4dx
-      ENDPOINT: https://api.explorer.provable.com/v1
+      ENDPOINT: ${{ inputs.endpoint }}
       PROGRAM: ${{ inputs.program }}
       BROADCAST: ${{ inputs.broadcast }}
     steps:
