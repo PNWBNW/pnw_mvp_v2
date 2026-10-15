@@ -2,7 +2,7 @@
   "program": "pnw_router_v3.aleo",
   "version": "0.3.0",
   "description": "Layer 1 orchestration router for PNW MVP v2. Routes agreement creation, acceptance, status control, and resume approvals across core Layer 1 programs. Contains no business state or aggregation logic.",
-  "license": "PROPRIETARY",
+  "license": "AGPL-3.0-only",
   "dependencies": [
     {
       "name": "employer_agreement_v3.aleo",

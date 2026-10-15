@@ -2,7 +2,7 @@
   "program": "pnw_name_registrar.aleo",
   "version": "0.1.0",
   "description": "PNW Name Registrar — handles USDCx payment and license verification, then delegates name storage to pnw_name_registry_v2.aleo.",
-  "license": "PROPRIETARY",
+  "license": "AGPL-3.0-only",
   "dependencies": [
     {
       "name": "employer_license_registry.aleo",
