@@ -1,4 +1,16 @@
-# Open registration (2026-10-14)
+# Open registration (2026-10-14, deployed 2026-10-15)
+
+**Live on testnet.**
+
+| Program | Edition | Upgrade tx | Fee tx |
+|---|---|---|---|
+| `pnw_name_registrar_v5.aleo` | 1 | `at1m77eapnjtp4wxk0lf5y9dyp3j0glxm2umsv8rk0j8nt2ny96xg9q6cgtx6` | `at1vyv2fpc0eanxdcwmqqyhh7r27dfuqjylcptcszlpmh5f0d4ghq9scz3f0e` |
+| `employer_agreement_v4.aleo` | 2 | `at17d0f4a442msg92tzgem7s65346s2eway3auvpwalzmnyhngtgqqqe62yjc` | `at1y57hyvancr67dm49jq7fyvqxmc6yc8p8jsswcf50gdg4mt2ng5qs4t3g7y` |
+
+Toolchain that worked: bytecode compiled with Leo 4.0.0, upgrade built and sent by Leo 4.4.5
+(crates.io build) with `--consensus-heights` set to snarkVM 4.12.0's testnet table (V21 at
+20,234,000, V22 at 20,415,000; Leo 4.4.5's snarkVM 4.11 has both as placeholders, and fee proofs
+built for consensus 20 are rejected with "verify_batch failed"). Endpoint `/v2`.
 
 Two `@admin` programs upgraded in place (edition bump, same program ids, same admin
 `aleo1a2qje865a7ccrrwg37z6e36uyjtqlm5vdj8yzlrhypvg60xhncqqlev4dx`). Previous editions are in
