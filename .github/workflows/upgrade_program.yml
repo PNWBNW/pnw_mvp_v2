@@ -137,7 +137,8 @@ jobs:
         run: |
           set -o pipefail
           leo upgrade --help | sed -n '1,12p'
-          flags=(--path "$RUNNER_TEMP/bytecode/$PROGRAM" --network testnet --endpoint "$ENDPOINT" --yes --disable-update-check)
+          # Wait up to ~5 minutes for the transaction to land (Leo's default is 12 blocks).
+          flags=(--path "$RUNNER_TEMP/bytecode/$PROGRAM" --network testnet --endpoint "$ENDPOINT" --yes --disable-update-check --max-wait 20 --blocks-to-check 100)
           # Leo built on snarkVM 4.11 has V21/V22 as unscheduled placeholders; testnet
           # activated them at 20,234,000 and 20,415,000 (snarkVM 4.12.0).
           if [ -n "$HEIGHTS" ]; then flags+=(--consensus-heights "$HEIGHTS"); fi
@@ -148,3 +149,8 @@ jobs:
             echo "Check only: building the upgrade of $PROGRAM, nothing is sent."
           fi
           leo upgrade "${flags[@]}" 2>&1 | sed -E 's/APrivateKey1[0-9A-Za-z]+/<redacted>/g'
+
+      - name: Show the program's edition now
+        if: always()
+        run: |
+          echo "Latest edition of $PROGRAM on testnet: $(curl -fsSL "$ENDPOINT/testnet/program/$PROGRAM/latest_edition" || echo unknown)"
