@@ -36,7 +36,7 @@
     },
     "pnw_name_registrar_v5.aleo": {
       "status": "active",
-      "notes": "@admin, reverse resolver; edition 2 (2026-10-14) free and no license approval — see docs/migrations/2026-10-14-open-registration.md",
+      "notes": "@admin, reverse resolver; edition 1 (2026-10-15) adds register_worker_free / register_employer_free: free, no license approval. Upgrade tx at1m77eapnjtp4wxk0lf5y9dyp3j0glxm2umsv8rk0j8nt2ny96xg9q6cgtx6",
       "deployed_at": "2026-03-28"
     },
     "employer_license_registry.aleo": {
@@ -57,7 +57,7 @@
     "employer_agreement_v4.aleo": {
       "status": "active",
       "transaction_id": "at1488hqlv0apt8rx9zrmkr67pe5ffp2pc59w4gtelmflepa04meqxsklhksw",
-      "notes": "@admin, Leo v4.0, 3-party FinalAgreement records",
+      "notes": "@admin, Leo v4.0, 3-party FinalAgreement records; edition 2 (2026-10-15) adds create_offer_open / pause_employer_open / terminate_employer_open / resume_employer_open: no license approval. Upgrade tx at17d0f4a442msg92tzgem7s65346s2eway3auvpwalzmnyhngtgqqqe62yjc",
       "deployed_at": "2026-04-01"
     },
     "payroll_core_v2.aleo": {
