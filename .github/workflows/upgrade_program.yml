@@ -27,10 +27,10 @@ on:
         type: string
         default: "https://api.explorer.provable.com/v2"
       leo_release:
-        description: "Leo version (built from crates.io, cached after the first run)"
+        description: "Leo version from crates.io, or latest (built once, then cached)"
         required: true
         type: string
-        default: "4.4.5"
+        default: "latest"
 
 jobs:
   upgrade:
@@ -53,25 +53,40 @@ jobs:
       # Two Leos. 4.0.0 compiles our sources (they use its syntax, and its output is the
       # bytecode checked against the deployed edition). The newer one, built from crates.io
       # because Leo no longer publishes binaries, signs and sends under today's consensus.
-      - name: Restore Leo ${{ inputs.leo_release }}
+      - name: Pick Leo version
+        id: leo-version
+        env:
+          LEO_RELEASE: ${{ inputs.leo_release }}
+        run: |
+          v="${LEO_RELEASE#v}"
+          if [ -z "$v" ] || [ "$v" = "latest" ]; then
+            v=$(curl -fsSL -A "pnw-mvp-ci" https://crates.io/api/v1/crates/leo-lang | jq -r .crate.max_stable_version)
+          fi
+          echo "version=$v" >> "$GITHUB_OUTPUT"
+          echo "Leo $v"
+          echo "Its snarkVM: $(curl -fsSL -A "pnw-mvp-ci" "https://crates.io/api/v1/crates/leo-lang/$v/dependencies" | jq -r '.dependencies[] | select(.crate_id=="snarkvm") | .req')"
+          echo "Newest snarkVM on crates.io: $(curl -fsSL -A "pnw-mvp-ci" https://crates.io/api/v1/crates/snarkvm | jq -r .crate.max_stable_version)"
+          echo "Network block height now: $(curl -fsSL "$ENDPOINT/testnet/block/height/latest")"
+
+      - name: Restore Leo ${{ steps.leo-version.outputs.version }}
         id: leo-cache
         uses: actions/cache/restore@v4
         with:
           path: ~/cargo-leo
-          key: leo-crates-${{ inputs.leo_release }}-${{ runner.os }}
+          key: leo-crates-${{ steps.leo-version.outputs.version }}-${{ runner.os }}
 
-      - name: Build Leo ${{ inputs.leo_release }} (first run only, about 16 minutes)
+      - name: Build Leo ${{ steps.leo-version.outputs.version }} (first run per version, about 16 minutes)
         if: steps.leo-cache.outputs.cache-hit != 'true'
         env:
-          LEO_RELEASE: ${{ inputs.leo_release }}
-        run: cargo install leo-lang --locked --version "${LEO_RELEASE#v}" --root "$HOME/cargo-leo"
+          LEO_VERSION: ${{ steps.leo-version.outputs.version }}
+        run: cargo install leo-lang --locked --version "$LEO_VERSION" --root "$HOME/cargo-leo"
 
-      - name: Save Leo ${{ inputs.leo_release }}
+      - name: Save Leo ${{ steps.leo-version.outputs.version }}
         if: steps.leo-cache.outputs.cache-hit != 'true'
         uses: actions/cache/save@v4
         with:
           path: ~/cargo-leo
-          key: leo-crates-${{ inputs.leo_release }}-${{ runner.os }}
+          key: leo-crates-${{ steps.leo-version.outputs.version }}-${{ runner.os }}
 
       - name: Install both Leos
         run: |
