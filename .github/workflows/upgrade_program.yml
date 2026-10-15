@@ -26,6 +26,11 @@ on:
         required: true
         type: string
         default: "https://api.explorer.provable.com/v2"
+      consensus_heights:
+        description: "Testnet consensus activation heights V1..V22 (snarkVM 4.12.0); blank = Leo's own table"
+        required: false
+        type: string
+        default: "0,2950000,4800000,6625000,6765000,7600000,8365000,9173000,9800000,10525000,11952000,12669000,14906000,15370000,16886000,17319000,18295000,18296000,18813000,19374000,20234000,20415000"
       leo_release:
         description: "Leo version from crates.io, or latest (built once, then cached)"
         required: true
@@ -128,10 +133,14 @@ jobs:
       - name: Upgrade ${{ inputs.program }} from its bytecode
         env:
           PRIVATE_KEY: ${{ secrets.ADMIN_PRIVATE_KEY || secrets.ALEO_PRIVATE_KEY }}
+          HEIGHTS: ${{ inputs.consensus_heights }}
         run: |
           set -o pipefail
           leo upgrade --help | sed -n '1,12p'
           flags=(--path "$RUNNER_TEMP/bytecode/$PROGRAM" --network testnet --endpoint "$ENDPOINT" --yes --disable-update-check)
+          # Leo built on snarkVM 4.11 has V21/V22 as unscheduled placeholders; testnet
+          # activated them at 20,234,000 and 20,415,000 (snarkVM 4.12.0).
+          if [ -n "$HEIGHTS" ]; then flags+=(--consensus-heights "$HEIGHTS"); fi
           if [ "$BROADCAST" = "true" ]; then
             flags+=(--broadcast)
             echo "Sending the upgrade of $PROGRAM."
