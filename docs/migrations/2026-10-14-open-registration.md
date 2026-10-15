@@ -47,7 +47,7 @@ version before broadcasting.
 4. Repeat 2–3 for `employer_agreement_v4.aleo`.
 
 From a laptop instead: `cd src/layer1/<program> && leo upgrade --network testnet --endpoint
-https://api.explorer.provable.com/v1 --broadcast` with `PRIVATE_KEY` in `.env`.
+https://api.explorer.provable.com/v2 --broadcast` with `PRIVATE_KEY` in `.env`.
 
 Imports: the first check run failed with "Cannot add program … because its import
 'employer_license_registry.aleo' must be added first"; both programs keep every import they had.
