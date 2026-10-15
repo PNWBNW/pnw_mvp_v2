@@ -149,4 +149,11 @@ USDCx is treated as a native Aleo asset (`test_usdcx_stablecoin.aleo` on testnet
 
 ## License
 
-Proprietary — PNW Smart Contract License v1.7. See the master repo [`LICENSE.md`](https://github.com/PNWBNW/pnw/blob/main/LICENSE.md).
+Copyright (C) 2025-2026 Proven National Workers (Joshua Daniel Day).
+
+These programs and tools are free software: you can redistribute them and/or modify them under the
+terms of the **GNU Affero General Public License, version 3** (`AGPL-3.0-only`). See
+[`LICENSE`](./LICENSE). They are distributed WITHOUT ANY WARRANTY; without even the implied warranty
+of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
+
+The app built on them, Hewn, is at [PNWBNW/pnw](https://github.com/PNWBNW/pnw) under the same licence.

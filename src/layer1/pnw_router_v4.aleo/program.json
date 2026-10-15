@@ -2,7 +2,7 @@
   "program": "pnw_router_v4.aleo",
   "version": "0.1.0",
   "description": "Layer 1 router v4 — Leo v4.0. Routes to v4 agreement and v2 profiles/registry.",
-  "license": "PROPRIETARY",
+  "license": "AGPL-3.0-only",
   "dependencies": [
     {
       "name": "employer_agreement_v4.aleo",

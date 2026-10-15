@@ -2,7 +2,7 @@
   "program": "employer_agreement_v3.aleo",
   "version": "0.1.0",
   "description": "Layer 1 employer-worker agreement framework v3. Same logic as v2 but imports pnw_name_registry_v2.aleo and uses @admin constructor.",
-  "license": "PROPRIETARY",
+  "license": "AGPL-3.0-only",
   "dependencies": [
     {
       "name": "pnw_name_registry_v2.aleo",

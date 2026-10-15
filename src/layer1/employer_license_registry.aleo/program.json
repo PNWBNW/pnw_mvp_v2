@@ -2,6 +2,6 @@
   "program": "employer_license_registry.aleo",
   "version": "0.1.0",
   "description": "Layer 1 employer verification gate for PNW MVP v2. Stores minimal business-license eligibility signals.",
-  "license": "PROPRIETARY",
+  "license": "AGPL-3.0-only",
   "dependencies": []
 }

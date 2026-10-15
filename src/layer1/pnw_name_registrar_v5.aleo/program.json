@@ -2,7 +2,7 @@
   "program": "pnw_name_registrar_v5.aleo",
   "version": "0.1.0",
   "description": "PNW Name Registrar v5 \u2014 one name per wallet, free, worker OR employer (edition 2: open registration).",
-  "license": "PROPRIETARY",
+  "license": "AGPL-3.0-only",
   "dependencies": [
     {
       "name": "employer_license_registry.aleo",
