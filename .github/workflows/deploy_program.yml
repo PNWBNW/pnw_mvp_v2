@@ -1,0 +1,157 @@
+name: deploy-new-program
+
+# Deploys one new program (a new id; deployed programs are never edited, a
+# change ships as the next version). From the GitHub app or website:
+# Actions → deploy-new-program → Run workflow. Leave "broadcast" off first: it
+# builds and checks without sending anything. The deploy fee comes from the
+# account whose key is in the testnet-staging environment.
+
+on:
+  workflow_dispatch:
+    inputs:
+      program:
+        description: "Program to deploy"
+        required: true
+        type: choice
+        options:
+          - hewn_letters_v1.aleo
+      broadcast:
+        description: "Send it (off = build and check only)"
+        required: true
+        type: boolean
+        default: false
+      endpoint:
+        description: "Explorer API base (Leo appends /testnet/...)"
+        required: true
+        type: string
+        default: "https://api.explorer.provable.com/v2"
+      consensus_heights:
+        description: "Testnet consensus activation heights V1..V22 (snarkVM 4.12.0); blank = Leo's own table"
+        required: false
+        type: string
+        default: "0,2950000,4800000,6625000,6765000,7600000,8365000,9173000,9800000,10525000,11952000,12669000,14906000,15370000,16886000,17319000,18295000,18296000,18813000,19374000,20234000,20415000"
+      leo_release:
+        description: "Leo version from crates.io, or latest (built once, then cached)"
+        required: true
+        type: string
+        default: "latest"
+
+jobs:
+  deploy:
+    runs-on: ubuntu-24.04
+    environment: testnet-staging
+    concurrency:
+      group: deploy-new-program
+      cancel-in-progress: false
+    permissions:
+      contents: read
+    env:
+      ENDPOINT: ${{ inputs.endpoint }}
+      PROGRAM: ${{ inputs.program }}
+      BROADCAST: ${{ inputs.broadcast }}
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4.2.2
+
+      # Two Leos, as in upgrade-admin-program: 4.0.0 compiles and tests our sources; the
+      # newer one, built from crates.io, signs and sends under today's consensus.
+      - name: Pick Leo version
+        id: leo-version
+        env:
+          LEO_RELEASE: ${{ inputs.leo_release }}
+        run: |
+          v="${LEO_RELEASE#v}"
+          if [ -z "$v" ] || [ "$v" = "latest" ]; then
+            v=$(curl -fsSL -A "pnw-mvp-ci" https://crates.io/api/v1/crates/leo-lang | jq -r .crate.max_stable_version)
+          fi
+          echo "version=$v" >> "$GITHUB_OUTPUT"
+          echo "Leo $v"
+          echo "Network block height now: $(curl -fsSL "$ENDPOINT/testnet/block/height/latest")"
+
+      - name: Restore Leo ${{ steps.leo-version.outputs.version }}
+        id: leo-cache
+        uses: actions/cache/restore@v4
+        with:
+          path: ~/cargo-leo
+          key: leo-crates-${{ steps.leo-version.outputs.version }}-${{ runner.os }}
+
+      - name: Build Leo ${{ steps.leo-version.outputs.version }} (first run per version, about 16 minutes)
+        if: steps.leo-cache.outputs.cache-hit != 'true'
+        env:
+          LEO_VERSION: ${{ steps.leo-version.outputs.version }}
+        run: cargo install leo-lang --locked --version "$LEO_VERSION" --root "$HOME/cargo-leo"
+
+      - name: Save Leo ${{ steps.leo-version.outputs.version }}
+        if: steps.leo-cache.outputs.cache-hit != 'true'
+        uses: actions/cache/save@v4
+        with:
+          path: ~/cargo-leo
+          key: leo-crates-${{ steps.leo-version.outputs.version }}-${{ runner.os }}
+
+      - name: Install both Leos
+        run: |
+          echo "$HOME/cargo-leo/bin" >> "$GITHUB_PATH"
+          "$HOME/cargo-leo/bin/leo" --version
+          curl -fsSL "https://github.com/ProvableHQ/leo/releases/download/v4.0.0/leo-master-x86_64-unknown-linux-gnu.zip" -o leo400.zip
+          unzip -q leo400.zip -d /tmp/leo400
+          install -m 0755 /tmp/leo400/leo "$HOME/leo400"
+          "$HOME/leo400" --version
+
+      - name: Stop if ${{ inputs.program }} is already deployed
+        run: |
+          code=$(curl -s -o /dev/null -w '%{http_code}' "$ENDPOINT/testnet/program/$PROGRAM")
+          if [ "$code" = "200" ]; then
+            echo "::error::$PROGRAM is already on testnet. Deployed programs are never replaced; ship the next version."
+            exit 1
+          fi
+          echo "$PROGRAM is not on testnet yet (HTTP $code)."
+
+      - name: Check there is a key
+        env:
+          PRIVATE_KEY: ${{ secrets.ADMIN_PRIVATE_KEY || secrets.ALEO_PRIVATE_KEY }}
+        run: |
+          if [ -z "$PRIVATE_KEY" ]; then
+            echo "::error::No key. Add ADMIN_PRIVATE_KEY to the testnet-staging environment's secrets."
+            exit 1
+          fi
+          addr=$(leo account import "$PRIVATE_KEY" --disable-update-check 2>/dev/null | grep -o 'aleo1[a-z0-9]\{58\}' | head -1)
+          echo "The deploy fee comes from ${addr:-an unknown account}."
+          echo "Its public balance: $(curl -fsSL "$ENDPOINT/testnet/program/credits.aleo/mapping/account/$addr" || echo unknown)"
+
+      - name: Compile and test ${{ inputs.program }} with Leo 4.0.0
+        run: |
+          mkdir -p "$HOME/.aleo"
+          # Leo 4.4 reads any path ending in .aleo as a bytecode file; build from a copy without the suffix.
+          pkg="$RUNNER_TEMP/pkg/${PROGRAM%.aleo}"
+          mkdir -p "$RUNNER_TEMP/pkg" "$RUNNER_TEMP/bytecode"
+          cp -r "src/layer1/$PROGRAM" "$pkg"
+          (cd "$pkg" && "$HOME/leo400" build --disable-update-check --network testnet --endpoint "$ENDPOINT")
+          (cd "$pkg" && "$HOME/leo400" test --disable-update-check)
+          cp "$pkg/build/main.aleo" "$RUNNER_TEMP/bytecode/$PROGRAM"
+          echo "Functions in the compiled program:"
+          grep -E '^(function|closure|constructor)' "$RUNNER_TEMP/bytecode/$PROGRAM"
+          sha256sum "$RUNNER_TEMP/bytecode/$PROGRAM"
+
+      - name: Deploy ${{ inputs.program }} from its bytecode
+        env:
+          PRIVATE_KEY: ${{ secrets.ADMIN_PRIVATE_KEY || secrets.ALEO_PRIVATE_KEY }}
+          HEIGHTS: ${{ inputs.consensus_heights }}
+        run: |
+          set -o pipefail
+          leo deploy --help | sed -n '1,40p'
+          # Wait up to ~5 minutes for the transaction to land.
+          flags=(--path "$RUNNER_TEMP/bytecode/$PROGRAM" --network testnet --endpoint "$ENDPOINT" --yes --disable-update-check --max-wait 20 --blocks-to-check 100)
+          if [ -n "$HEIGHTS" ]; then flags+=(--consensus-heights "$HEIGHTS"); fi
+          if [ "$BROADCAST" = "true" ]; then
+            flags+=(--broadcast)
+            echo "Sending the deployment of $PROGRAM."
+          else
+            echo "Check only: building the deployment of $PROGRAM, nothing is sent."
+          fi
+          leo deploy "${flags[@]}" 2>&1 | sed -E 's/APrivateKey1[0-9A-Za-z]+/<redacted>/g'
+
+      - name: Show whether ${{ inputs.program }} is on testnet
+        if: always()
+        run: |
+          code=$(curl -s -o /dev/null -w '%{http_code}' "$ENDPOINT/testnet/program/$PROGRAM")
+          echo "$PROGRAM on testnet: HTTP $code (200 = deployed)"

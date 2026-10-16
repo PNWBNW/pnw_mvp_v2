@@ -63,3 +63,13 @@ jobs:
 
       - name: 🛡️ Enforce execute negative-path guards
         run: scripts/check_phase4_negative_path_guards.sh
+
+      - name: 🧪 Leo tests for hewn_letters_v1 (negative cases included)
+        run: |
+          mkdir -p "$HOME/.aleo"
+          # Leo reads a path ending in .aleo as bytecode; test from a copy without the suffix.
+          pkg="$RUNNER_TEMP/hewn_letters_v1"
+          cp -r src/layer1/hewn_letters_v1.aleo "$pkg"
+          cd "$pkg"
+          leo test --disable-update-check | tee "$RUNNER_TEMP/leo-test.log"
+          grep -q "7 / 7 tests passed" "$RUNNER_TEMP/leo-test.log"

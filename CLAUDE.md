@@ -156,6 +156,9 @@ See `docs/NOTES.md` for full details and fix priority. Summary:
 - `src/layer2/payroll_nfts.aleo/main.leo` — LEGACY (v1, superseded by v2)
 - `src/layer2/credential_nft.aleo/main.leo` — LEGACY (v1, superseded by v3)
 
+### Letters (on-chain messaging, 2026-10-16)
+- `src/layer1/hewn_letters_v1.aleo/` — private letters as records: `send` (a `Letter` to the recipient, a `SentLetter` to the sender) and `send_page` (a long document). No mappings, no finalize, `@noupgrade`. Leo tests in `tests/` (7, four must fail), run in CI. Deploy: Actions → deploy-new-program (`.github/workflows/deploy_program.yml`).
+
 ### Portal TypeScript (off-chain)
 - `portal/src/adapters/aleo_cli_adapter.ts` — **THE execution boundary**; builds `snarkos` commands
 - `portal/src/adapters/layer2_adapter.ts` — program/transition name mapping (no execution)
