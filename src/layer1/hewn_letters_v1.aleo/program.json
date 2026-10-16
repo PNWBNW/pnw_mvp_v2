@@ -1,0 +1,7 @@
+{
+  "program": "hewn_letters_v1.aleo",
+  "version": "0.1.0",
+  "description": "Private letters between two parties as records: one sealed envelope to the recipient (and a copy to the sender). No mappings, no public state.",
+  "license": "AGPL-3.0-only",
+  "dependencies": []
+}
