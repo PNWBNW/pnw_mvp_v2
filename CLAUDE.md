@@ -157,7 +157,7 @@ See `docs/NOTES.md` for full details and fix priority. Summary:
 - `src/layer2/credential_nft.aleo/main.leo` — LEGACY (v1, superseded by v3)
 
 ### Letters (on-chain messaging, 2026-10-16)
-- `src/layer1/hewn_letters_v1.aleo/` — private letters as records: `send` (a `Letter` to the recipient, a `SentLetter` to the sender) and `send_page` (a long document). No mappings, no finalize, `@noupgrade`. Leo tests in `tests/` (7, four must fail), run in CI. Deploy: Actions → deploy-new-program (`.github/workflows/deploy_program.yml`).
+- `src/layer1/hewn_letters_v1.aleo/` — private letters as records: `send` (a `Letter` to the recipient, a `SentLetter` to the sender) and `send_page` (a long document). No mappings, no finalize, `@noupgrade`. Leo tests in `tests/` (7, four must fail), run in CI. Deploy: Actions → deploy-new-program (`.github/workflows/deploy_program.yml`). **Deployed 2026-10-16:** `at1pxclare6clej0feuzcncngmwvma44g0hg2ngsh763gltk0rz6qpqgtfqnt` (14.955 credits: synthesis 9.58, storage 4.37, namespace 1). Execution: `send` 0.006578, `send_page` 0.086886 credits.
 
 ### Portal TypeScript (off-chain)
 - `portal/src/adapters/aleo_cli_adapter.ts` — **THE execution boundary**; builds `snarkos` commands
