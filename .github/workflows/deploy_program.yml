@@ -14,7 +14,7 @@ on:
         required: true
         type: choice
         options:
-          - hewn_letters_v1.aleo
+          - hewn_letters_v2.aleo
       broadcast:
         description: "Send it (off = build and check only)"
         required: true

@@ -73,3 +73,13 @@ jobs:
           cd "$pkg"
           leo test --disable-update-check | tee "$RUNNER_TEMP/leo-test.log"
           grep -q "7 / 7 tests passed" "$RUNNER_TEMP/leo-test.log"
+
+      - name: 🧪 Leo tests for hewn_letters_v2 (negative cases included)
+        run: |
+          mkdir -p "$HOME/.aleo"
+          # Leo reads a path ending in .aleo as bytecode; test from a copy without the suffix.
+          pkg="$RUNNER_TEMP/hewn_letters_v2"
+          cp -r src/layer1/hewn_letters_v2.aleo "$pkg"
+          cd "$pkg"
+          leo test --disable-update-check | tee "$RUNNER_TEMP/leo-test-v2.log"
+          grep -q "12 / 12 tests passed" "$RUNNER_TEMP/leo-test-v2.log"

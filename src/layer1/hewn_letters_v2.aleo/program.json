@@ -1,0 +1,7 @@
+{
+  "program": "hewn_letters_v2.aleo",
+  "version": "0.1.0",
+  "description": "Private letters as records: one sealed envelope to one recipient (and a copy to the sender), a long page, or one announcement to up to eight people in a single call. No mappings, no public state.",
+  "license": "AGPL-3.0-only",
+  "dependencies": []
+}
