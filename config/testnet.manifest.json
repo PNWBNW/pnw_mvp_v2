@@ -21,6 +21,9 @@
     },
     "external": {
       "usdcx": "test_usdcx_stablecoin.aleo"
+    },
+    "letters": {
+      "hewn_letters": "hewn_letters_v1.aleo"
     }
   },
   "deployments": {
@@ -122,6 +125,12 @@
       "transaction_id": "at1gvhfmt56t6dc7alg6pgqp6mq4kryxwjtvfyxe2zyt50e2qq845yqk3n3ea",
       "fee_transaction_id": "at1rxm9ufpyr70t4s8hx205nnjh9rqyr02pex88zxrt8qgpa5zauvqswq6w8z",
       "deployed_at": "2026-03-12"
+    },
+    "hewn_letters_v1.aleo": {
+      "status": "active",
+      "transaction_id": "at1pxclare6clej0feuzcncngmwvma44g0hg2ngsh763gltk0rz6qpqgtfqnt",
+      "fee_transaction_id": "at1xpqcty50j8ndnfzt5nry4wc3cmme3tjqmht72enzug9us06y0gpsrmlwek",
+      "deployed_at": "2026-10-16"
     }
   }
 }
