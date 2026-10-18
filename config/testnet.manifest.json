@@ -23,7 +23,8 @@
       "usdcx": "test_usdcx_stablecoin.aleo"
     },
     "letters": {
-      "hewn_letters": "hewn_letters_v1.aleo"
+      "hewn_letters": "hewn_letters_v2.aleo",
+      "hewn_letters_v1": "hewn_letters_v1.aleo"
     }
   },
   "deployments": {
@@ -127,10 +128,18 @@
       "deployed_at": "2026-03-12"
     },
     "hewn_letters_v1.aleo": {
-      "status": "active",
+      "status": "legacy",
       "transaction_id": "at1pxclare6clej0feuzcncngmwvma44g0hg2ngsh763gltk0rz6qpqgtfqnt",
       "fee_transaction_id": "at1xpqcty50j8ndnfzt5nry4wc3cmme3tjqmht72enzug9us06y0gpsrmlwek",
-      "deployed_at": "2026-10-16"
+      "deployed_at": "2026-10-16",
+      "notes": "@noupgrade — superseded by hewn_letters_v2.aleo for sending; the app still reads letters sent with it"
+    },
+    "hewn_letters_v2.aleo": {
+      "status": "active",
+      "transaction_id": "at177xpwtt9kdlffahrrnzdwv335g9lys63auye7zw3gtju09ghxu8q9jlauk",
+      "fee_transaction_id": "at1sthw0xvmuu3xz0vw7lg75j58qhr7j2d2ru88v7t2ffsw99vzqgps8mn0y5",
+      "deployed_at": "2026-10-18",
+      "notes": "21.611652 credits: storage 5.983, synthesis 14.626652, namespace 1, constructor 0.002. Execution: send 0.006578, send_page 0.086886, send_many 0.056052"
     }
   }
 }
