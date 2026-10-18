@@ -24,5 +24,6 @@ for announcements. Design and reasoning: `docs/LETTERS.md` in the app repo (PNWB
 **Tests:** `leo test` runs 12: four that must work and eight that must fail. The must-fail cases
 include the zero address in the first, middle and last place of `send_many`.
 
-**Deploy:** Actions → deploy-new-program → `hewn_letters_v2.aleo`. Run it first with broadcast
-off.
+**Deployed 2026-10-18:** `at177xpwtt9kdlffahrrnzdwv335g9lys63auye7zw3gtju09ghxu8q9jlauk`, for
+21.612 credits. Execution costs: `send` 0.006578, `send_page` 0.086886, `send_many` 0.056052
+credits.
