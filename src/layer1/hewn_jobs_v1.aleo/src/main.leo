@@ -8,25 +8,34 @@
 // every reply, interview time and "not selected". This program never sees an
 // applicant.
 //
-//   post    a new posting: the facts anyone can filter on (pay, type, hours,
-//           where) and its body (title, location and description, packed and
-//           deflated by the app into 40 fields, about 1.2 KB)
-//   update  the same, replacing a posting that is still open
-//   close   closes it for good (post again to reopen)
+//   post     a new posting: the facts anyone can filter on (pay, type, hours,
+//            where) and its body (title, location and description, packed and
+//            deflated by the app into 40 fields, about 1.2 KB). Costs $1 in
+//            USDCx to the Hewn foundation, on top of the network fee.
+//   update   the same, replacing a posting that is still open. Free.
+//   feature  keeps an open posting near the top of the board: $5 a day, up to
+//            30 days ahead, stacking on what's left. The board shows featured
+//            postings first while their window lasts.
+//   close    closes it for good (post again to reopen). Free.
 //
 // Only the business that owns the posting's .hewn name can post under it,
-// update it or close it: each call runs the registry's `assert_employer_owner`
-// against the signer and the name's industry code (1 to 40 for a business
-// name; a worker name has none, so it can't post), and a fork running its own
-// registry can't post here.
+// update it, feature it or close it: each call runs the registry's
+// `assert_employer_owner` against the signer and the name's industry code
+// (1 to 40 for a business name; a worker name has none, so it can't post),
+// and a fork running its own registry can't post here.
 // The board lists postings by index: `posting_count[0]` is how many were ever
 // posted and `posting_at[i]` the id of the i-th, so any app can walk them
 // without a server or an indexer.
+//
+// Fees are public USDCx transfers from the signer to the foundation treasury
+// (the same account the name registrar pays), which is fine: the posting is
+// public anyway. If anything in the call fails, nothing is charged.
 //
 // Immutable (@noupgrade): a change ships as hewn_jobs_v2.
 // ---------------------------------------------------------------------------
 
 import pnw_name_registry_v2.aleo;
+import test_usdcx_stablecoin.aleo;
 
 // The checks every posting passes, before Shield is asked.
 fn check_facts(employer_name_hash: field, pay_type: u8, pay_min: u64, pay_max: u64, employment_type: u8, hours_per_week: u16, place: u8) {
@@ -43,12 +52,23 @@ fn check_facts(employer_name_hash: field, pay_type: u8, pay_min: u64, pay_max: u
 }
 
 program hewn_jobs_v1.aleo {
+    // The Hewn foundation treasury: the account the name registrar pays.
+    const HEWN_TREASURY: address = aleo1s8t86aza932zah3mv5knclvnn5zy4gedpl5a4wn5h2yrt08mxqzsw5amdd;
+    // USDCx has six decimals: 1_000_000 is $1.
+    const POSTING_FEE: u128 = 1_000_000u128;        // $1 a posting
+    const FEATURE_FEE_PER_DAY: u128 = 5_000_000u128; // $5 a day
+    const MAX_FEATURE_DAYS: u8 = 30u8;
+    // About one block every 3 seconds (the app assumes the same, chain/offer.ts).
+    const BLOCKS_PER_DAY: u32 = 28_800u32;
+    const MAX_FEATURE_BLOCKS: u32 = 864_000u32;      // 30 days
+
     // What anyone can filter on. Pay is in cents; `pay_type` 0 means the
     // posting shows no pay (then both amounts are 0).
     struct Posting {
         employer_name_hash: field,
         posted_height: u32,
         open: bool,
+        featured_until: u32, // block height; 0 or past means not featured
         pay_type: u8,        // 0 not shown, 1 an hour, 2 a year
         pay_min: u64,
         pay_max: u64,
@@ -87,10 +107,12 @@ program hewn_jobs_v1.aleo {
         // A business name's industry code is 1 to 40; a worker name's is 0.
         assert(suffix_code >= 1u8 && suffix_code <= 40u8);
         let owner: Final = pnw_name_registry_v2.aleo::assert_employer_owner(employer_name_hash, self.signer, suffix_code);
+        let paid: Final = test_usdcx_stablecoin.aleo::transfer_public_as_signer(HEWN_TREASURY, POSTING_FEE);
         let facts: Posting = Posting {
             employer_name_hash: employer_name_hash,
             posted_height: 0u32,
             open: true,
+            featured_until: 0u32,
             pay_type: pay_type,
             pay_min: pay_min,
             pay_max: pay_max,
@@ -100,6 +122,7 @@ program hewn_jobs_v1.aleo {
         };
         return final {
             owner.run();
+            paid.run();
             assert(!postings.contains(posting_id));
             let n: u32 = posting_count.get_or_use(0u8, 0u32);
             posting_at.set(n, posting_id);
@@ -108,6 +131,7 @@ program hewn_jobs_v1.aleo {
                 employer_name_hash: facts.employer_name_hash,
                 posted_height: block.height,
                 open: true,
+                featured_until: 0u32,
                 pay_type: facts.pay_type,
                 pay_min: facts.pay_min,
                 pay_max: facts.pay_max,
@@ -132,7 +156,6 @@ program hewn_jobs_v1.aleo {
         public body: Body,
     ) -> Final {
         check_facts(employer_name_hash, pay_type, pay_min, pay_max, employment_type, hours_per_week, place);
-        // A business name's industry code is 1 to 40; a worker name's is 0.
         assert(suffix_code >= 1u8 && suffix_code <= 40u8);
         let owner: Final = pnw_name_registry_v2.aleo::assert_employer_owner(employer_name_hash, self.signer, suffix_code);
         return final {
@@ -144,6 +167,7 @@ program hewn_jobs_v1.aleo {
                 employer_name_hash: employer_name_hash,
                 posted_height: current.posted_height,
                 open: true,
+                featured_until: current.featured_until,
                 pay_type: pay_type,
                 pay_min: pay_min,
                 pay_max: pay_max,
@@ -155,8 +179,40 @@ program hewn_jobs_v1.aleo {
         };
     }
 
+    // Pays $5 a day to keep an open posting near the top for `days` more days.
+    // Days stack on whatever is left, but the window can never reach more than
+    // 30 days ahead. A posting that isn't open can't be featured.
+    fn feature(public posting_id: field, public employer_name_hash: field, public suffix_code: u8, public days: u8) -> Final {
+        assert(days >= 1u8 && days <= MAX_FEATURE_DAYS);
+        assert(suffix_code >= 1u8 && suffix_code <= 40u8);
+        let owner: Final = pnw_name_registry_v2.aleo::assert_employer_owner(employer_name_hash, self.signer, suffix_code);
+        let paid: Final = test_usdcx_stablecoin.aleo::transfer_public_as_signer(HEWN_TREASURY, FEATURE_FEE_PER_DAY * (days as u128));
+        let added: u32 = (days as u32) * BLOCKS_PER_DAY;
+        return final {
+            owner.run();
+            paid.run();
+            let current: Posting = postings.get(posting_id);
+            assert_eq(current.employer_name_hash, employer_name_hash);
+            assert(current.open);
+            let from: u32 = current.featured_until > block.height ? current.featured_until : block.height;
+            let until: u32 = from + added;
+            assert(until - block.height <= MAX_FEATURE_BLOCKS);
+            postings.set(posting_id, Posting {
+                employer_name_hash: current.employer_name_hash,
+                posted_height: current.posted_height,
+                open: true,
+                featured_until: until,
+                pay_type: current.pay_type,
+                pay_min: current.pay_min,
+                pay_max: current.pay_max,
+                employment_type: current.employment_type,
+                hours_per_week: current.hours_per_week,
+                place: current.place,
+            });
+        };
+    }
+
     fn close(public posting_id: field, public employer_name_hash: field, public suffix_code: u8) -> Final {
-        // A business name's industry code is 1 to 40; a worker name's is 0.
         assert(suffix_code >= 1u8 && suffix_code <= 40u8);
         let owner: Final = pnw_name_registry_v2.aleo::assert_employer_owner(employer_name_hash, self.signer, suffix_code);
         return final {
@@ -168,6 +224,7 @@ program hewn_jobs_v1.aleo {
                 employer_name_hash: current.employer_name_hash,
                 posted_height: current.posted_height,
                 open: false,
+                featured_until: current.featured_until,
                 pay_type: current.pay_type,
                 pay_min: current.pay_min,
                 pay_max: current.pay_max,
