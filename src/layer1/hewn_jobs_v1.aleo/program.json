@@ -1,13 +1,18 @@
 {
   "program": "hewn_jobs_v1.aleo",
   "version": "0.1.0",
-  "description": "The public job board: postings anyone can read, posted, updated and closed only by the business that owns the .hewn name on them. Applications never touch it (they go as letters).",
+  "description": "The public job board: postings anyone can read, posted ($1 USDCx to the foundation), updated, featured ($5 a day, 30 days at most) and closed only by the business that owns the .hewn name on them. Applications never touch it (they go as letters).",
   "license": "AGPL-3.0-only",
   "dependencies": [
     {
       "name": "pnw_name_registry_v2.aleo",
       "location": "local",
       "path": "../../stubs/pnw_name_registry_v2.aleo"
+    },
+    {
+      "name": "test_usdcx_stablecoin.aleo",
+      "location": "local",
+      "path": "../../stubs/test_usdcx_stablecoin.aleo"
     }
   ]
 }

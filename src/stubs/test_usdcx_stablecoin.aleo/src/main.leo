@@ -9,6 +9,7 @@
 //
 // Interface surface used by PNW programs:
 //   - pnw_name_registrar: transfer_public_as_signer
+//   - hewn_jobs_v1:       transfer_public_as_signer (+ mint_test in tests)
 //   - payroll_core:       transfer_private, Token, MerkleProof, ComplianceRecord
 // ---------------------------------------------------------
 
@@ -59,8 +60,19 @@ program test_usdcx_stablecoin.aleo {
     }
 
     // ---------------------------------------------------------
+    // mint_test — TEST ONLY, not on the deployed program: gives `to` a
+    // public balance so a test can pay a fee (hewn_jobs_v1 tests).
+    // ---------------------------------------------------------
+    fn mint_test(to: address, amount: u128) -> Final {
+        return final {
+            let bal: u128 = account.get_or_use(to, 0u128);
+            account.set(to, bal + amount);
+        };
+    }
+
+    // ---------------------------------------------------------
     // transfer_public_as_signer — debit SIGNER's public balance, credit `to`.
-    // Used by pnw_name_registrar for name registration fees.
+    // Used by pnw_name_registrar and hewn_jobs_v1 for fees.
     // ---------------------------------------------------------
     fn transfer_public_as_signer(to: address, amount: u128) -> Final {
         let from: address = self.signer;
