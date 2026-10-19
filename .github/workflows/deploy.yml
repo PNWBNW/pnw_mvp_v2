@@ -73,3 +73,15 @@ jobs:
           cd "$pkg"
           leo test --disable-update-check | tee "$RUNNER_TEMP/leo-test-v2.log"
           grep -q "12 / 12 tests passed" "$RUNNER_TEMP/leo-test-v2.log"
+
+      - name: 🧪 Leo tests for hewn_jobs_v1 (negative cases included)
+        run: |
+          mkdir -p "$HOME/.aleo"
+          # Its program.json depends on the local registry stub at ../../stubs; copy both so the path holds.
+          pkg="$RUNNER_TEMP/jobs/pkg/hewn_jobs_v1"
+          mkdir -p "$RUNNER_TEMP/jobs/pkg"
+          cp -r src/stubs "$RUNNER_TEMP/jobs/stubs"
+          cp -r src/layer1/hewn_jobs_v1.aleo "$pkg"
+          cd "$pkg"
+          leo test --disable-update-check | tee "$RUNNER_TEMP/leo-test-jobs.log"
+          grep -q "19 / 19 tests passed" "$RUNNER_TEMP/leo-test-jobs.log"

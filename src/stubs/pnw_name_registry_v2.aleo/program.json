@@ -1,0 +1,7 @@
+{
+  "program": "pnw_name_registry_v2.aleo",
+  "version": "0.1.0",
+  "description": "Local stub for pnw_name_registry_v2.aleo: the `assert_is_owner` interface other programs call, plus a test-only `register_test_name` to seed it. Never deployed; the real program is on testnet.",
+  "license": "AGPL-3.0-only",
+  "dependencies": []
+}

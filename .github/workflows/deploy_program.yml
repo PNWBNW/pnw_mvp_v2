@@ -15,6 +15,7 @@ on:
         type: choice
         options:
           - hewn_letters_v2.aleo
+          - hewn_jobs_v1.aleo
       broadcast:
         description: "Send it (off = build and check only)"
         required: true
@@ -125,8 +126,26 @@ jobs:
           pkg="$RUNNER_TEMP/pkg/${PROGRAM%.aleo}"
           mkdir -p "$RUNNER_TEMP/pkg" "$RUNNER_TEMP/bytecode"
           cp -r "src/layer1/$PROGRAM" "$pkg"
+          # Local stubs of deployed programs (src/stubs), where a program.json points at ../../stubs: tests seed them.
+          cp -r src/stubs "$RUNNER_TEMP/stubs"
           (cd "$pkg" && "$HOME/leo400" build --disable-update-check --network testnet --endpoint "$ENDPOINT")
           (cd "$pkg" && "$HOME/leo400" test --disable-update-check)
+          # The deployed bytecode is compiled against the real dependencies on testnet, never a stub.
+          if grep -q '"location": "local"' "$pkg/program.json"; then
+            python3 - "$pkg/program.json" <<'PY'
+          import json, sys
+          p = sys.argv[1]
+          m = json.load(open(p))
+          for d in m.get("dependencies", []):
+              if d.get("location") == "local":
+                  d.pop("path", None)
+                  d["location"] = "network"
+                  d["network"] = "testnet"
+          json.dump(m, open(p, "w"), indent=2)
+          PY
+            rm -rf "$pkg/build" "$pkg/tests"
+            (cd "$pkg" && "$HOME/leo400" build --disable-update-check --network testnet --endpoint "$ENDPOINT")
+          fi
           cp "$pkg/build/main.aleo" "$RUNNER_TEMP/bytecode/$PROGRAM"
           echo "Functions in the compiled program:"
           grep -E '^(function|closure|constructor)' "$RUNNER_TEMP/bytecode/$PROGRAM"
