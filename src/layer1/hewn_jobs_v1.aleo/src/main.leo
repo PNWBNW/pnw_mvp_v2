@@ -15,8 +15,10 @@
 //   close   closes it for good (post again to reopen)
 //
 // Only the business that owns the posting's .hewn name can post under it,
-// update it or close it: each call runs the registry's `assert_is_owner`
-// against the signer, so a fork running its own registry can't post here.
+// update it or close it: each call runs the registry's `assert_employer_owner`
+// against the signer and the name's industry code (1 to 40 for a business
+// name; a worker name has none, so it can't post), and a fork running its own
+// registry can't post here.
 // The board lists postings by index: `posting_count[0]` is how many were ever
 // posted and `posting_at[i]` the id of the i-th, so any app can walk them
 // without a server or an indexer.
@@ -71,6 +73,7 @@ program hewn_jobs_v1.aleo {
     fn post(
         public posting_id: field,
         public employer_name_hash: field,
+        public suffix_code: u8,
         public pay_type: u8,
         public pay_min: u64,
         public pay_max: u64,
@@ -81,7 +84,9 @@ program hewn_jobs_v1.aleo {
     ) -> Final {
         assert_neq(posting_id, 0field);
         check_facts(employer_name_hash, pay_type, pay_min, pay_max, employment_type, hours_per_week, place);
-        let owner: Final = pnw_name_registry_v2.aleo::assert_is_owner(employer_name_hash, self.signer);
+        // A business name's industry code is 1 to 40; a worker name's is 0.
+        assert(suffix_code >= 1u8 && suffix_code <= 40u8);
+        let owner: Final = pnw_name_registry_v2.aleo::assert_employer_owner(employer_name_hash, self.signer, suffix_code);
         let facts: Posting = Posting {
             employer_name_hash: employer_name_hash,
             posted_height: 0u32,
@@ -117,6 +122,7 @@ program hewn_jobs_v1.aleo {
     fn update(
         public posting_id: field,
         public employer_name_hash: field,
+        public suffix_code: u8,
         public pay_type: u8,
         public pay_min: u64,
         public pay_max: u64,
@@ -126,7 +132,9 @@ program hewn_jobs_v1.aleo {
         public body: Body,
     ) -> Final {
         check_facts(employer_name_hash, pay_type, pay_min, pay_max, employment_type, hours_per_week, place);
-        let owner: Final = pnw_name_registry_v2.aleo::assert_is_owner(employer_name_hash, self.signer);
+        // A business name's industry code is 1 to 40; a worker name's is 0.
+        assert(suffix_code >= 1u8 && suffix_code <= 40u8);
+        let owner: Final = pnw_name_registry_v2.aleo::assert_employer_owner(employer_name_hash, self.signer, suffix_code);
         return final {
             owner.run();
             let current: Posting = postings.get(posting_id);
@@ -147,8 +155,10 @@ program hewn_jobs_v1.aleo {
         };
     }
 
-    fn close(public posting_id: field, public employer_name_hash: field) -> Final {
-        let owner: Final = pnw_name_registry_v2.aleo::assert_is_owner(employer_name_hash, self.signer);
+    fn close(public posting_id: field, public employer_name_hash: field, public suffix_code: u8) -> Final {
+        // A business name's industry code is 1 to 40; a worker name's is 0.
+        assert(suffix_code >= 1u8 && suffix_code <= 40u8);
+        let owner: Final = pnw_name_registry_v2.aleo::assert_employer_owner(employer_name_hash, self.signer, suffix_code);
         return final {
             owner.run();
             let current: Posting = postings.get(posting_id);

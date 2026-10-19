@@ -84,4 +84,4 @@ jobs:
           cp -r src/layer1/hewn_jobs_v1.aleo "$pkg"
           cd "$pkg"
           leo test --disable-update-check | tee "$RUNNER_TEMP/leo-test-jobs.log"
-          grep -q "16 / 16 tests passed" "$RUNNER_TEMP/leo-test-jobs.log"
+          grep -q "19 / 19 tests passed" "$RUNNER_TEMP/leo-test-jobs.log"
