@@ -52,6 +52,9 @@ business name and its code), `register_test_name` (a worker name) and `mint_test
 `program.json` points at them. The deploy workflow switches both dependencies to the real programs
 on testnet before compiling the bytecode it deploys.
 
-**Deploy:** Actions → deploy-new-program → `hewn_jobs_v1.aleo`, broadcast off first.
+**Deployed 2026-10-19** (Actions → deploy-new-program): `at1354m4j9wxc9st3ukwcl2082s6429ddgx27kfekz500rpzcne4qqse80q4n`,
+fee transaction `at1m7ngn79cd0kpuj92zkkv05lx7aq0wwgzh0sdc9df6dmc6ghvmgpse2cz0s`; 8.924390 credits (storage
+6.628, synthesis 1.294, namespace 1, constructor 0.002). Per call, in ALEO on top of the USDCx fee:
+`post` 0.020269, `update` 0.014193, `feature` 0.006927, `close` 0.003964.
 
 `@noupgrade`: a change ships as `hewn_jobs_v2`.
