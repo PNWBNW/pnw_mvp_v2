@@ -1,5 +1,12 @@
-# ARCHITECTURE.md  
+# ARCHITECTURE.md
 **PNW MVP v2 – Aleo-Native Payroll, Receipts, and Audit Framework**
+
+> **Read with one update in mind (October 2026).** This is the conceptual spec the programs were
+> built to, and it still describes them. The app on top of them is now
+> [Hewn](https://github.com/PNWBNW/hewn), not the portal, and Hewn's payroll settled on one private
+> USDCx transfer per worker with the paystub sent as a sealed letter: `payroll_core`, the receipts
+> and the per-payment anchors described below are deployed but not called. How payroll stays
+> provable without them is Hewn's `docs/AUDIT_DESIGN.md`.
 
 ---
 

@@ -28,11 +28,11 @@ sudo install -m 755 /tmp/snarkos-bin/snarkos /usr/local/bin/snarkos
 rm -rf /tmp/snarkos.zip /tmp/snarkos-bin
 
 # Bootstrap .env from example so plan-gate scripts work immediately.
-# Secrets (ALEO_PRIVATE_KEY etc.) are injected via Codespace secrets — not stored here.
+# Secrets (PRIVATE_KEY etc.) are injected via Codespace secrets — not stored here.
 if [[ ! -f .env ]]; then
   cp .env.example .env
   echo "INFO: Copied .env.example → .env"
-  echo "      Fill in ALEO_PRIVATE_KEY / ALEO_VIEW_KEY / ALEO_ADDRESS before running execute scripts."
+  echo "      Fill in PRIVATE_KEY / ALEO_VIEW_KEY / ALEO_ADDRESS before running execute scripts."
 fi
 
 echo ""
