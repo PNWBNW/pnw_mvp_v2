@@ -85,3 +85,13 @@ jobs:
           cd "$pkg"
           leo test --disable-update-check | tee "$RUNNER_TEMP/leo-test-jobs.log"
           grep -q "31 / 31 tests passed" "$RUNNER_TEMP/leo-test-jobs.log"
+
+      - name: 🧪 Leo tests for employer_agreement_v5 (negative cases included)
+        run: |
+          mkdir -p "$HOME/.aleo"
+          # No imports, so no stubs; test from a copy without the .aleo suffix.
+          pkg="$RUNNER_TEMP/employer_agreement_v5"
+          cp -r src/layer1/employer_agreement_v5.aleo "$pkg"
+          cd "$pkg"
+          leo test --disable-update-check | tee "$RUNNER_TEMP/leo-test-agreement-v5.log"
+          grep -q "15 / 15 tests passed" "$RUNNER_TEMP/leo-test-agreement-v5.log"

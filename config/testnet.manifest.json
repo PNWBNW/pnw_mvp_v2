@@ -150,6 +150,10 @@
       "fee_transaction_id": "at1m7ngn79cd0kpuj92zkkv05lx7aq0wwgzh0sdc9df6dmc6ghvmgpse2cz0s",
       "deployed_at": "2026-10-19",
       "notes": "8.924390 credits: storage 6.628, synthesis 1.29439, namespace 1, constructor 0.002. Execution: post 0.020269, update 0.014193, feature 0.006927, close 0.003964 (plus the USDCx fees: post $1, feature $5 a day). @noupgrade"
+    },
+    "employer_agreement_v5.aleo": {
+      "status": "staged",
+      "notes": "Not deployed. @noupgrade, Leo v4.0, two-party: the P-256 public halves ride in the records (employer's with the offer, worker's with the acceptance), no registry call so no name hash or account in public inputs, SentOffer to the employer, no DAO copy. docs/migrations/2026-10-23-agreement-v5.md. program_ids.layer1.employer_agreement stays v4 until Hewn switches."
     }
   }
 }
