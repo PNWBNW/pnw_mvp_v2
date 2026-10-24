@@ -17,6 +17,7 @@ on:
           - hewn_letters_v2.aleo
           - hewn_jobs_v1.aleo
           - employer_agreement_v5.aleo
+          - hewn_cards_v1.aleo
       broadcast:
         description: "Send it (off = build and check only)"
         required: true

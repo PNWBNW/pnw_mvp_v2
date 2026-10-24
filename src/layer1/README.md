@@ -26,6 +26,7 @@ credentials.
 | [`pnw_router_v4.aleo`](pnw_router_v4.aleo/README.md) | `@admin` | One entry surface over agreements, profiles and names. | Deployed, not called |
 | [`hewn_letters_v2.aleo`](hewn_letters_v2.aleo/README.md) | `@noupgrade` | Sealed letters as records: `send`, `send_page`, `send_many` (eight at once). | Every offer, message, timecard, schedule and paystub |
 | [`hewn_jobs_v1.aleo`](hewn_jobs_v1.aleo/README.md) | `@noupgrade` | The public job board: `post` ($1 USDCx), `update`, `feature` ($5 a day), `close`. | Jobs and Find work |
+| [`hewn_cards_v1.aleo`](hewn_cards_v1.aleo/README.md) | `@noupgrade` | The cards every account gets, **staged, not deployed** (2026-10-24): a business's card and a worker's tenure card, issued once per name by its owner; on chain only the issue height (where time on Hewn counts from) and whether the card is shown (a worker's switch). | Nothing yet: issued at setup once deployed |
 
 Two programs these import are not ours: `test_usdcx_stablecoin.aleo` (the testnet stablecoin) and
 `credits.aleo`. Local stand-ins for building and testing offline are in [`../stubs/`](../stubs/README.md).

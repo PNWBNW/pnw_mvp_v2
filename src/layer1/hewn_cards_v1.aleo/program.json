@@ -1,0 +1,13 @@
+{
+  "program": "hewn_cards_v1.aleo",
+  "version": "0.1.0",
+  "description": "The cards every account gets: a business's card (always shown) and a worker's tenure card (shown or hidden, their switch), each issued once per .hewn name by its owner. On chain only the issue height, where time on Hewn counts from, and whether the card is shown; the picture is drawn from the name.",
+  "license": "AGPL-3.0-only",
+  "dependencies": [
+    {
+      "name": "pnw_name_registry_v2.aleo",
+      "location": "local",
+      "path": "../../stubs/pnw_name_registry_v2.aleo"
+    }
+  ]
+}
