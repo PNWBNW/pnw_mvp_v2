@@ -10,6 +10,7 @@
       "employer_profiles": "employer_profiles_v2.aleo",
       "employer_license_registry": "employer_license_registry.aleo",
       "employer_agreement": "employer_agreement_v4.aleo",
+      "employer_agreement_v5": "employer_agreement_v5.aleo",
       "payroll_core": "payroll_core_v2.aleo",
       "paystub_receipts": "paystub_receipts.aleo",
       "payroll_audit_log": "payroll_audit_log.aleo"
@@ -64,7 +65,7 @@
     "employer_agreement_v4.aleo": {
       "status": "active",
       "transaction_id": "at1488hqlv0apt8rx9zrmkr67pe5ffp2pc59w4gtelmflepa04meqxsklhksw",
-      "notes": "@admin, Leo v4.0, 3-party FinalAgreement records; edition 2 (2026-10-15) adds create_offer_open / pause_employer_open / terminate_employer_open / resume_employer_open: no license approval. Upgrade tx at17d0f4a442msg92tzgem7s65346s2eway3auvpwalzmnyhngtgqqqe62yjc",
+      "notes": "@admin, Leo v4.0, 3-party FinalAgreement records; edition 2 (2026-10-15) adds create_offer_open / pause_employer_open / terminate_employer_open / resume_employer_open: no license approval. Upgrade tx at17d0f4a442msg92tzgem7s65346s2eway3auvpwalzmnyhngtgqqqe62yjc New offers go to employer_agreement_v5 since DEPLOY_DATE_PENDING; v4 stays live: Hewn reads the agreements made with it, and payroll_core_v2, pnw_router_v4, payroll_nfts_v2 and credential_nft_v3/v4 import it, so its source stays in src/layer1.",
       "deployed_at": "2026-04-01"
     },
     "payroll_core_v2.aleo": {
@@ -152,8 +153,11 @@
       "notes": "8.924390 credits: storage 6.628, synthesis 1.29439, namespace 1, constructor 0.002. Execution: post 0.020269, update 0.014193, feature 0.006927, close 0.003964 (plus the USDCx fees: post $1, feature $5 a day). @noupgrade"
     },
     "employer_agreement_v5.aleo": {
-      "status": "staged",
-      "notes": "Not deployed. @noupgrade, Leo v4.0, two-party: the P-256 public halves ride in the records (employer's with the offer, worker's with the acceptance), no registry call so no name hash or account in public inputs, SentOffer to the employer, no DAO copy. docs/migrations/2026-10-23-agreement-v5.md. program_ids.layer1.employer_agreement stays v4 until Hewn switches."
+      "status": "active",
+      "transaction_id": "DEPLOY_TX_PENDING",
+      "fee_transaction_id": "FEE_TX_PENDING",
+      "deployed_at": "DEPLOY_DATE_PENDING",
+      "notes": "@noupgrade, Leo v4.0, two-party: the P-256 public halves ride in the records (employer's with the offer, worker's with the acceptance), no registry call so no name hash or account in public inputs, SentOffer to the employer, no DAO copy. Deploy fee 38.856351 credits. Hewn sends every new offer here. docs/migrations/2026-10-23-agreement-v5.md."
     }
   }
 }

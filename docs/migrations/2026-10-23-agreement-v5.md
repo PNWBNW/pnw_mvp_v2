@@ -1,7 +1,8 @@
-# employer_agreement_v5 (2026-10-23, staged)
+# employer_agreement_v5 (2026-10-23)
 
-**Not deployed yet.** `employer_agreement_v4.aleo` stays live; Hewn keeps reading v4 records for
-the agreements already made.
+**Deployed DEPLOY_DATE_PENDING** (deploy-new-program): transaction `DEPLOY_TX_PENDING`, fee transaction `FEE_TX_PENDING`,
+38.856351 credits. `employer_agreement_v4.aleo` stays live; Hewn keeps reading v4 records for the
+agreements already made, and sends every new offer to v5.
 
 ## Why a new version
 

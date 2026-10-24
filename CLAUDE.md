@@ -67,7 +67,8 @@ In short:
 | `pnw_name_registry_v2.aleo` | Who owns which name | Read; every other program checks names through it |
 | `pnw_name_registrar_v5.aleo` (edition 1) | Registering names, free since 2026-10-15 | Setup |
 | `pnw_worker_profiles_v2.aleo` | A worker's private profile | Worker setup |
-| `employer_agreement_v4.aleo` (edition 2) | Offers and agreements | Offers and acceptance |
+| `employer_agreement_v5.aleo` | Offers and agreements, two parties, the key halves in the records | Offers and acceptance |
+| `employer_agreement_v4.aleo` (edition 2) | The previous agreements program; four live programs import it | Read for agreements made before v5 |
 | `hewn_letters_v2.aleo` | Sealed letters (`send`, `send_page`, `send_many`) | Everything between people |
 | `hewn_jobs_v1.aleo` | The public job board | Jobs, Find work |
 | `employer_license_registry.aleo`, `employer_profiles_v2.aleo`, `pnw_router_v4.aleo`, `payroll_core_v2.aleo`, `paystub_receipts.aleo`, `payroll_audit_log.aleo` | Licences, employer profiles, routing, one-proof payroll, receipts, audit anchors | Deployed, not called |

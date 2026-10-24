@@ -1,8 +1,12 @@
 # employer_agreement_v5.aleo
 
-Job offers and the agreements they become, between two parties. **Staged, not deployed**
-(2026-10-23, `docs/migrations/2026-10-23-agreement-v5.md`); `employer_agreement_v4.aleo` stays live
-until Hewn switches.
+Job offers and the agreements they become, between two parties. **Deployed DEPLOY_DATE_PENDING**
+(Actions → deploy-new-program): `DEPLOY_TX_PENDING`, fee transaction `FEE_TX_PENDING`; 38.856351
+credits (storage 23.082, synthesis 14.772, namespace 1, constructor 0.002). Per call, in ALEO:
+`create_offer` 0.015784, `accept_offer` 0.018355, `withdraw_offer` 0.002639, pause and terminate
+about 0.0067, each resume approval 0.0062, `resume` 0.006721. Hewn sends every new offer here;
+`employer_agreement_v4.aleo` stays live for the agreements made before
+(`docs/migrations/2026-10-23-agreement-v5.md`).
 
 What changed from v4, in one line each:
 
