@@ -1,8 +1,10 @@
 # employer_agreement_v5.aleo
 
-Job offers and the agreements they become, between two parties. **Staged, not deployed**
-(2026-10-23; locked in 2026-10-24 before the deploy, `docs/migrations/2026-10-23-agreement-v5.md`);
-`employer_agreement_v4.aleo` stays live until Hewn switches.
+Job offers and the agreements they become, between two parties. **Deployed 2026-10-24**
+(transaction `at1pvypp6lknqz7u7rs8af2qc8r5k2wgds7x3sct6xtdjs0t70feu9ssx6j3k`, block 20793785;
+staged 2026-10-23 and locked in before the deploy, `docs/migrations/2026-10-23-agreement-v5.md`).
+`employer_agreement_v4.aleo` stays live: it holds the agreements already made, and Hewn sends new
+offers to it until it switches.
 
 What changed from v4, in one line each:
 
@@ -93,4 +95,4 @@ frequency, an end before the start, a review before the start, a zero revision, 
 taken for active or agreed, a pending offer taken for active or agreed, the wrong key, the wrong
 worker). Every test runs as one signer, who can't be both parties, so acceptance and the
 lifecycle after it (pause, resume, the three ways of ending and their reasons) are checked on the
-network at deploy time (the migration note has the list).
+network with two test wallets (the migration note has the list; not run yet).

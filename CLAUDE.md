@@ -68,6 +68,7 @@ In short:
 | `pnw_name_registrar_v5.aleo` (edition 1) | Registering names, free since 2026-10-15 | Setup |
 | `pnw_worker_profiles_v2.aleo` | A worker's private profile | Worker setup |
 | `employer_agreement_v4.aleo` (edition 2) | Offers and agreements | Offers and acceptance |
+| `employer_agreement_v5.aleo` | Two-party offers and agreements, deployed 2026-10-24 | Not yet: Hewn switches next, and keeps reading v4 |
 | `hewn_letters_v2.aleo` | Sealed letters (`send`, `send_page`, `send_many`) | Everything between people |
 | `hewn_jobs_v1.aleo` | The public job board | Jobs, Find work |
 | `employer_license_registry.aleo`, `employer_profiles_v2.aleo`, `pnw_router_v4.aleo`, `payroll_core_v2.aleo`, `paystub_receipts.aleo`, `payroll_audit_log.aleo` | Licences, employer profiles, routing, one-proof payroll, receipts, audit anchors | Deployed, not called |
@@ -134,6 +135,7 @@ cp -r src/layer1/hewn_jobs_v1.aleo /tmp/hewn_jobs_v1 && cp -r src/stubs /tmp/stu
 - 2026-10-16/18 — Letters are records on chain (`hewn_letters_v1`, then `v2` with `send_many`); the chain is the mailbox.
 - 2026-10-19 — The public job board (`hewn_jobs_v1`): $1 USDCx to post, $5 a day to feature, 30 days at most, employer names only.
 - 2026-10-20 — Superseded versions live in `src/<layer>/archive/`, unchanged; every live program carries a README.
+- 2026-10-24 — `employer_agreement_v5` deployed: two parties, the halves in the records, no public link between the parties, a pair tag for other programs, a private end reason. v4 stays live for the agreements already made and the programs that import it.
 
 ## What's next
 
