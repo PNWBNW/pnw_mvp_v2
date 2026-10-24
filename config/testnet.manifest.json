@@ -153,7 +153,7 @@
     },
     "employer_agreement_v5.aleo": {
       "status": "staged",
-      "notes": "Not deployed. @noupgrade, Leo v4.0, two-party: the P-256 public halves ride in the records (employer's with the offer, worker's with the acceptance), no registry call so no name hash or account in public inputs, SentOffer to the employer, no DAO copy. docs/migrations/2026-10-23-agreement-v5.md. program_ids.layer1.employer_agreement stays v4 until Hewn switches."
+      "notes": "Not deployed. @noupgrade, Leo v4.0, two-party: the P-256 public halves ride in the records (employer's with the offer, worker's with the acceptance), no registry call so no name hash or account in public inputs, SentOffer to the employer, no DAO copy. Rebuilt 2026-10-24 before deploying: a pair tag (BHP1024 over the random parties_key and both accounts) carries the status for other programs (assert_pair_active, assert_pair_agreed; the v4-style assert_agreement_* helpers that took the id publicly are gone), every 32-byte value is [u128; 2] and every half [u128; 4], an agreement ends with a private reason (the ending party's copy and an AgreementEnd record to the other; mutual ends take both approvals), status 4 = withdrawn. docs/migrations/2026-10-23-agreement-v5.md. program_ids.layer1.employer_agreement stays v4 until Hewn switches."
     }
   }
 }

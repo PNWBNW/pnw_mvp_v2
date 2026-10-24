@@ -1,7 +1,7 @@
 {
   "program": "employer_agreement_v5.aleo",
   "version": "0.1.0",
-  "description": "Job offers and the agreements they become, between two parties: the offer carries the employer's P-256 public half and the acceptance the worker's, so the pair's key is made in each vault and never written to chain; no registry call, so no name hash or account in public state; no DAO copy.",
+  "description": "Job offers and the agreements they become, between two parties: the offer carries the employer's P-256 public half and the acceptance the worker's, so the pair's key is made in each vault and never written to chain; no registry call, so no name hash or account in public state; no DAO copy. A pair tag (a hash over the random parties key and both accounts) carries the status for other programs; bytes travel packed as u128; an agreement ends with a private reason.",
   "license": "AGPL-3.0-only",
   "dependencies": []
 }
