@@ -10,6 +10,7 @@
       "employer_profiles": "employer_profiles_v2.aleo",
       "employer_license_registry": "employer_license_registry.aleo",
       "employer_agreement": "employer_agreement_v4.aleo",
+      "employer_agreement_v5": "employer_agreement_v5.aleo",
       "payroll_core": "payroll_core_v2.aleo",
       "paystub_receipts": "paystub_receipts.aleo",
       "payroll_audit_log": "payroll_audit_log.aleo"
@@ -64,7 +65,7 @@
     "employer_agreement_v4.aleo": {
       "status": "active",
       "transaction_id": "at1488hqlv0apt8rx9zrmkr67pe5ffp2pc59w4gtelmflepa04meqxsklhksw",
-      "notes": "@admin, Leo v4.0, 3-party FinalAgreement records; edition 2 (2026-10-15) adds create_offer_open / pause_employer_open / terminate_employer_open / resume_employer_open: no license approval. Upgrade tx at17d0f4a442msg92tzgem7s65346s2eway3auvpwalzmnyhngtgqqqe62yjc",
+      "notes": "@admin, Leo v4.0, 3-party FinalAgreement records; edition 2 (2026-10-15) adds create_offer_open / pause_employer_open / terminate_employer_open / resume_employer_open: no license approval. Upgrade tx at17d0f4a442msg92tzgem7s65346s2eway3auvpwalzmnyhngtgqqqe62yjc. Still live after v5 (2026-10-24): it holds the agreements already made, and payroll_core_v2, pnw_router_v4, payroll_nfts_v2 and credential_nft_v3 import it (so does the staged credential_nft_v4); Hewn sends new offers here until it switches to v5.",
       "deployed_at": "2026-04-01"
     },
     "payroll_core_v2.aleo": {
@@ -152,8 +153,11 @@
       "notes": "8.924390 credits: storage 6.628, synthesis 1.29439, namespace 1, constructor 0.002. Execution: post 0.020269, update 0.014193, feature 0.006927, close 0.003964 (plus the USDCx fees: post $1, feature $5 a day). @noupgrade"
     },
     "employer_agreement_v5.aleo": {
-      "status": "staged",
-      "notes": "Not deployed. @noupgrade, Leo v4.0, two-party: the P-256 public halves ride in the records (employer's with the offer, worker's with the acceptance), no registry call so no name hash or account in public inputs, SentOffer to the employer, no DAO copy. Rebuilt 2026-10-24 before deploying: a pair tag (BHP1024 over the random parties_key and both accounts) carries the status for other programs (assert_pair_active, assert_pair_agreed; the v4-style assert_agreement_* helpers that took the id publicly are gone), every 32-byte value is [u128; 2] and every half [u128; 4], an agreement ends with a private reason (the ending party's copy and an AgreementEnd record to the other; mutual ends take both approvals), status 4 = withdrawn. docs/migrations/2026-10-23-agreement-v5.md. program_ids.layer1.employer_agreement stays v4 until Hewn switches."
+      "status": "active",
+      "transaction_id": "at1pvypp6lknqz7u7rs8af2qc8r5k2wgds7x3sct6xtdjs0t70feu9ssx6j3k",
+      "fee_transaction_id": "at1476zzxqz9rw9ylmcyveux660y43qqfm3yu2k7965wdaggsg6surszw4z7k",
+      "deployed_at": "2026-10-24",
+      "notes": "@noupgrade, edition 0, block 20793785. Compiled and tested with Leo 4.0.0 (22/22), deployed from that bytecode (deploy-new-program run 12, consensus version 22); the bytecode on chain matches main 633e45e byte for byte. 40.764508 credits: storage 28.516, synthesis 11.246508, namespace 1, constructor 0.002. Execution: create_offer 0.007735, accept_offer 0.007279, withdraw_offer 0.003059, pause 0.005272, resume 0.005369 (each approval 0.00428), terminate 0.00637, approve_end 0.00431, end_mutual 0.006401, assert_pair_active 0.0017, assert_pair_agreed 0.00178. Two-party: the P-256 public halves ride in the records, no registry call so no name hash or account in public inputs, SentOffer to the employer, no DAO copy; a pair tag (BHP1024 over the random parties_key and both accounts) carries the status for other programs; bytes packed as [u128; 2] / [u128; 4]; an agreement ends with a private reason; status 4 = withdrawn. docs/migrations/2026-10-23-agreement-v5.md. program_ids.layer1.employer_agreement stays v4 (the agreements already made) and employer_agreement_v5 is added beside it, as Hewn's packages/config/src/programs.ts has it; Hewn sends new offers here once it switches."
     }
   }
 }

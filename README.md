@@ -32,6 +32,7 @@ ids from `config/testnet.manifest.json`; nothing hard-codes one.
 | **`pnw_name_registrar_v5.aleo`** | Registers names, free since 2026-10-15, and keeps the readable name for reverse lookup | Setup |
 | **`pnw_worker_profiles_v2.aleo`** | A worker's private profile record and its anchor | Worker setup |
 | **`employer_agreement_v4.aleo`** | Job offers and agreements: a private offer to the worker, three agreement copies on acceptance, pause / end / resume | Offers and acceptance |
+| `employer_agreement_v5.aleo` | The two-party rebuild (2026-10-24): the conversation key's public halves in the records, nothing public about who works for whom, a private reason when an agreement ends, a pair tag other programs check | Deployed; Hewn switches next |
 | **`hewn_letters_v2.aleo`** | Sealed letters as private records: one, a long page, or one to eight people at once | Every offer, message, timecard, schedule and paystub |
 | **`hewn_jobs_v1.aleo`** | The public job board: post ($1 USDCx), update, feature ($5 a day), close | Jobs and Find work |
 | `employer_license_registry.aleo` | A verified flag per employer, set by the authority | Not required by the free paths |

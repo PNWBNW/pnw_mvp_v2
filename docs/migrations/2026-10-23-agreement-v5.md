@@ -1,7 +1,7 @@
-# employer_agreement_v5 (2026-10-23, staged; locked in 2026-10-24)
+# employer_agreement_v5 (2026-10-23, staged; locked in and deployed 2026-10-24)
 
-**Not deployed yet.** `employer_agreement_v4.aleo` stays live; Hewn keeps reading v4 records for
-the agreements already made.
+**Deployed 2026-10-24** (below). `employer_agreement_v4.aleo` stays live; Hewn keeps reading v4
+records for the agreements already made, and sends new offers to v5 once it switches.
 
 ## Why a new version
 
@@ -80,20 +80,36 @@ changes the signer for a whole test, not within one), so the tests cover the off
 the pair tag's public state and the refusals; acceptance and the lifecycle after it are checked on
 the network below.
 
-## Deploy (Joshua, admin key as the deployer) — from the phone
+## Deploy (Joshua, admin key as the deployer, 2026-10-24)
 
-Workflow `.github/workflows/deploy_program.yml`: Actions → deploy-new-program → Run workflow →
-program `employer_agreement_v5.aleo`, broadcast **off** (green = it builds against the live network
-and the key can pay). Then again with broadcast **on**. The admin account holds 263 public
-credits (2026-10-24, swapped from testnet USDCx through Shield Swap); the staged version was
-quoted at 38.9.
+Workflow `.github/workflows/deploy_program.yml` (deploy-new-program) from `main` at `633e45e`:
+broadcast off (run 10), then on (run 12). Compiled and tested with Leo 4.0.0 (22 of 22), deployed
+from that bytecode at consensus version 22.
 
-Then, in this repository, one PR: `config/testnet.manifest.json` (`program_ids.layer1.employer_agreement`
-→ v5, the deployment entry with its transaction ids, v4 marked legacy), the live table in
-`src/layer1/README.md` and `CLAUDE.md`. `employer_agreement_v4.aleo` stays in `src/layer1`: five
-live programs import it.
+| | |
+|---|---|
+| Transaction | `at1pvypp6lknqz7u7rs8af2qc8r5k2wgds7x3sct6xtdjs0t70feu9ssx6j3k`, accepted |
+| Fee transaction | `at1476zzxqz9rw9ylmcyveux660y43qqfm3yu2k7965wdaggsg6surszw4z7k` |
+| Block | 20793785 |
+| Cost | 40.764508 credits: storage 28.516, synthesis 11.246508, namespace 1, constructor 0.002 (public fee, no priority fee) |
+| Size | 20.27 KB; 2,401,604 variables, 1,933,558 constraints |
 
-## Checks after deploy (must fail / must pass)
+The program the explorer serves (`/v2/testnet/program/employer_agreement_v5.aleo`) matches what
+Leo 4.0.0 builds from `main` byte for byte.
+
+What one call costs, in credits: `create_offer` 0.007735, `accept_offer` 0.007279, `withdraw_offer`
+0.003059, `pause_*` 0.00527, each `approve_resume_*` 0.00428, `resume` 0.005369, `terminate_*`
+0.00637, each `approve_end_*` 0.00431, `end_mutual` 0.006401, `assert_pair_active` 0.0017,
+`assert_pair_agreed` 0.00178.
+
+The manifest records it (`config/testnet.manifest.json`, status active). `program_ids.layer1`
+keeps `employer_agreement` on v4, which holds the agreements already made, and adds
+`employer_agreement_v5` beside it, as Hewn's `packages/config/src/programs.ts` already has it.
+`employer_agreement_v4.aleo` stays in `src/layer1`, not `archive/`: four deployed programs import
+it (`payroll_core_v2`, `pnw_router_v4`, `payroll_nfts_v2`, `credential_nft_v3`), and so does the
+staged `credential_nft_v4`.
+
+## Checks after deploy (must fail / must pass; not run yet)
 
 With two fresh test wallets holding only ALEO for fees, B (a business name) and W (a worker name):
 
