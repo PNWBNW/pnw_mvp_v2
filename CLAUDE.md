@@ -32,7 +32,7 @@ the README in `src/layer1/`, `src/layer2/` and `src/stubs/`, then Hewn's `CLAUDE
   commitment anchors, statuses and block heights.
 - No cumulative counters in public mappings (they leak wages by difference). CI enforces this
   (`scripts/check_layer1_public_leakage_guards.py`).
-- Layer 2 never moves funds. No pooled custody: an employer's USDCx records are consumed and the
+- Layer 2 never moves funds (`scripts/check_layer2_moves_no_funds.py` in CI). No pooled custody: an employer's USDCx records are consumed and the
   worker's emitted in the same transition, or Hewn pays with a plain `transfer_private`.
 
 **Writing Leo**
@@ -97,7 +97,7 @@ In short:
 
 | Workflow | Trigger | Does |
 |---|---|---|
-| `deploy.yml` (the plan gate) | Every push and pull request | Pinned CLI check, portal typechecks, adapter codec test, manifest schema, the leakage guard, the public-state map check (`docs/PUBLIC_STATE.md`), Leo tests for `hewn_letters_v2`, `hewn_jobs_v1`, `employer_agreement_v5`, `hewn_cards_v1` and `hewn_credentials_v1` |
+| `deploy.yml` (the plan gate) | Every push and pull request | Pinned CLI check, portal typechecks, adapter codec test, manifest schema, the leakage guard, the public-state map check (`docs/PUBLIC_STATE.md`), the Layer 2 funds check, Leo tests for `hewn_letters_v2`, `hewn_jobs_v1`, `employer_agreement_v5`, `hewn_cards_v1` and `hewn_credentials_v1` |
 | `deploy_program.yml` (deploy-new-program) | Manual | Deploys one program from `src/layer1/` with the admin key, swapping stubs for the deployed dependencies first |
 | `upgrade_program.yml` (upgrade-admin-program) | Manual | Upgrades an `@admin` program in place; run once with broadcast off, then on |
 | `execute_testnet.yml` (the execute gate) | Manual, or the `work` branch | Runs a scenario through the CLI harness and verifies receipts |
