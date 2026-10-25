@@ -99,7 +99,7 @@ In short:
 
 | Workflow | Trigger | Does |
 |---|---|---|
-| `deploy.yml` (the plan gate) | Every push and pull request | The secrets scan, pinned CLI check, portal typechecks, adapter codec test, manifest schema, the leakage guard, the public-state map check (`docs/PUBLIC_STATE.md`), the archive check, the Layer 2 funds check, Leo tests for `hewn_letters_v2`, `hewn_jobs_v1`, `employer_agreement_v5`, `hewn_cards_v1`, `hewn_credentials_v1`, `pnw_name_registry_v2`, `pnw_name_registrar_v5` and `pnw_worker_profiles_v2` |
+| `deploy.yml` (the plan gate) | Every push and pull request | The secrets scan, pinned CLI check, portal typechecks, adapter codec test, manifest schema, the leakage guard, the public-state map check (`docs/PUBLIC_STATE.md`), the archive check, the Layer 2 funds check, Leo tests for `hewn_letters_v2`, `hewn_jobs_v1`, `employer_agreement_v5`, `hewn_cards_v1`, `hewn_credentials_v1`, `pnw_name_registry_v2`, `pnw_name_registrar_v5`, `pnw_worker_profiles_v2` and `employer_agreement_v4` |
 | `deploy_program.yml` (deploy-new-program) | Manual | Deploys one program from `src/layer1/` with the admin key, swapping stubs for the deployed dependencies first |
 | `upgrade_program.yml` (upgrade-admin-program) | Manual | Upgrades an `@admin` program in place; run once with broadcast off, then on |
 | `execute_testnet.yml` (the execute gate) | Manual, or the `work` branch | Runs a scenario through the CLI harness and verifies receipts |
