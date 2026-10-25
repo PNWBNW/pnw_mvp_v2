@@ -9,6 +9,7 @@ Helpers for CI and for operating the programs from a terminal. Three groups.
 | `verify_provable_cli.sh` | Checks the installed `leo` and `snarkos` match the pinned versions |
 | `run_phase4_adapter_tests.sh` | Runs `portal/tests/phase4_adapter.test.ts` |
 | `validate_testnet_manifest.py` | Checks `config/testnet.manifest.json` against its schema |
+| `check_public_state.py` | Fails if `docs/PUBLIC_STATE.md` misses a mapping in a program's source, lists one that doesn't exist, leaves out an active program, or misstates which programs have Leo tests in this gate |
 | `check_layer1_public_leakage_guards.py` | Fails if any Layer 1 program (archive included) names a cumulative counter in public state, the kind that leaks wages by difference |
 | `check_phase4_negative_path_guards.sh` | Checks a scenario of the wrong kind is refused |
 | `validate_workflow_yaml.sh` | Lints the workflow files |

@@ -88,7 +88,7 @@ In short:
 | `src/layer1/archive/`, `src/layer2/archive/` | Superseded versions and pre-upgrade snapshots, unchanged |
 | `config/testnet.manifest.json` | What is deployed: ids, transactions, notes |
 | `config/scenarios/` | Fixtures for the command-line execute gate |
-| `docs/` | `ARCHITECTURE.md` (the spec), `migrations/` (every deployed change), `operations/` (the CLI path), `archive/` |
+| `docs/` | `ARCHITECTURE.md` (the spec), `PUBLIC_STATE.md` (every public mapping, what it reveals, Hewn's use, tests), `migrations/` (every deployed change), `operations/` (the CLI path), `archive/` |
 | `portal/` | The original planning-layer TypeScript, kept for its CI type gates; the live copy is Hewn's `packages/` |
 | `scripts/` | CI checks and the execute harness; see its README |
 | `.github/workflows/` | See below |
@@ -97,7 +97,7 @@ In short:
 
 | Workflow | Trigger | Does |
 |---|---|---|
-| `deploy.yml` (the plan gate) | Every push and pull request | Pinned CLI check, portal typechecks, adapter codec test, manifest schema, the leakage guard, Leo tests for `hewn_letters_v2`, `hewn_jobs_v1`, `employer_agreement_v5`, `hewn_cards_v1` and `hewn_credentials_v1` |
+| `deploy.yml` (the plan gate) | Every push and pull request | Pinned CLI check, portal typechecks, adapter codec test, manifest schema, the leakage guard, the public-state map check (`docs/PUBLIC_STATE.md`), Leo tests for `hewn_letters_v2`, `hewn_jobs_v1`, `employer_agreement_v5`, `hewn_cards_v1` and `hewn_credentials_v1` |
 | `deploy_program.yml` (deploy-new-program) | Manual | Deploys one program from `src/layer1/` with the admin key, swapping stubs for the deployed dependencies first |
 | `upgrade_program.yml` (upgrade-admin-program) | Manual | Upgrades an `@admin` program in place; run once with broadcast off, then on |
 | `execute_testnet.yml` (the execute gate) | Manual, or the `work` branch | Runs a scenario through the CLI harness and verifies receipts |
