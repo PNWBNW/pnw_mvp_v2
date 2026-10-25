@@ -35,6 +35,7 @@ ids from `config/testnet.manifest.json`; nothing hard-codes one.
 | `employer_agreement_v5.aleo` | The two-party rebuild (2026-10-24): the conversation key's public halves in the records, nothing public about who works for whom, a private reason when an agreement ends, a pair tag other programs check | Deployed; Hewn switches next |
 | **`hewn_letters_v2.aleo`** | Sealed letters as private records: one, a long page, or one to eight people at once | Every offer, message, timecard, schedule and paystub |
 | **`hewn_jobs_v1.aleo`** | The public job board: post ($1 USDCx), update, feature ($5 a day), close | Jobs and Find work |
+| **`hewn_cards_v1.aleo`** | The cards every account gets: a business's card and a worker's tenure card, issued once per name; on chain only the issue height and whether it is shown | Issued at setup, next |
 | `employer_license_registry.aleo` | A verified flag per employer, set by the authority | Not required by the free paths |
 | `employer_profiles_v2.aleo` | An employer's private profile record | Deployed, not called |
 | `pnw_router_v4.aleo` | One entry surface over agreements, profiles and names | Deployed, not called |
