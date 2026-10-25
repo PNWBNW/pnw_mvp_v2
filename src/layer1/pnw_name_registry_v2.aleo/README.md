@@ -36,7 +36,7 @@ board, credentials. Hewn reads the mappings directly for name lookups.
 plaintext behind it lives in the registrar's reverse resolver.
 
 Superseded v1 (`pnw_name_registry.aleo`, `@noupgrade`) is in `../archive/`. On mainnet, names
-move under the Aleo Name Service as the `hewn` TLD (Hewn's `BUILD_PLAN.md`, "Mainnet names").
+move under the Aleo Name Service as the `hewn` TLD (Hewn's `docs/MAINNET_NAMES.md`).
 
 ## Tests
 

@@ -19,7 +19,8 @@ Upgrades: `@admin`. Deployed on testnet; **edition 1** since the open-registrati
 Rules, the same in every path: one name per wallet, worker names are soulbound. A wallet is meant
 to be a worker or an employer but never both; the chain doesn't hold that line yet (the registry
 counts the two kinds apart, and the tests record it), Hewn's app does
-(`apps/business/src/chain/account_kind.ts`), and the mainnet registrar will. The free functions
+(`apps/business/src/chain/account_kind.ts`), and the mainnet registrar will (Joshua confirmed the
+rule on 2026-10-25; a worker's account can still be a business's customer). The free functions
 were appended in the upgrade; the paid ones stay byte-for-byte as deployed, because an upgrade may
 not change what a finalize takes in.
 

@@ -145,7 +145,8 @@ cp -r src/layer1/hewn_jobs_v1.aleo /tmp/hewn_jobs_v1 && cp -r src/stubs /tmp/stu
 
 ## What's next
 
-Mainnet. `.hewn` names move under the Aleo Name Service as a TLD (Hewn's `BUILD_PLAN.md`,
-"Mainnet names"), which needs a registrar program for it and a conversation with the ANS team.
+Mainnet. `.hewn` names move under the Aleo Name Service as a TLD (Hewn's `docs/MAINNET_NAMES.md`),
+which needs a registrar program for it (one that keeps a wallet to one kind of name, which v5
+doesn't) and a conversation with the ANS team.
 The audit design (Hewn's `docs/AUDIT_DESIGN.md`) decides what Layer 2 anchors become. Every program
 that will hold real money gets a third-party audit first.
