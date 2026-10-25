@@ -109,7 +109,26 @@ keeps `employer_agreement` on v4, which holds the agreements already made, and a
 it (`payroll_core_v2`, `pnw_router_v4`, `payroll_nfts_v2`, `credential_nft_v3`), and so does the
 staged `credential_nft_v4`.
 
-## Checks after deploy (must fail / must pass; not run yet)
+## Checks after deploy (must fail / must pass)
+
+**Run 2026-10-25**, from a script with two funded test wallets (B holding the business name
+`hewncards_b1`, W the worker name `hewncards_w1`), inputs built as Hewn's app builds them (the
+halves random bytes, not real P-256 points; the program doesn't check them). Six of six: every
+pass accepted, every refusal rejected in finalize, the public inputs as designed.
+
+| Step | Expect | Got | Transaction |
+|---|---|---|---|
+| B `create_offer` to W | accepted | accepted; all 8 transition inputs private; the finalize's arguments the agreement id (`[u128; 2]`) and the pair tag (`field`), nothing else; `agreement_status` 0 | `at1qx9q5qlv6vfyyj56k6azc36v0uaagyeqf7jjkjq5z2kyfzuahupqgmulc2` |
+| W `accept_offer` (the PendingAgreement decrypted with W's view key, the accept-time hash packed, W's half) | accepted | accepted; inputs a record and two private values; the same two public arguments; status 1. The first v5 acceptance on testnet | `at1f96vhyqufqpjw8336l5zmpwydde9eg4vdsgh39jz59cnkt4v8u9qfy4dgj` |
+| B a second `create_offer` to W (new id, new key) | accepted | accepted; status 0 | `at1m7c8dk9853fqryw057nxhayv2f900rcaknx0tmw9x0sahnuewc9q7umjau` |
+| B `withdraw_offer` with the SentOffer alone | accepted | accepted; the one input a record; status 4 (withdrawn) | `at1tmjtj4dt78tf3rav86yungp64fwx8rmf2k8zs0wgn4l30ja3scfq32qh8d` |
+| B `create_offer` with offer 1's agreement id again | rejected | rejected (status still 1) | `at16mt8xlwfa0gph9kksmruan8h92fes45fyqgnrs5p56enf58lwvgsyupjjt` |
+| B `withdraw_offer` on the accepted offer | rejected | rejected (status still 1) | `at1e5kuj8cpxyyftze3l0tvcvdset56h06pyayhk4ptlq5qr25q7qzsjauzpz` |
+
+Not run yet: the pauses and resume, the three endings and their reasons, `end_mutual`, and
+`assert_pair_active` / `assert_pair_agreed` from a third wallet (the credentials program's
+network check, which calls `assert_pair_agreed` on this pair, covers the last). The list as
+planned, for those:
 
 With two fresh test wallets holding only ALEO for fees, B (a business name) and W (a worker name):
 
