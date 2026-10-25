@@ -190,3 +190,23 @@ jobs:
           cd "$pkg"
           leo test --disable-update-check | tee "$RUNNER_TEMP/leo-test-registrar.log"
           grep -q "24 / 24 tests passed" "$RUNNER_TEMP/leo-test-registrar.log"
+
+      - name: 🧪 Leo tests for pnw_worker_profiles_v2 (negative cases included)
+        run: |
+          mkdir -p "$HOME/.aleo"
+          # Tests only; the deployed program is never edited. The copy gets @noupgrade for @admin (the
+          # local ledger refuses an @admin program whose deployer isn't the admin) and its registry
+          # dependency pointed at the stub, whose assert_is_owner is the deployed one and whose
+          # test-only register_test_name seeds the owner. See the README.
+          work="$RUNNER_TEMP/profiles"
+          mkdir -p "$work/pkg"
+          cp -r src/stubs "$work/stubs"
+          pkg="$work/pkg/pnw_worker_profiles_v2"
+          cp -r src/layer1/pnw_worker_profiles_v2.aleo "$pkg"
+          sed -i 's/^    @admin(address = "aleo1a2qje865a7ccrrwg37z6e36uyjtqlm5vdj8yzlrhypvg60xhncqqlev4dx") constructor() {}$/    @noupgrade constructor() {}/' "$pkg/src/main.leo"
+          grep -q '^    @noupgrade constructor() {}$' "$pkg/src/main.leo"
+          sed -i 's#"path": "../pnw_name_registry_v2.aleo"#"path": "../../stubs/pnw_name_registry_v2.aleo"#' "$pkg/program.json"
+          grep -q 'stubs/pnw_name_registry_v2.aleo' "$pkg/program.json"
+          cd "$pkg"
+          leo test --disable-update-check | tee "$RUNNER_TEMP/leo-test-profiles.log"
+          grep -q "19 / 19 tests passed" "$RUNNER_TEMP/leo-test-profiles.log"

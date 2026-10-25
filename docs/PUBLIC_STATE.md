@@ -35,7 +35,7 @@ program's Leo tests.
 | `pnw_name_registry_v2.aleo` | `sellback_refund_amount` | `field` → `u128` | The refund for a name sold back: a registry fee, never a wage | no | yes |
 | `pnw_name_registry_v2.aleo` | `authorized_caller` | `u8` → `address` | Which registrar program may write names | no | yes |
 | `pnw_name_registrar_v5.aleo` | `name_plaintext` | `field` → `u128` | The name itself, encoded (the reverse resolver). Public by design, like the name | read | yes |
-| `pnw_worker_profiles_v2.aleo` | `profile_anchor_height` | `[u8; 32]` → `u32` | That a profile with this hash exists, and the block it was anchored at. The profile stays in a private record | yes | no |
+| `pnw_worker_profiles_v2.aleo` | `profile_anchor_height` | `[u8; 32]` → `u32` | That a profile with this hash exists, and the block it was anchored at. The profile stays in a private record | yes | yes |
 | `employer_profiles_v2.aleo` | `profile_anchor_height` | `[u8; 32]` → `u32` | That an employer profile hash exists, and when | no | no |
 | `employer_license_registry.aleo` | `is_verified` | `address` → `bool` | Which accounts the licence authority verified. Unused since open registration (2026-10-15) | no | no |
 | `employer_license_registry.aleo` | `license_hash_of` | `address` → `field` | A hash of an account's licence documents. Unused since open registration | no | no |
@@ -96,7 +96,7 @@ None of these is called by Hewn today; they wait on the audit design.
   names, never a person's pay; `postings` holds an ad's advertised range. No wage appears anywhere.
 - **Accounts in public:** the registry's own job (who owns a name), the licence registry (unused),
   and the issuer in `credential_nft_v3`/`v4` (unused, and replaced by `hewn_credentials_v1`).
-- **Tests:** 7 of the 19 programs listed have Leo tests in the plan gate. `pnw_name_registry_v2` and
-  `pnw_name_registrar_v5` since 2026-10-25. Next, by Joshua's decision (2026-10-25):
-  `pnw_worker_profiles_v2` and `employer_agreement_v4`, the deployed programs Hewn calls; the
+- **Tests:** 8 of the 19 programs listed have Leo tests in the plan gate. `pnw_name_registry_v2`,
+  `pnw_name_registrar_v5` and `pnw_worker_profiles_v2` since 2026-10-25. Next, by Joshua's decision
+  (2026-10-25): `employer_agreement_v4`, the deployed programs Hewn calls; the
   rest later if needed. Tests only: deployed programs are never edited.
