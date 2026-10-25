@@ -1,0 +1,7 @@
+{
+  "program": "employer_license_registry.aleo",
+  "version": "0.1.0",
+  "description": "Local stub for employer_license_registry.aleo: the `assert_verified` interface other programs call, plus a test-only `set_test_verified` to seed it. Never deployed; the real program is on testnet.",
+  "license": "AGPL-3.0-only",
+  "dependencies": []
+}
