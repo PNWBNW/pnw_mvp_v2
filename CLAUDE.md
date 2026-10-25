@@ -47,7 +47,8 @@ the README in `src/layer1/`, `src/layer2/` and `src/stubs/`, then Hewn's `CLAUDE
 **Keys and secrets**
 - Never commit or print a private key, view key, `.env` or seed phrase. The admin key lives only in
   the GitHub secret `ADMIN_PRIVATE_KEY` (environment `testnet-staging`). Never ask anyone to paste
-  a key into a chat. Keys never go in URLs; logs never print accounts.
+  a key into a chat. Keys never go in URLs; logs never print accounts. The plan gate's secrets
+  scan (`scripts/check_secrets.py`) is the backstop.
 
 **Working here**
 - Hewn's app is the caller. Every transaction is signed in the user's Shield wallet; the
@@ -97,7 +98,7 @@ In short:
 
 | Workflow | Trigger | Does |
 |---|---|---|
-| `deploy.yml` (the plan gate) | Every push and pull request | Pinned CLI check, portal typechecks, adapter codec test, manifest schema, the leakage guard, the public-state map check (`docs/PUBLIC_STATE.md`), Leo tests for `hewn_letters_v2`, `hewn_jobs_v1`, `employer_agreement_v5`, `hewn_cards_v1` and `hewn_credentials_v1` |
+| `deploy.yml` (the plan gate) | Every push and pull request | The secrets scan, pinned CLI check, portal typechecks, adapter codec test, manifest schema, the leakage guard, the public-state map check (`docs/PUBLIC_STATE.md`), Leo tests for `hewn_letters_v2`, `hewn_jobs_v1`, `employer_agreement_v5`, `hewn_cards_v1` and `hewn_credentials_v1` |
 | `deploy_program.yml` (deploy-new-program) | Manual | Deploys one program from `src/layer1/` with the admin key, swapping stubs for the deployed dependencies first |
 | `upgrade_program.yml` (upgrade-admin-program) | Manual | Upgrades an `@admin` program in place; run once with broadcast off, then on |
 | `execute_testnet.yml` (the execute gate) | Manual, or the `work` branch | Runs a scenario through the CLI harness and verifies receipts |
