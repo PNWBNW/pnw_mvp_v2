@@ -40,3 +40,30 @@ all keyed by the agreement id. The terms themselves never appear: Hewn sends the
 a sealed letter and the record carries their hash (`terms_doc_hash`, `terms_root`).
 
 v2 and v3, and the snapshot taken before edition 2, are in `../archive/`.
+
+## Tests
+
+`tests/test_employer_agreement_v4.leo`, run by the plan gate (`deploy.yml`): 31 tests, 23 of them
+refusals. What must work: an open offer (minted to the worker, the employer as `employer_address`;
+public only the anchor height, a commitment, status pending and no approvals), an open-ended offer
+(no end date, review on the start), the licensed original with the licence flag, each pay
+frequency, `assert_agreement_anchored`, and, from pending, terminate by the business (`_open`),
+terminate by the worker, and supersede. What must fail: an offer for a name nobody owns, someone
+else owns, or reused id; pay frequency 0 and 6; a zero revision, schema or policy; an end on or
+before the start; a review before the start; the licensed original without the flag; pause and
+resume from pending; terminate twice, with the wrong parties key, after the name changed hands, or
+for an unknown id; supersede twice; `assert_agreement_active` and `assert_employer_authorized` on
+a pending offer; the anchored check on an unknown id; and a DAO path from a caller that isn't the
+DAO.
+
+The deployed program is never edited. The gate tests a copy with `@noupgrade` in place of `@admin`
+(the local ledger refuses an `@admin` program whose deployer isn't the admin) and its two network
+dependencies pointed at the stubs in `src/stubs/`, whose `assert_is_owner` and `assert_verified`
+are the deployed ones and whose test-only `register_test_name` and `set_test_verified` seed them;
+the substitutions are asserted before `leo test`.
+
+What the tests can't show: `accept_job_offer`. It consumes the `PendingAgreement` the offer minted
+to the worker, and a record minted inside a test belongs to the test program, which no signer can
+spend. So no test reaches ACTIVE, and the paths that need it (pause, approving and completing a
+resume, the two active-state assertions) are shown refusing from pending, not succeeding.
+`employer_agreement_v5`, the successor, has the full lifecycle under test (22 tests).

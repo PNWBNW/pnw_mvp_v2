@@ -210,3 +210,33 @@ jobs:
           cd "$pkg"
           leo test --disable-update-check | tee "$RUNNER_TEMP/leo-test-profiles.log"
           grep -q "19 / 19 tests passed" "$RUNNER_TEMP/leo-test-profiles.log"
+
+      - name: 🧪 Leo tests for employer_agreement_v4 (negative cases included)
+        run: |
+          mkdir -p "$HOME/.aleo"
+          # Tests only; the deployed program is never edited. The copy gets @noupgrade for @admin (the
+          # local ledger refuses an @admin program whose deployer isn't the admin) and its two network
+          # dependencies pointed at the stubs (assert_is_owner and assert_verified as deployed, with the
+          # test-only register_test_name and set_test_verified to seed them). See the README.
+          work="$RUNNER_TEMP/agreement4"
+          mkdir -p "$work/pkg"
+          cp -r src/stubs "$work/stubs"
+          pkg="$work/pkg/employer_agreement_v4"
+          cp -r src/layer1/employer_agreement_v4.aleo "$pkg"
+          sed -i 's/^    @admin(address = "aleo1a2qje865a7ccrrwg37z6e36uyjtqlm5vdj8yzlrhypvg60xhncqqlev4dx")$/    @noupgrade/' "$pkg/src/main.leo"
+          grep -q '^    @noupgrade$' "$pkg/src/main.leo"
+          cat > "$pkg/program.json" <<'JSON'
+          {
+            "program": "employer_agreement_v4.aleo",
+            "version": "0.1.0",
+            "description": "Test copy; the deployed dependencies are in src/layer1/employer_agreement_v4.aleo/program.json.",
+            "license": "AGPL-3.0-only",
+            "dependencies": [
+              { "name": "pnw_name_registry_v2.aleo", "location": "local", "path": "../../stubs/pnw_name_registry_v2.aleo" },
+              { "name": "employer_license_registry.aleo", "location": "local", "path": "../../stubs/employer_license_registry.aleo" }
+            ]
+          }
+          JSON
+          cd "$pkg"
+          leo test --disable-update-check | tee "$RUNNER_TEMP/leo-test-agreement4.log"
+          grep -q "31 / 31 tests passed" "$RUNNER_TEMP/leo-test-agreement4.log"

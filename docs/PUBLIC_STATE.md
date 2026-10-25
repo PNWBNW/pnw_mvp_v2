@@ -39,10 +39,10 @@ program's Leo tests.
 | `employer_profiles_v2.aleo` | `profile_anchor_height` | `[u8; 32]` → `u32` | That an employer profile hash exists, and when | no | no |
 | `employer_license_registry.aleo` | `is_verified` | `address` → `bool` | Which accounts the licence authority verified. Unused since open registration (2026-10-15) | no | no |
 | `employer_license_registry.aleo` | `license_hash_of` | `address` → `field` | A hash of an account's licence documents. Unused since open registration | no | no |
-| `employer_agreement_v4.aleo` | `agreement_anchor_height` | `[u8; 32]` → `u32` | That an agreement id exists, and when it was made | read | no |
-| `employer_agreement_v4.aleo` | `agreement_parties_commitment` | `[u8; 32]` → `field` | A hash over the parties, not who they are. v4's transactions do put both name hashes and accounts in their public finalize arguments, which is why v5 exists | read | no |
-| `employer_agreement_v4.aleo` | `agreement_status` | `[u8; 32]` → `u8` | An agreement's status (pending, active, paused, ended) | read | no |
-| `employer_agreement_v4.aleo` | `resume_approvals` | `[u8; 32]` → `u8` | Which side has approved resuming a paused agreement | read | no |
+| `employer_agreement_v4.aleo` | `agreement_anchor_height` | `[u8; 32]` → `u32` | That an agreement id exists, and when it was made | read | yes |
+| `employer_agreement_v4.aleo` | `agreement_parties_commitment` | `[u8; 32]` → `field` | A hash over the parties, not who they are. v4's transactions do put both name hashes and accounts in their public finalize arguments, which is why v5 exists | read | yes |
+| `employer_agreement_v4.aleo` | `agreement_status` | `[u8; 32]` → `u8` | An agreement's status (pending, active, paused, ended) | read | yes |
+| `employer_agreement_v4.aleo` | `resume_approvals` | `[u8; 32]` → `u8` | Which side has approved resuming a paused agreement | read | yes |
 | `employer_agreement_v5.aleo` | `agreement_anchor_height` | `[u128; 2]` → `u32` | That an agreement id exists, and when. Nothing public names either party | yes | yes |
 | `employer_agreement_v5.aleo` | `agreement_status` | `[u128; 2]` → `u8` | An agreement's status (0 pending, 1 active, 2 paused, 3 ended, 4 withdrawn) | yes | yes |
 | `employer_agreement_v5.aleo` | `resume_approvals` | `[u128; 2]` → `u8` | Which side has approved resuming | yes | yes |
@@ -96,7 +96,7 @@ None of these is called by Hewn today; they wait on the audit design.
   names, never a person's pay; `postings` holds an ad's advertised range. No wage appears anywhere.
 - **Accounts in public:** the registry's own job (who owns a name), the licence registry (unused),
   and the issuer in `credential_nft_v3`/`v4` (unused, and replaced by `hewn_credentials_v1`).
-- **Tests:** 8 of the 19 programs listed have Leo tests in the plan gate. `pnw_name_registry_v2`,
-  `pnw_name_registrar_v5` and `pnw_worker_profiles_v2` since 2026-10-25. Next, by Joshua's decision
-  (2026-10-25): `employer_agreement_v4`, the deployed programs Hewn calls; the
-  rest later if needed. Tests only: deployed programs are never edited.
+- **Tests:** 9 of the 19 programs listed have Leo tests in the plan gate. `pnw_name_registry_v2`,
+  `pnw_name_registrar_v5`, `pnw_worker_profiles_v2` and `employer_agreement_v4` since 2026-10-25,
+  by Joshua's decision (2026-10-25): every deployed program Hewn calls; the rest later if needed.
+  Tests only: deployed programs are never edited.
