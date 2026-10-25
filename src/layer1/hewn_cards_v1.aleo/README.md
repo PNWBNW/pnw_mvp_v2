@@ -1,7 +1,9 @@
 # hewn_cards_v1.aleo
 
-The cards every account gets, **staged, not deployed** (2026-10-24): a business's card and a
-worker's tenure card, each issued once per `.hewn` name by the account that owns it. Design and
+The cards every account gets, **deployed 2026-10-25** (transaction
+`at1wcl4ymh20vhmq3td6jt4meknl5u8uclptc2ktl5r2jk2eh6jtcyqmakzeq`, block 20801930, 6.12 credits;
+staged 2026-10-24): a business's card and a worker's tenure card, each issued once per `.hewn`
+name by the account that owns it. Design and
 the art: `docs/HEWN_ART.md` in the app repo (PNWBNW/hewn).
 
 A card is drawn from two things: the account's name (public already on the registry: it gives
