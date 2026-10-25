@@ -32,6 +32,9 @@
     },
     "cards": {
       "hewn_cards": "hewn_cards_v1.aleo"
+    },
+    "credentials": {
+      "hewn_credentials": "hewn_credentials_v1.aleo"
     }
   },
   "deployments": {
@@ -168,6 +171,13 @@
       "fee_transaction_id": "at1hchhtqlurqw7affkm5fgzadwfw38vzgtydw2m9rmjrjyrju0hyqq3saajm",
       "deployed_at": "2026-10-25",
       "notes": "@noupgrade, edition 0, block 20801930 (2026-10-25 00:08 UTC). Compiled and tested with Leo 4.0.0 (22/22), deployed from that bytecode against the live registry (deploy-new-program, consensus version 22); the program on chain matches main 9c85315 instruction for instruction. 6.119467 credits: storage 4.513, synthesis 0.604467, namespace 1, constructor 0.002. Execution: issue_business_card 0.003575, issue_worker_card 0.003578, show_card 0.003517, hide_card 0.003497. The cards every account gets (Hewn's docs/HEWN_ART.md): issued once per .hewn name by its owner through the registry's assert_employer_owner (the industry code for a business, 0 for a worker); show_card / hide_card, a worker's switch. Public state: cards[name_hash] = { issued_at (block height, where time on Hewn counts from), shown }. No fee of its own. 22 Leo tests, 18 refusals."
+    },
+    "hewn_credentials_v1.aleo": {
+      "status": "active",
+      "transaction_id": "at1fndzrvr79edftn7a8k5shvqcp5ygj4jw4q9qndmwdpu3fa7vluzqu4hauy",
+      "fee_transaction_id": "at1ya905q5kgwh5djv6kdpqglrwfkraz62fa0406yugl3tnn7vv0yxsfsq2zj",
+      "deployed_at": "2026-10-25",
+      "notes": "@noupgrade, edition 0, block 20806575 (2026-10-25 03:37 UTC). Compiled and tested with Leo 4.0.0 (28/28), deployed from that bytecode against the live employer_agreement_v5 (deploy-new-program run 16, consensus version 22); the program on chain matches main bcf2f38 instruction for instruction. 9.083442 credits: storage 6.423, synthesis 1.658442, namespace 1, constructor 0.002. Execution: issue 0.005567, accept 0.003091, decline 0.002459, revoke 0.002497, assert_active 0.001486. A worker's credentials (Hewn's docs/HEWN_ART.md): a business vouching for a person it has an agreement with (1 employment verified, 2 skills, 3 clearance, 4 custom), in two private records (the issuer's copy and the subject's) that carry a hash of the document; public only credential_status[commitment] (1 offered, 2 active, 3 revoked, 4 declined) and credential_anchor[commitment] (issue height). issue checks the pair through employer_agreement_v5::assert_pair_agreed (active, paused or ended), so nothing public names the two; accept and decline spend the subject's copy, revoke the issuer's; assert_active for other programs. No fee of its own. 28 Leo tests, 20 refusals."
     }
   }
 }

@@ -1,8 +1,10 @@
 # hewn_credentials_v1.aleo
 
-A worker's credentials, **staged 2026-10-25** (not yet deployed): a business vouching for a person
-it has an agreement with: employment verified, a skill, a clearance, or something custom. Design
-and the art: `docs/HEWN_ART.md` in the app repo (PNWBNW/hewn), "A worker's land and its
+A worker's credentials, **deployed 2026-10-25** (transaction
+`at1fndzrvr79edftn7a8k5shvqcp5ygj4jw4q9qndmwdpu3fa7vluzqu4hauy`, block 20806575, 9.08 credits;
+staged the same day): a business vouching for a person it has an agreement with: employment
+verified, a skill, a clearance, or something custom. Design and the art: `docs/HEWN_ART.md` in the
+app repo (PNWBNW/hewn), "A worker's land and its
 landmarks". The worker's app draws each live credential as a landmark on their land (a cabin, a
 bridge, a fire lookout, a cairn): built and lit while active, a bare frame while offered, a ghost
 once revoked. The business's app keeps its copy.
@@ -63,10 +65,12 @@ local stub (`src/stubs/employer_agreement_v5.aleo`, the pair tag as deployed), s
 `set_test_pair`. One signer throughout: where a test has to spend the subject's copy, the stub
 seeds the signer on both sides, which the live program never allows.
 
-## To deploy
+## Deployed
 
-`deploy-new-program` with `hewn_credentials_v1.aleo` swaps the stub for the live
-`employer_agreement_v5.aleo` and compiles the bytecode against it. Then: record the deploy in
-`config/testnet.manifest.json` (`program_ids.credentials.hewn_credentials`), and check it on the
-network with two funded test accounts: an offer and its acceptance on v5 first, then issue,
-accept, revoke, decline, and the refusals.
+`deploy-new-program` run 16 (2026-10-25 03:37 UTC) swapped the stub for the live `employer_agreement_v5.aleo`,
+compiled with Leo 4.0.0, ran the 28 tests and deployed the bytecode: transaction
+`at1fndzrvr79edftn7a8k5shvqcp5ygj4jw4q9qndmwdpu3fa7vluzqu4hauy`, fee `at1ya905q5kgwh5djv6kdpqglrwfkraz62fa0406yugl3tnn7vv0yxsfsq2zj`, block 20806575,
+9.083442 credits (storage 6.423, synthesis 1.658442, namespace 1, constructor 0.002). Execution costs:
+`issue` 0.005567, `accept` 0.003091, `decline` 0.002459, `revoke` 0.002497, `assert_active`
+0.001486. The program on chain matches main bcf2f38 instruction for instruction; recorded in
+`config/testnet.manifest.json` as `program_ids.credentials.hewn_credentials`.
