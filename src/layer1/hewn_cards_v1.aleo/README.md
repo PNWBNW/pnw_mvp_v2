@@ -55,16 +55,33 @@ name, a zero name, the switch before a card exists, switching to the state the c
 a business's card, switching someone else's card). The registry is the local stub (`src/stubs`),
 seeded with a worker name or a business name with its code.
 
-## Checks after deploy (must fail / must pass)
+## Checked on the network (2026-10-25)
 
-With two fresh test wallets holding ALEO for fees, B (a business name, industry code `c`) and W
-(a worker name):
+Run from a script with two fresh test wallets funded with 4 credits each: B, holding the
+business name `hewncards_b1` (industry code 7, registered through `register_employer_free`,
+`at1s74j6crsnnym46gnjpmwgky5d3h0jgcw5lhvuspp2ztj9gxwuy9se0wvxy`), and W, holding the worker name
+`hewncards_w1` (`register_worker_free`, `at10fatwulnsztk8lz3ghqazcqnar8y2526xdfyuevyvjgr9wzpxc8q2mpj96`).
+Every call below went to the network; a refusal is a transaction the network rejected in finalize
+(the explorer files it under its fee transaction), and the mapping was read after each one.
 
-- B: `issue_business_card(B, c)` → **accepted**; `cards[B]` is `{ issued_at: h, shown: true }` with `h` the transaction's block. B again → **rejected**.
-- B: `issue_business_card(B, c + 1)` → **rejected**; `issue_worker_card(B, true)` → **rejected**; `hide_card(B)` → **rejected**.
-- W: `issue_worker_card(W, false)` → **accepted**; `cards[W].shown` is false. W: `hide_card(W)` → **rejected** (already hidden); `show_card(W)` → **accepted**; `show_card(W)` again → **rejected**.
-- W: `issue_business_card(W, c)` → **rejected**. A third wallet: `show_card(W)` → **rejected**.
-- The explorer: each transaction's public inputs are the name hash, the code or the flag, and the signer (through the registry's finalize), nothing else.
+| Call | Expected | Result |
+|---|---|---|
+| B: `issue_business_card(B, 7)` | accepted | ✅ `at1zcm4m62h9nd0etutrd93rrg6wwkpcm9ugknrgus9ytxs7y9kdyzs07sugg`; `cards[B] = { issued_at: 20802629, shown: true }` |
+| B: the same again | rejected | ✅ block 20802632 |
+| B: `issue_business_card(B, 8)` (wrong code) | rejected | ✅ block 20802635 |
+| B: `issue_worker_card(B, true)` | rejected | ✅ block 20802641 |
+| B: `hide_card(B)` | rejected | ✅ block 20802646 |
+| W: `issue_worker_card(W, false)` | accepted | ✅ `at12tx6z58er24la7pvh5ydelvulupth07hmr6d0kzk36u2swqef58q4mpgwq`; `cards[W] = { issued_at: 20802650, shown: false }` |
+| W: `hide_card(W)` (already hidden) | rejected | ✅ block 20802654 |
+| W: `show_card(W)` | accepted | ✅ `at1enccrrafr2yfyjya6tmupjrqdpjldkfvusgu0slx9c4yl9tc8yrquy8wlp`; `shown: true` |
+| W: `show_card(W)` again | rejected | ✅ block 20802662 |
+| W: `issue_business_card(W, 7)` | rejected | ✅ block 20802665 |
+| W: `hide_card(W)` | accepted | ✅ `at159rm248e3p8ltmwvpzap5m6l8sd0tkfw02rrmnvx28udc8yukg9spxf9gt`; `shown: false` |
+
+13 of 13 as expected (the two registrations included), the issue heights unchanged throughout. A
+third wallet switching W's card, and the two refusals the transition itself makes (code 0 or 41,
+a zero name), are covered by the Leo tests and weren't sent. Each refused call cost its signer
+the network fee, as any rejected execution does.
 
 Then the app (its own PR): a business's card issued in the same setup that registers its name,
 a worker asked at setup whether theirs is shown, the switch in Settings with the honest note
