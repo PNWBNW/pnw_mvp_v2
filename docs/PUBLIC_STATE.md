@@ -24,16 +24,16 @@ program's Leo tests.
 
 | Program | Mapping | Key → value | What a watcher learns | Hewn calls | Tests |
 |---|---|---|---|---|---|
-| `pnw_name_registry_v2.aleo` | `name_owner` | `field` → `address` | Which account owns a name hash. Public by design, as a domain's owner is | read | no |
-| `pnw_name_registry_v2.aleo` | `name_kind` | `field` → `u8` | Whether a name is a person's or a business's | read | no |
-| `pnw_name_registry_v2.aleo` | `employer_suffix_code` | `field` → `u8` | A business name's industry code | read | no |
-| `pnw_name_registry_v2.aleo` | `worker_primary_name_of` | `address` → `field` | An account's person name hash (the reverse of `name_owner`) | read | no |
-| `pnw_name_registry_v2.aleo` | `employer_primary_name_of` | `address` → `field` | An account's business name hash | read | no |
-| `pnw_name_registry_v2.aleo` | `employer_name_count` | `address` → `u8` | How many business names an account holds. A count of names, not of money | read | no |
-| `pnw_name_registry_v2.aleo` | `employer_base_paid` | `field` → `u128` | The price paid to the registry for a business name: a business-level fee, never a wage. Free since 2026-10-15, so 0 for new names | read | no |
-| `pnw_name_registry_v2.aleo` | `sellback_seller` | `field` → `address` | Which account sold a name back to the registry | no | no |
-| `pnw_name_registry_v2.aleo` | `sellback_refund_amount` | `field` → `u128` | The refund for a name sold back: a registry fee, never a wage | no | no |
-| `pnw_name_registry_v2.aleo` | `authorized_caller` | `u8` → `address` | Which registrar program may write names | no | no |
+| `pnw_name_registry_v2.aleo` | `name_owner` | `field` → `address` | Which account owns a name hash. Public by design, as a domain's owner is | read | yes |
+| `pnw_name_registry_v2.aleo` | `name_kind` | `field` → `u8` | Whether a name is a person's or a business's | read | yes |
+| `pnw_name_registry_v2.aleo` | `employer_suffix_code` | `field` → `u8` | A business name's industry code | read | yes |
+| `pnw_name_registry_v2.aleo` | `worker_primary_name_of` | `address` → `field` | An account's person name hash (the reverse of `name_owner`) | read | yes |
+| `pnw_name_registry_v2.aleo` | `employer_primary_name_of` | `address` → `field` | An account's business name hash | read | yes |
+| `pnw_name_registry_v2.aleo` | `employer_name_count` | `address` → `u8` | How many business names an account holds. A count of names, not of money | read | yes |
+| `pnw_name_registry_v2.aleo` | `employer_base_paid` | `field` → `u128` | The price paid to the registry for a business name: a business-level fee, never a wage. Free since 2026-10-15, so 0 for new names | read | yes |
+| `pnw_name_registry_v2.aleo` | `sellback_seller` | `field` → `address` | Which account sold a name back to the registry | no | yes |
+| `pnw_name_registry_v2.aleo` | `sellback_refund_amount` | `field` → `u128` | The refund for a name sold back: a registry fee, never a wage | no | yes |
+| `pnw_name_registry_v2.aleo` | `authorized_caller` | `u8` → `address` | Which registrar program may write names | no | yes |
 | `pnw_name_registrar_v5.aleo` | `name_plaintext` | `field` → `u128` | The name itself, encoded (the reverse resolver). Public by design, like the name | read | no |
 | `pnw_worker_profiles_v2.aleo` | `profile_anchor_height` | `[u8; 32]` → `u32` | That a profile with this hash exists, and the block it was anchored at. The profile stays in a private record | yes | no |
 | `employer_profiles_v2.aleo` | `profile_anchor_height` | `[u8; 32]` → `u32` | That an employer profile hash exists, and when | no | no |
@@ -96,7 +96,7 @@ None of these is called by Hewn today; they wait on the audit design.
   names, never a person's pay; `postings` holds an ad's advertised range. No wage appears anywhere.
 - **Accounts in public:** the registry's own job (who owns a name), the licence registry (unused),
   and the issuer in `credential_nft_v3`/`v4` (unused, and replaced by `hewn_credentials_v1`).
-- **Tests:** 5 of the 19 programs listed have Leo tests in the plan gate. Next, by Joshua's
-  decision (2026-10-25): `pnw_name_registry_v2`, `pnw_name_registrar_v5`,
+- **Tests:** 6 of the 19 programs listed have Leo tests in the plan gate. `pnw_name_registry_v2` since 2026-10-25. Next, by
+  Joshua's decision (2026-10-25): `pnw_name_registrar_v5`,
   `pnw_worker_profiles_v2` and `employer_agreement_v4`, the deployed programs Hewn calls; the
   rest later if needed. Tests only: deployed programs are never edited.
