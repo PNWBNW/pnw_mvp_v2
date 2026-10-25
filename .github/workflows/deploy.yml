@@ -131,3 +131,22 @@ jobs:
           cd "$pkg"
           leo test --disable-update-check | tee "$RUNNER_TEMP/leo-test-credentials.log"
           grep -q "28 / 28 tests passed" "$RUNNER_TEMP/leo-test-credentials.log"
+
+      - name: 🧪 Leo tests for pnw_name_registry_v2 (negative cases included)
+        run: |
+          mkdir -p "$HOME/.aleo"
+          # Tests only; the deployed program is never edited. The copy under test differs on two
+          # marked lines so the tests can run offline: ADMIN is the test program's own address (its
+          # writes are gated on the caller being the registrar or ADMIN, and a program's caller inside
+          # a test is the test program), and the constructor is @noupgrade (the local test ledger
+          # refuses to deploy an @admin program for a deployer who isn't the admin). See the README.
+          pkg="$RUNNER_TEMP/registry/pkg/pnw_name_registry_v2"
+          mkdir -p "$RUNNER_TEMP/registry/pkg"
+          cp -r src/layer1/pnw_name_registry_v2.aleo "$pkg"
+          cd "$pkg"
+          sed -i 's/const ADMIN: address = aleo1a2qje865a7ccrrwg37z6e36uyjtqlm5vdj8yzlrhypvg60xhncqqlev4dx;/const ADMIN: address = aleo1lmfaqae9nx2nxxm4f4fzv9cztv3fauhtvd8hwvg4pugjefpa0g9q9ctnfe;/' src/main.leo
+          sed -i 's/^    @admin(address = "aleo1a2qje865a7ccrrwg37z6e36uyjtqlm5vdj8yzlrhypvg60xhncqqlev4dx")$/    @noupgrade/' src/main.leo
+          test "$(grep -c 'aleo1lmfaqae9nx2nxxm4f4fzv9cztv3fauhtvd8hwvg4pugjefpa0g9q9ctnfe' src/main.leo)" = "1"
+          grep -q '^    @noupgrade$' src/main.leo
+          leo test --disable-update-check | tee "$RUNNER_TEMP/leo-test-registry.log"
+          grep -q "30 / 30 tests passed" "$RUNNER_TEMP/leo-test-registry.log"
