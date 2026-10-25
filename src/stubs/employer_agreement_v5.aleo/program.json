@@ -1,0 +1,7 @@
+{
+  "program": "employer_agreement_v5.aleo",
+  "version": "0.1.0",
+  "description": "Local stub for employer_agreement_v5.aleo: the pair tag and the two assertions other programs call (`assert_pair_active`, `assert_pair_agreed`) as deployed, plus a test-only `set_test_pair` to seed a pair's status. Never deployed; the real program is on testnet.",
+  "license": "AGPL-3.0-only",
+  "dependencies": []
+}

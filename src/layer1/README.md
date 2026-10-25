@@ -27,6 +27,7 @@ credentials.
 | [`hewn_letters_v2.aleo`](hewn_letters_v2.aleo/README.md) | `@noupgrade` | Sealed letters as records: `send`, `send_page`, `send_many` (eight at once). | Every offer, message, timecard, schedule and paystub |
 | [`hewn_jobs_v1.aleo`](hewn_jobs_v1.aleo/README.md) | `@noupgrade` | The public job board: `post` ($1 USDCx), `update`, `feature` ($5 a day), `close`. | Jobs and Find work |
 | [`hewn_cards_v1.aleo`](hewn_cards_v1.aleo/README.md) | `@noupgrade` | The cards every account gets (deployed 2026-10-25): a business's card and a worker's tenure card, issued once per name by its owner; on chain only the issue height (where time on Hewn counts from) and whether the card is shown (a worker's switch). | Nothing yet: the app issues cards at setup next |
+| [`hewn_credentials_v1.aleo`](hewn_credentials_v1.aleo/README.md) | `@noupgrade` | A worker's credentials (staged 2026-10-25): a business vouching for a person it has an agreement with (employment, a skill, a clearance, custom), in two private records; public only a commitment, its status and its issue block. Issuing checks the pair through `employer_agreement_v5`, so nothing public names the two. | Not yet: deploy, then the app |
 
 Two programs these import are not ours: `test_usdcx_stablecoin.aleo` (the testnet stablecoin) and
 `credits.aleo`. Local stand-ins for building and testing offline are in [`../stubs/`](../stubs/README.md).

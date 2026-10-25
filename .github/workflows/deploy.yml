@@ -107,3 +107,15 @@ jobs:
           cd "$pkg"
           leo test --disable-update-check | tee "$RUNNER_TEMP/leo-test-cards.log"
           grep -q "22 / 22 tests passed" "$RUNNER_TEMP/leo-test-cards.log"
+
+      - name: 🧪 Leo tests for hewn_credentials_v1 (negative cases included)
+        run: |
+          mkdir -p "$HOME/.aleo"
+          # Its program.json depends on the local employer_agreement_v5 stub at ../../stubs; copy both so the path holds.
+          pkg="$RUNNER_TEMP/credentials/pkg/hewn_credentials_v1"
+          mkdir -p "$RUNNER_TEMP/credentials/pkg"
+          cp -r src/stubs "$RUNNER_TEMP/credentials/stubs"
+          cp -r src/layer1/hewn_credentials_v1.aleo "$pkg"
+          cd "$pkg"
+          leo test --disable-update-check | tee "$RUNNER_TEMP/leo-test-credentials.log"
+          grep -q "28 / 28 tests passed" "$RUNNER_TEMP/leo-test-credentials.log"

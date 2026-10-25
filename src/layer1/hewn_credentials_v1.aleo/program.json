@@ -1,0 +1,13 @@
+{
+  "program": "hewn_credentials_v1.aleo",
+  "version": "0.1.0",
+  "description": "A worker's credentials: a business vouching for a person it has an agreement with (employment verified, a skill, a clearance, or custom), in two private records with only a commitment, its status and its issue block public. Issued by the employer of an agreement in employer_agreement_v5 (pair agreed, nothing public names the pair), accepted or declined by the subject, revoked by the issuer.",
+  "license": "AGPL-3.0-only",
+  "dependencies": [
+    {
+      "name": "employer_agreement_v5.aleo",
+      "location": "local",
+      "path": "../../stubs/employer_agreement_v5.aleo"
+    }
+  ]
+}
