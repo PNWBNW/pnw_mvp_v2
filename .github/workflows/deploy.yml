@@ -150,3 +150,43 @@ jobs:
           grep -q '^    @noupgrade$' src/main.leo
           leo test --disable-update-check | tee "$RUNNER_TEMP/leo-test-registry.log"
           grep -q "30 / 30 tests passed" "$RUNNER_TEMP/leo-test-registry.log"
+
+      - name: 🧪 Leo tests for pnw_name_registrar_v5 (negative cases included)
+        run: |
+          mkdir -p "$HOME/.aleo"
+          # Tests only; the deployed program is never edited. Its three network dependencies become
+          # local ones: the stablecoin and licence-registry stubs, and the real registry with ADMIN set
+          # to the registrar's own program address (the registry gates writes on the caller being the
+          # registrar or ADMIN, and the caller of a program the registrar calls is the registrar).
+          # Both copies get @noupgrade for @admin (the local ledger refuses an @admin program whose
+          # deployer isn't the admin). See the README.
+          work="$RUNNER_TEMP/registrar"
+          mkdir -p "$work/pkg" "$work/registry"
+          cp -r src/stubs "$work/stubs"
+          reg="$work/registry/pnw_name_registry_v2.aleo"
+          cp -r src/layer1/pnw_name_registry_v2.aleo "$reg"
+          rm -rf "$reg/tests"
+          sed -i 's/const ADMIN: address = aleo1a2qje865a7ccrrwg37z6e36uyjtqlm5vdj8yzlrhypvg60xhncqqlev4dx;/const ADMIN: address = aleo182yu0apetjymwrw52tnx3wx9rc3kw3t6asvwesd3maa9ruz4fqrqw3hven;/' "$reg/src/main.leo"
+          sed -i 's/^    @admin(address = "aleo1a2qje865a7ccrrwg37z6e36uyjtqlm5vdj8yzlrhypvg60xhncqqlev4dx")$/    @noupgrade/' "$reg/src/main.leo"
+          test "$(grep -c 'aleo182yu0apetjymwrw52tnx3wx9rc3kw3t6asvwesd3maa9ruz4fqrqw3hven' "$reg/src/main.leo")" = "1"
+          grep -q '^    @noupgrade$' "$reg/src/main.leo"
+          pkg="$work/pkg/pnw_name_registrar_v5"
+          cp -r src/layer1/pnw_name_registrar_v5.aleo "$pkg"
+          sed -i 's/^    @admin(address = "aleo1a2qje865a7ccrrwg37z6e36uyjtqlm5vdj8yzlrhypvg60xhncqqlev4dx")$/    @noupgrade/' "$pkg/src/main.leo"
+          grep -q '^    @noupgrade$' "$pkg/src/main.leo"
+          cat > "$pkg/program.json" <<'JSON'
+          {
+            "program": "pnw_name_registrar_v5.aleo",
+            "version": "0.1.0",
+            "description": "Test copy; the deployed dependencies are in src/layer1/pnw_name_registrar_v5.aleo/program.json.",
+            "license": "AGPL-3.0-only",
+            "dependencies": [
+              { "name": "employer_license_registry.aleo", "location": "local", "path": "../../stubs/employer_license_registry.aleo" },
+              { "name": "test_usdcx_stablecoin.aleo", "location": "local", "path": "../../stubs/test_usdcx_stablecoin.aleo" },
+              { "name": "pnw_name_registry_v2.aleo", "location": "local", "path": "../../registry/pnw_name_registry_v2.aleo" }
+            ]
+          }
+          JSON
+          cd "$pkg"
+          leo test --disable-update-check | tee "$RUNNER_TEMP/leo-test-registrar.log"
+          grep -q "24 / 24 tests passed" "$RUNNER_TEMP/leo-test-registrar.log"
