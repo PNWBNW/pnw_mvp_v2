@@ -72,7 +72,7 @@ In short:
 | `hewn_letters_v2.aleo` | Sealed letters (`send`, `send_page`, `send_many`) | Everything between people |
 | `hewn_jobs_v1.aleo` | The public job board | Jobs, Find work |
 | `hewn_cards_v1.aleo` | The cards every account gets: issue height and shown, by name | Not yet: the app issues cards at setup next |
-| `hewn_credentials_v1.aleo` (staged 2026-10-25) | A worker's credentials: a business vouching for a person it has an agreement with, two private records, a public commitment with its status | Not yet: deploy, then the app |
+| `hewn_credentials_v1.aleo` | A worker's credentials, deployed 2026-10-25: a business vouching for a person it has an agreement with, two private records, a public commitment with its status | Team page (issue, revoke) and a worker's Profile (accept, decline); drawn as landmarks |
 | `employer_license_registry.aleo`, `employer_profiles_v2.aleo`, `pnw_router_v4.aleo`, `payroll_core_v2.aleo`, `paystub_receipts.aleo`, `payroll_audit_log.aleo` | Licences, employer profiles, routing, one-proof payroll, receipts, audit anchors | Deployed, not called |
 | `payroll_nfts_v2.aleo`, `credential_nft_v3.aleo`, `credential_nft_v4.aleo` (staged), `audit_nft.aleo` | Layer 2 anchors | Deployed, not called: waiting on the audit design and credentials |
 
@@ -138,6 +138,7 @@ cp -r src/layer1/hewn_jobs_v1.aleo /tmp/hewn_jobs_v1 && cp -r src/stubs /tmp/stu
 - 2026-10-19 — The public job board (`hewn_jobs_v1`): $1 USDCx to post, $5 a day to feature, 30 days at most, employer names only.
 - 2026-10-20 — Superseded versions live in `src/<layer>/archive/`, unchanged; every live program carries a README.
 - 2026-10-24 — `employer_agreement_v5` deployed: two parties, the halves in the records, no public link between the parties, a pair tag for other programs, a private end reason. v4 stays live for the agreements already made and the programs that import it.
+- 2026-10-25 — `hewn_credentials_v1` deployed: a business vouches for a person it has an agreement with, in two private records; public only a commitment with its status and issue height. Issuing checks the pair through `employer_agreement_v5`, so nothing public names the two; no transfer, no fee of its own.
 - 2026-10-25 — `hewn_cards_v1` deployed: a business's card and a worker's tenure card, one public entry per name (issue height, shown), bound to the name, no fee of its own. Time on Hewn counts from the card's issue; the registry check runs at issue, so hiding is the app's permission to draw, not an erasure.
 
 ## What's next
