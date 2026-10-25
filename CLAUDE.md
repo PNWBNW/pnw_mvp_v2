@@ -72,6 +72,7 @@ In short:
 | `hewn_letters_v2.aleo` | Sealed letters (`send`, `send_page`, `send_many`) | Everything between people |
 | `hewn_jobs_v1.aleo` | The public job board | Jobs, Find work |
 | `hewn_cards_v1.aleo` | The cards every account gets: issue height and shown, by name | Not yet: the app issues cards at setup next |
+| `hewn_credentials_v1.aleo` (staged 2026-10-25) | A worker's credentials: a business vouching for a person it has an agreement with, two private records, a public commitment with its status | Not yet: deploy, then the app |
 | `employer_license_registry.aleo`, `employer_profiles_v2.aleo`, `pnw_router_v4.aleo`, `payroll_core_v2.aleo`, `paystub_receipts.aleo`, `payroll_audit_log.aleo` | Licences, employer profiles, routing, one-proof payroll, receipts, audit anchors | Deployed, not called |
 | `payroll_nfts_v2.aleo`, `credential_nft_v3.aleo`, `credential_nft_v4.aleo` (staged), `audit_nft.aleo` | Layer 2 anchors | Deployed, not called: waiting on the audit design and credentials |
 
@@ -96,7 +97,7 @@ In short:
 
 | Workflow | Trigger | Does |
 |---|---|---|
-| `deploy.yml` (the plan gate) | Every push and pull request | Pinned CLI check, portal typechecks, adapter codec test, manifest schema, the leakage guard, Leo tests for `hewn_letters_v2`, `hewn_jobs_v1`, `employer_agreement_v5` and `hewn_cards_v1` |
+| `deploy.yml` (the plan gate) | Every push and pull request | Pinned CLI check, portal typechecks, adapter codec test, manifest schema, the leakage guard, Leo tests for `hewn_letters_v2`, `hewn_jobs_v1`, `employer_agreement_v5`, `hewn_cards_v1` and `hewn_credentials_v1` |
 | `deploy_program.yml` (deploy-new-program) | Manual | Deploys one program from `src/layer1/` with the admin key, swapping stubs for the deployed dependencies first |
 | `upgrade_program.yml` (upgrade-admin-program) | Manual | Upgrades an `@admin` program in place; run once with broadcast off, then on |
 | `execute_testnet.yml` (the execute gate) | Manual, or the `work` branch | Runs a scenario through the CLI harness and verifies receipts |
