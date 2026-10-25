@@ -11,6 +11,7 @@ Helpers for CI and for operating the programs from a terminal. Three groups.
 | `validate_testnet_manifest.py` | Checks `config/testnet.manifest.json` against its schema |
 | `check_secrets.py` | Fails if a tracked file holds something shaped like an Aleo private or view key, a GitHub or AWS token, a PEM private key or a literal secret, or if a `.env` file other than `.env.example` is tracked. Reports file and line, never the match. The same script runs in Hewn |
 | `check_archive.py` | Fails if a folder in `src/layer*/archive/` has no row in that archive's README, or an archived file is edited, added or removed without its line in that archive's `SHA256SUMS` (`--write` records it, in the same PR as the README row) |
+| `check_layer2_moves_no_funds.py` | Fails if a Layer 2 program imports anything but the money-free Layer 1 programs, calls another program's function that isn't an `assert_` check, or names a token program or a transfer |
 | `check_public_state.py` | Fails if `docs/PUBLIC_STATE.md` misses a mapping in a program's source, lists one that doesn't exist, leaves out an active program, or misstates which programs have Leo tests in this gate |
 | `check_layer1_public_leakage_guards.py` | Fails if any Layer 1 program (archive included) names a cumulative counter in public state, the kind that leaks wages by difference |
 | `check_phase4_negative_path_guards.sh` | Checks a scenario of the wrong kind is refused |
