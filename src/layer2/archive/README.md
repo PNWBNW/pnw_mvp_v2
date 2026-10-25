@@ -13,3 +13,8 @@ the record.
 
 `credential_nft_v4.aleo` (v3 plus an employer licence check) is not archived: it is deployed and
 staged in `src/layer2/`. Which program is live is decided by `config/testnet.manifest.json`.
+
+**Kept unchanged, checked.** `SHA256SUMS` in this folder holds the hash of every archived file. The
+plan gate (`scripts/check_archive.py`) fails if a file here changes, appears or disappears without
+its line there, or a folder has no row above. To archive a program: move it here unchanged, add
+its row, run `python3 -I scripts/check_archive.py --write`, and review the diff (only new lines).

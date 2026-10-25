@@ -61,6 +61,9 @@ jobs:
       - name: 🛡️ Enforce Layer 1 public-state leakage guard
         run: python3 scripts/check_layer1_public_leakage_guards.py
 
+      - name: 🗄️ Archived programs unchanged and listed
+        run: python3 -I scripts/check_archive.py
+
       - name: 🗺️ Check the public-state map lists every mapping
         run: python3 -I scripts/check_public_state.py
 

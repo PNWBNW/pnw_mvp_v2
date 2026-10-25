@@ -20,7 +20,8 @@ the README in `src/layer1/`, `src/layer2/` and `src/stubs/`, then Hewn's `CLAUDE
 **Immutability**
 - A deployed program is never edited in place. A change ships as a new version (`hewn_jobs_v2`)
   with a migration note under `docs/migrations/`; the old version moves, unchanged, to
-  `src/layer1/archive/` or `src/layer2/archive/`.
+  `src/layer1/archive/` or `src/layer2/archive/`, with a row in that folder's README and its
+  hashes in that folder's `SHA256SUMS` (`scripts/check_archive.py --write`; CI fails on an edit).
 - An `@admin` program may be upgraded in place (`upgrade_program.yml`) only when the migration
   note explains why that is safe and Joshua has said go. An upgrade can append functions but can't
   change what an existing finalize takes in (`docs/migrations/2026-10-14-open-registration.md`).
@@ -97,7 +98,7 @@ In short:
 
 | Workflow | Trigger | Does |
 |---|---|---|
-| `deploy.yml` (the plan gate) | Every push and pull request | Pinned CLI check, portal typechecks, adapter codec test, manifest schema, the leakage guard, the public-state map check (`docs/PUBLIC_STATE.md`), Leo tests for `hewn_letters_v2`, `hewn_jobs_v1`, `employer_agreement_v5`, `hewn_cards_v1` and `hewn_credentials_v1` |
+| `deploy.yml` (the plan gate) | Every push and pull request | Pinned CLI check, portal typechecks, adapter codec test, manifest schema, the leakage guard, the public-state map check (`docs/PUBLIC_STATE.md`), the archive check, Leo tests for `hewn_letters_v2`, `hewn_jobs_v1`, `employer_agreement_v5`, `hewn_cards_v1` and `hewn_credentials_v1` |
 | `deploy_program.yml` (deploy-new-program) | Manual | Deploys one program from `src/layer1/` with the admin key, swapping stubs for the deployed dependencies first |
 | `upgrade_program.yml` (upgrade-admin-program) | Manual | Upgrades an `@admin` program in place; run once with broadcast off, then on |
 | `execute_testnet.yml` (the execute gate) | Manual, or the `work` branch | Runs a scenario through the CLI harness and verifies receipts |
