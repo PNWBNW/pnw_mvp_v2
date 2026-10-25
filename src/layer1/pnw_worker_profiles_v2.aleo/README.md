@@ -1,102 +1,48 @@
-# worker_profiles.aleo
+# pnw_worker_profiles_v2.aleo
 
-**Layer:** 1 (Canonical)  
-**Purpose:** Private worker identity profiles anchored by deterministic commitments
+A worker's profile: name, age, gender, residency and country codes, a state-issued id, an industry
+code and policy flags, all in a private `WorkerProfile` record the worker owns. Public state holds
+one thing, `profile_anchor_height`: the block at which a profile's commitment (`profile_anchor`, a
+32-byte hash the app computes) was first seen. Nothing about the person reaches a mapping.
 
----
+Upgrades: `@admin`. Deployed on testnet 2026-03-26; imports `pnw_name_registry_v2.aleo`.
 
-## Overview
+| Function | Does | Hewn |
+|---|---|---|
+| `create_worker_profile(...)` | Mints the record to the caller, who must own the worker name it binds to; anchors the commitment (first height wins) | Worker setup |
+| `update_worker_profile(old, ...)` | Consumes the caller's record and mints the next revision (strictly higher `profile_rev`), still bound to the name, with a new anchor | Profile edits |
+| `assert_profile_anchored(anchor)` | Refuses unless the anchor has a height | Other programs |
+| `assert_worker_exists(anchor)` | The same check, under the name other programs call it by | Other programs |
 
-`worker_profiles.aleo` is the canonical Layer 1 worker identity/profile program for PNW MVP v2.
+Checks in every path: gender is 1, 2 or 3 (male, female, prefer not to say), age at most 120, the
+residency state, country and industry codes and the schema and policy versions are non-zero, and
+the revision is non-zero (and climbs on update). Ownership of the name is checked through the
+registry's `assert_is_owner` at create and again at update, so a name that changed hands takes the
+right to update the profile with it. The record's `issued_height` is a sentinel (0); the height
+lives in the mapping.
 
-It stores worker identity payloads as **private record fields**, and publishes only a **hash anchor index** that proves a profile existed at or before a given block height.
+Not enforced on chain: that the name is a worker's rather than a business's (the registry has no
+`assert_worker_owner`; the app only offers this to worker accounts), and that a name has one
+profile (the tests record that two can be created).
 
-This is the source of truth used by:
-- employer agreements (eligibility + binding)
-- payroll execution (eligibility + receipts)
-- Layer 2 document assembly (paystubs, summaries, audit disclosures)
+## Tests
 
----
+`tests/test_pnw_worker_profiles_v2.leo`, run by the plan gate (`deploy.yml`): 19 tests, 14 of them
+refusals. What must work: create (the record is the caller's, bound to the name, at revision 1,
+and the anchor gets a height), the edge values (age 120, each gender code), the two public
+assertions, and the recorded fact that a name can carry two profiles. What must fail: create for
+a name nobody owns, someone else owns, or another name than the one owned; gender 0 and 4; age
+121; a zero state, country, industry, schema, policy or revision; and either assertion on an
+unknown anchor.
 
-## Privacy model
+The deployed program is never edited. The gate tests a copy with `@noupgrade` in place of
+`@admin` (the local ledger refuses an `@admin` program whose deployer isn't the admin) and its
+registry dependency pointed at the stub in `src/stubs/`, whose `assert_is_owner` is the deployed
+one and whose test-only `register_test_name` seeds the owner; both changes are asserted before
+`leo test`.
 
-### Private (record fields)
-- full name (first/middle/last)
-- age and gender (enum)
-- residency state code, country code
-- state-issued ID (encoded u128)
-- industry_code and policy flags
-- schema/policy versions and profile revision
-- the profile_anchor itself
-
-### Public (allowed)
-- `profile_anchor_height[profile_anchor] -> first_seen_block_height`
-  - hash-only existence index
-  - does not reveal identity fields
-
-No plaintext names, addresses, wages, or other linkable identity details are published.
-
----
-
-## Name binding
-
-Worker profiles are bound to a worker `.pnw` identity via:
-- `worker_name_hash: field`
-
-Ownership is asserted using `pnw_name_registry.aleo`:
-- `assert_is_owner(worker_name_hash, caller)`
-
-(If we want strict worker-kind enforcement inside the registry, we can re-add a registry helper like `assert_worker_owner` later. This program is already compatible with that upgrade.)
-
----
-
-## Anchoring
-
-The portal provides:
-- `profile_anchor: [u8; 32]`
-
-The program stores:
-- the anchor privately in the record, and
-- a public “first-seen” index `profile_anchor_height` (anchor -> height)
-
-Anchoring is **write-once** per anchor; reusing the same anchor will not overwrite the original height.
-
----
-
-## Transitions
-
-### `create_worker_profile(...) -> WorkerProfile`
-- asserts caller owns the claimed `worker_name_hash`
-- validates basic constraints (gender enum, bounds, non-zero codes)
-- anchors `profile_anchor` to first-seen block height
-- returns a new private WorkerProfile record
-
-### `update_worker_profile(old_profile, ...) -> WorkerProfile`
-- asserts caller owns the old record (record owner check)
-- asserts caller still owns the bound name hash
-- consumes old record and returns a new one
-- requires `new_profile_rev > old_profile.profile_rev`
-- anchors the new profile anchor
-
-### `assert_profile_anchored(profile_anchor)`
-- public utility to assert a given anchor exists on-chain
-
-### `get_anchor_height(profile_anchor) -> u32`
-- public read utility to fetch the first-seen block height (0 if absent)
-
----
-
-## Portal responsibilities
-
-The portal must:
-- normalize and hash names into `worker_name_hash`
-- encode identity fields into deterministic `u128` values
-- compute `profile_anchor` deterministically (domain-separated)
-- maintain local taxonomies (state/country/industry mappings)
-
----
-
-## License
-
-**PROPRIETARY**  
-No rights are granted for reuse, redistribution, or deployment without explicit authorization.
+What the tests can't show: `update_worker_profile`. It consumes the record `create` minted to the
+caller, and inside a test the caller is the test program, whose records no signer can spend, so
+every update call is refused before the program's own checks run. Its field guards are the same
+asserts as create's; the revision-must-climb and owner checks are read, not run. Hewn's caller is
+the worker's wallet, where the record is spendable.
