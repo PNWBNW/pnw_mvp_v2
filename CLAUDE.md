@@ -20,7 +20,8 @@ the README in `src/layer1/`, `src/layer2/` and `src/stubs/`, then Hewn's `CLAUDE
 **Immutability**
 - A deployed program is never edited in place. A change ships as a new version (`hewn_jobs_v2`)
   with a migration note under `docs/migrations/`; the old version moves, unchanged, to
-  `src/layer1/archive/` or `src/layer2/archive/`.
+  `src/layer1/archive/` or `src/layer2/archive/`, with a row in that folder's README and its
+  hashes in that folder's `SHA256SUMS` (`scripts/check_archive.py --write`; CI fails on an edit).
 - An `@admin` program may be upgraded in place (`upgrade_program.yml`) only when the migration
   note explains why that is safe and Joshua has said go. An upgrade can append functions but can't
   change what an existing finalize takes in (`docs/migrations/2026-10-14-open-registration.md`).
@@ -47,7 +48,8 @@ the README in `src/layer1/`, `src/layer2/` and `src/stubs/`, then Hewn's `CLAUDE
 **Keys and secrets**
 - Never commit or print a private key, view key, `.env` or seed phrase. The admin key lives only in
   the GitHub secret `ADMIN_PRIVATE_KEY` (environment `testnet-staging`). Never ask anyone to paste
-  a key into a chat. Keys never go in URLs; logs never print accounts.
+  a key into a chat. Keys never go in URLs; logs never print accounts. The plan gate's secrets
+  scan (`scripts/check_secrets.py`) is the backstop.
 
 **Working here**
 - Hewn's app is the caller. Every transaction is signed in the user's Shield wallet; the
@@ -97,7 +99,7 @@ In short:
 
 | Workflow | Trigger | Does |
 |---|---|---|
-| `deploy.yml` (the plan gate) | Every push and pull request | Pinned CLI check, portal typechecks, adapter codec test, manifest schema, the leakage guard, the public-state map check (`docs/PUBLIC_STATE.md`), the Layer 2 funds check, Leo tests for `hewn_letters_v2`, `hewn_jobs_v1`, `employer_agreement_v5`, `hewn_cards_v1` and `hewn_credentials_v1` |
+| `deploy.yml` (the plan gate) | Every push and pull request | The secrets scan, pinned CLI check, portal typechecks, adapter codec test, manifest schema, the leakage guard, the public-state map check (`docs/PUBLIC_STATE.md`), the archive check, the Layer 2 funds check, Leo tests for `hewn_letters_v2`, `hewn_jobs_v1`, `employer_agreement_v5`, `hewn_cards_v1` and `hewn_credentials_v1` |
 | `deploy_program.yml` (deploy-new-program) | Manual | Deploys one program from `src/layer1/` with the admin key, swapping stubs for the deployed dependencies first |
 | `upgrade_program.yml` (upgrade-admin-program) | Manual | Upgrades an `@admin` program in place; run once with broadcast off, then on |
 | `execute_testnet.yml` (the execute gate) | Manual, or the `work` branch | Runs a scenario through the CLI harness and verifies receipts |
