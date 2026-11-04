@@ -168,6 +168,11 @@ They do not require an on-chain router because:
 
 ### 6.1 Adapter Execution Boundary (Core Invariant)
 
+> **History (2026-11-04).** The planning layer and CLI adapter described in this section lived in
+> `portal/`, which was deleted on 2026-11-04 (`docs/archive/README.md` names the commit that holds
+> it). The invariant survives in Hewn as a stricter one: every write is signed in the user's Shield
+> wallet through one door, and program names come from one place (Hewn's INV-11 and INV-12).
+
 The system enforces a strict architectural separation between **planning** and **execution**. This is one of the most important invariants in the codebase.
 
 **Planning layer (never executes):**

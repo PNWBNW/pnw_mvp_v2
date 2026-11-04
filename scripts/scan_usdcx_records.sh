@@ -18,8 +18,7 @@
 # OUTPUT:
 #   Prints each matching Token record as a JSON object:
 #     { "amount": <u128>, "record": "<plaintext_record_string>" }
-#   The "record" field is the raw string to pass to snarkos developer execute
-#   or to portal/src/records/usdcx_fetcher.ts as the UsdcxRecord.raw value.
+#   The "record" field is the raw string to pass to snarkos developer execute.
 #
 # NOTE ON PROGRAM ID:
 #   The deployed testnet program ID may differ from "test_usdcx_stablecoin.aleo".

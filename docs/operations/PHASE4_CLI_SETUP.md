@@ -127,15 +127,8 @@ Alternative (recommended for onboarding): store the args JSON itself in `PHASE4_
 
 ## 1) Scaffold status in this repo
 
-Phase 4 now includes a baseline Layer 2 adapter scaffold:
-- `portal/src/adapters/aleo_cli_adapter.ts` (plan-only + execute-mode trace shape)
-- `portal/tsconfig.phase4.json` (focused adapter scaffold typecheck gate)
-
-Validate scaffold typing with:
-
-```bash
-npx --yes --package typescript tsc -p portal/tsconfig.phase4.json
-```
+The TypeScript adapter scaffold that used to live in `portal/` was deleted on 2026-11-04
+(`docs/archive/README.md`). The execute gate runs the pre-built commands in `config/scenarios/`.
 
 ## 2) Resolve latest upstream tags (optional helper)
 

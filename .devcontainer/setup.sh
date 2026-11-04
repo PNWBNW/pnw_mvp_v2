@@ -43,6 +43,4 @@ node --version
 python3 --version
 echo ""
 echo "Run plan-gate validation:"
-echo "  npx --yes --package typescript tsc -p portal/tsconfig.phase4.json"
-echo "  bash scripts/run_phase4_adapter_tests.sh"
 echo "  python3 scripts/validate_testnet_manifest.py config/testnet.manifest.json"

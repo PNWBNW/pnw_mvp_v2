@@ -8,6 +8,10 @@ For src/layer1/archive and src/layer2/archive, this fails when:
   - a file in the archive isn't in that archive's SHA256SUMS, or its hash differs (an archived
     program was edited), or SHA256SUMS names a file that is gone.
 
+For docs/archive (retired documents and code, Hewn's OPS-09: deleted, git history is the archive),
+this fails when anything but its README.md is there, or a row of the README's table names no
+commit that holds the thing (a backticked hex id).
+
 Archiving a program adds its folder, a README row and its lines in SHA256SUMS in the same pull
 request:  python3 -I scripts/check_archive.py --write  rewrites SHA256SUMS from the tree; review
 the diff, since a changed hash on an existing line means an archived file was edited.
@@ -22,6 +26,27 @@ from pathlib import Path
 ROOT = Path(__file__).resolve().parent.parent
 ARCHIVES = [ROOT / "src" / "layer1" / "archive", ROOT / "src" / "layer2" / "archive"]
 SKIP = {"README.md", "SHA256SUMS"}
+RECORD = ROOT / "docs" / "archive"
+COMMIT = re.compile(r"`([0-9a-f]{7,40})`")
+
+
+def record_problems() -> list[str]:
+    """docs/archive holds only its README, and every row names the commit that holds the thing."""
+    problems = []
+    if not RECORD.is_dir():
+        return ["docs/archive: missing (it holds the record of what was retired)"]
+    for path in sorted(RECORD.rglob("*")):
+        if path.is_file() and path.name != "README.md":
+            problems.append(f"docs/archive/{path.relative_to(RECORD).as_posix()}: retired things are deleted; the README's row and git history keep them")
+    readme = RECORD / "README.md"
+    rows = [l for l in readme.read_text().splitlines() if l.startswith("| `")] if readme.exists() else []
+    if not rows:
+        problems.append("docs/archive/README.md: no rows in its table")
+    for row in rows:
+        cells = [c.strip() for c in row.strip("|").split("|")]
+        if not COMMIT.search(cells[-1]):
+            problems.append(f"docs/archive/README.md: the row for {cells[0]} names no commit that holds it")
+    return problems
 
 
 def archived_files(archive: Path) -> dict[str, str]:
@@ -88,6 +113,7 @@ def main() -> int:
         for name in recorded:
             if name not in files:
                 problems.append(f"{rel}/{name}: in SHA256SUMS but gone from the archive")
+    problems += record_problems()
     if write:
         print(f"archive check: wrote SHA256SUMS for {total} files")
         return 0
