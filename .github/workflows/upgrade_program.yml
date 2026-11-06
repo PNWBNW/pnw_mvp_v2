@@ -32,10 +32,10 @@ on:
         type: string
         default: "0,2950000,4800000,6625000,6765000,7600000,8365000,9173000,9800000,10525000,11952000,12669000,14906000,15370000,16886000,17319000,18295000,18296000,18813000,19374000,20234000,20415000"
       leo_release:
-        description: "Leo version from crates.io, or latest (built once, then cached)"
+        description: "Leo version from crates.io that signs and sends, or latest (built once, then cached)"
         required: true
         type: string
-        default: "latest"
+        default: "4.4.6"
 
 jobs:
   upgrade:
@@ -56,7 +56,10 @@ jobs:
         uses: actions/checkout@v4.2.2
 
       # Two Leos. 4.0.0 compiles our sources (they use its syntax, and its output is the
-      # bytecode checked against the deployed edition). The newer one, built from crates.io
+      # bytecode checked against the deployed edition). Leo 4.4 refuses this source (a const
+      # inside program { }, self.signer) and removed --disable-update-check, so only the 4.0.0
+      # calls keep that flag; moving the source to 4.4 is a Leo change of its own (INV-22).
+      # The newer one, built from crates.io
       # because Leo no longer publishes binaries, signs and sends under today's consensus.
       - name: Pick Leo version
         id: leo-version
@@ -97,7 +100,8 @@ jobs:
         run: |
           echo "$HOME/cargo-leo/bin" >> "$GITHUB_PATH"
           "$HOME/cargo-leo/bin/leo" --version
-          curl -fsSL "https://github.com/ProvableHQ/leo/releases/download/v4.0.0/leo-master-x86_64-unknown-linux-gnu.zip" -o leo400.zip
+          curl -fsSL "https://github.com/aleo-labs-protocol/leo/releases/download/v4.0.0/leo-master-x86_64-unknown-linux-gnu.zip" -o leo400.zip
+          echo "95bcda063c8f0abad5f7484f5f6dbf9e5608bf0e5ce78082e2da8469366df705  leo400.zip" | sha256sum -c -
           unzip -q leo400.zip -d /tmp/leo400
           install -m 0755 /tmp/leo400/leo "$HOME/leo400"
           "$HOME/leo400" --version
@@ -110,7 +114,7 @@ jobs:
             echo "::error::No key. Add ADMIN_PRIVATE_KEY to the testnet-staging environment's secrets."
             exit 1
           fi
-          addr=$(leo account import "$PRIVATE_KEY" --disable-update-check 2>/dev/null | grep -o 'aleo1[a-z0-9]\{58\}' | head -1)
+          addr=$(leo account import "$PRIVATE_KEY" 2>/dev/null | grep -o 'aleo1[a-z0-9]\{58\}' | head -1)
           if [ "$addr" != "$ADMIN_ADDRESS" ]; then
             echo "::error::That key belongs to ${addr:-an unknown account}, not the admin ${ADMIN_ADDRESS}. Put the admin key in ADMIN_PRIVATE_KEY."
             exit 1
@@ -138,7 +142,7 @@ jobs:
           set -o pipefail
           leo upgrade --help | sed -n '1,12p'
           # Wait up to ~5 minutes for the transaction to land (Leo's default is 12 blocks).
-          flags=(--path "$RUNNER_TEMP/bytecode/$PROGRAM" --network testnet --endpoint "$ENDPOINT" --yes --disable-update-check --max-wait 20 --blocks-to-check 100)
+          flags=(--path "$RUNNER_TEMP/bytecode/$PROGRAM" --network testnet --endpoint "$ENDPOINT" --yes --max-wait 20 --blocks-to-check 100)
           # Leo built on snarkVM 4.11 has V21/V22 as unscheduled placeholders; testnet
           # activated them at 20,234,000 and 20,415,000 (snarkVM 4.12.0).
           if [ -n "$HEIGHTS" ]; then flags+=(--consensus-heights "$HEIGHTS"); fi

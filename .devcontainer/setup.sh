@@ -4,18 +4,16 @@
 set -euo pipefail
 
 LEO_VERSION="4.0.0"
-SNARKOS_VERSION="v4.6.0"
-LEO_URL="https://github.com/ProvableHQ/leo/releases/download/v${LEO_VERSION}/leo-master-x86_64-unknown-linux-gnu.zip"
-SNARKOS_URL="https://github.com/ProvableHQ/snarkOS/releases/download/${SNARKOS_VERSION}/aleo-${SNARKOS_VERSION}-x86_64-unknown-linux-gnu.zip"
-SNARKOS_SHA256="a7e1fdb4329b8ee45b1372aa5867d56f84a442caffe3c55bca8b20ca34f2bb25"
+SNARKOS_VERSION="v4.12.0"
+# 4.0.0: the language the programs are written in (Leo 4.4 refuses their source).
+LEO_URL="https://github.com/aleo-labs-protocol/leo/releases/download/v${LEO_VERSION}/leo-master-x86_64-unknown-linux-gnu.zip"
+SNARKOS_URL="https://github.com/aleo-labs-protocol/snarkOS/releases/download/${SNARKOS_VERSION}/aleo-${SNARKOS_VERSION}-x86_64-unknown-linux-gnu.zip"
+LEO_SHA256="95bcda063c8f0abad5f7484f5f6dbf9e5608bf0e5ce78082e2da8469366df705"
+SNARKOS_SHA256="31818f467c1b6bef6376c932c72fc47209f78a3a93662057f9c77cdef7913545"
 
 echo "=== Installing Leo ${LEO_VERSION} ==="
 curl -fsSL "$LEO_URL" -o /tmp/leo.zip
-if [[ -n "${LEO_SHA256:-}" ]]; then
-  echo "${LEO_SHA256}  /tmp/leo.zip" | sha256sum -c -
-else
-  echo "WARN: LEO_SHA256 not set; skipping Leo artifact checksum verification"
-fi
+echo "${LEO_SHA256}  /tmp/leo.zip" | sha256sum -c -
 unzip -q /tmp/leo.zip -d /tmp/leo-bin
 sudo install -m 755 /tmp/leo-bin/leo /usr/local/bin/leo
 rm -rf /tmp/leo.zip /tmp/leo-bin

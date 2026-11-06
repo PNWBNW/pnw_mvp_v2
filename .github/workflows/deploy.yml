@@ -11,12 +11,16 @@ jobs:
     runs-on: ubuntu-24.04
 
     env:
+      # Leo 4.0.0 is the language our programs are written in: Leo 4.4 refuses their source
+      # (a const inside program { }, self.signer), so moving it is a Leo change of its own (INV-22).
+      # snarkOS 4.12.0 is what the network runs. Both from aleo-labs-protocol, where they moved
+      # from ProvableHQ in late October 2026; the checksums are of the release zips.
       LEO_VERSION: 4.0.0
-      SNARKOS_VERSION: v4.6.0
-      LEO_URL: https://github.com/ProvableHQ/leo/releases/download/v4.0.0/leo-master-x86_64-unknown-linux-gnu.zip
-      SNARKOS_URL: https://github.com/ProvableHQ/snarkOS/releases/download/v4.6.0/aleo-v4.6.0-x86_64-unknown-linux-gnu.zip
-      LEO_SHA256: "${{ vars.LEO_SHA256 }}"
-      SNARKOS_SHA256: "a7e1fdb4329b8ee45b1372aa5867d56f84a442caffe3c55bca8b20ca34f2bb25"
+      SNARKOS_VERSION: v4.12.0
+      LEO_URL: https://github.com/aleo-labs-protocol/leo/releases/download/v4.0.0/leo-master-x86_64-unknown-linux-gnu.zip
+      SNARKOS_URL: https://github.com/aleo-labs-protocol/snarkOS/releases/download/v4.12.0/aleo-v4.12.0-x86_64-unknown-linux-gnu.zip
+      LEO_SHA256: "95bcda063c8f0abad5f7484f5f6dbf9e5608bf0e5ce78082e2da8469366df705"
+      SNARKOS_SHA256: "31818f467c1b6bef6376c932c72fc47209f78a3a93662057f9c77cdef7913545"
       STRICT_VERSION_CHECK: "false"
 
     steps:
@@ -31,16 +35,18 @@ jobs:
         with:
           node-version: '20'
 
-      - name: 🛠️ Install Leo CLI (v4.0.0)
+      - name: 🛠️ Install Leo CLI (pinned, checksum verified)
         run: |
-          curl -L "https://github.com/ProvableHQ/leo/releases/download/v4.0.0/leo-master-x86_64-unknown-linux-gnu.zip" -o leo.zip
+          curl -fsSL "$LEO_URL" -o leo.zip
+          echo "$LEO_SHA256  leo.zip" | sha256sum -c -
           unzip leo.zip -d /tmp
           sudo mv /tmp/leo /usr/local/bin/leo
           sudo chmod +x /usr/local/bin/leo
           leo --version
-      - name: ⚙️ Install snarkOS (v4.6.0)
+      - name: ⚙️ Install snarkOS (pinned, checksum verified)
         run: |
-          curl -L "https://github.com/ProvableHQ/snarkOS/releases/download/v4.6.0/aleo-v4.6.0-x86_64-unknown-linux-gnu.zip" -o snarkos.zip
+          curl -fsSL "$SNARKOS_URL" -o snarkos.zip
+          echo "$SNARKOS_SHA256  snarkos.zip" | sha256sum -c -
           unzip snarkos.zip -d /tmp
           sudo mv /tmp/snarkos /usr/local/bin/snarkos
           sudo chmod +x /usr/local/bin/snarkos

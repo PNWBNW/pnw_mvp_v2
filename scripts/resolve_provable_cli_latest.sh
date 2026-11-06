@@ -12,20 +12,22 @@ resolve_latest_tag() {
     "https://api.github.com/repos/${repo}/releases/latest" | jq -r '.tag_name'
 }
 
-echo "Resolving latest release tags from ProvableHQ..."
+# Leo and snarkOS moved from ProvableHQ to aleo-labs-protocol (late October 2026). Leo's
+# releases are tagged leo-lang-vX.Y.Z since 4.1; snarkOS keeps vX.Y.Z.
+echo "Resolving latest release tags from aleo-labs-protocol..."
 
-echo "LEO_REPO=ProvableHQ/leo"
-if leo_tag=$(resolve_latest_tag "ProvableHQ/leo" 2>/dev/null); then
+echo "LEO_REPO=aleo-labs-protocol/leo"
+if leo_tag=$(resolve_latest_tag "aleo-labs-protocol/leo" 2>/dev/null); then
   echo "LEO_LATEST_TAG=${leo_tag}"
 else
   echo "LEO_LATEST_TAG=<unresolved>"
-  echo "WARN: Could not resolve ProvableHQ/leo latest tag (network/rate-limit/access issue)." >&2
+  echo "WARN: Could not resolve aleo-labs-protocol/leo latest tag (network/rate-limit/access issue)." >&2
 fi
 
-echo "SNARKOS_REPO=ProvableHQ/snarkOS"
-if snarkos_tag=$(resolve_latest_tag "ProvableHQ/snarkOS" 2>/dev/null); then
+echo "SNARKOS_REPO=aleo-labs-protocol/snarkOS"
+if snarkos_tag=$(resolve_latest_tag "aleo-labs-protocol/snarkOS" 2>/dev/null); then
   echo "SNARKOS_LATEST_TAG=${snarkos_tag}"
 else
   echo "SNARKOS_LATEST_TAG=<unresolved>"
-  echo "WARN: Could not resolve ProvableHQ/snarkOS latest tag (network/rate-limit/access issue)." >&2
+  echo "WARN: Could not resolve aleo-labs-protocol/snarkOS latest tag (network/rate-limit/access issue)." >&2
 fi
