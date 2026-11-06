@@ -120,7 +120,7 @@ jobs:
             echo "::error::No key. Add ADMIN_PRIVATE_KEY to the testnet-staging environment's secrets."
             exit 1
           fi
-          addr=$(leo account import "$PRIVATE_KEY" --disable-update-check 2>/dev/null | grep -o 'aleo1[a-z0-9]\{58\}' | head -1)
+          addr=$(leo account import "$PRIVATE_KEY" 2>/dev/null | grep -o 'aleo1[a-z0-9]\{58\}' | head -1)
           echo "The deploy fee comes from ${addr:-an unknown account}."
           echo "Its public balance: $(curl -fsSL "$ENDPOINT/testnet/program/credits.aleo/mapping/account/$addr" || echo unknown)"
 
@@ -133,8 +133,8 @@ jobs:
           cp -r "src/layer1/$PROGRAM" "$pkg"
           # Local stubs of deployed programs (src/stubs), where a program.json points at ../../stubs: tests seed them.
           cp -r src/stubs "$RUNNER_TEMP/stubs"
-          (cd "$pkg" && "$HOME/leo-build" build --disable-update-check --network testnet --endpoint "$ENDPOINT")
-          (cd "$pkg" && "$HOME/leo-build" test --disable-update-check)
+          (cd "$pkg" && "$HOME/leo-build" build --network testnet --endpoint "$ENDPOINT")
+          (cd "$pkg" && "$HOME/leo-build" test)
           # The deployed bytecode is compiled against the real dependencies on testnet, never a stub.
           if grep -q '"location": "local"' "$pkg/program.json"; then
             python3 - "$pkg/program.json" <<'PY'
@@ -149,9 +149,10 @@ jobs:
           json.dump(m, open(p, "w"), indent=2)
           PY
             rm -rf "$pkg/build" "$pkg/tests"
-            (cd "$pkg" && "$HOME/leo-build" build --disable-update-check --network testnet --endpoint "$ENDPOINT")
+            (cd "$pkg" && "$HOME/leo-build" build --network testnet --endpoint "$ENDPOINT")
           fi
-          cp "$pkg/build/main.aleo" "$RUNNER_TEMP/bytecode/$PROGRAM"
+          # Leo 4.4 writes each program to build/<name>/<name>.aleo (4.0 wrote build/main.aleo).
+          cp "$pkg/build/${PROGRAM%.aleo}/$PROGRAM" "$RUNNER_TEMP/bytecode/$PROGRAM"
           echo "Functions in the compiled program:"
           grep -E '^(function|closure|constructor)' "$RUNNER_TEMP/bytecode/$PROGRAM"
           sha256sum "$RUNNER_TEMP/bytecode/$PROGRAM"
@@ -164,7 +165,7 @@ jobs:
           set -o pipefail
           leo deploy --help | sed -n '1,40p'
           # Wait up to ~5 minutes for the transaction to land.
-          flags=(--path "$RUNNER_TEMP/bytecode/$PROGRAM" --network testnet --endpoint "$ENDPOINT" --yes --disable-update-check --max-wait 20 --blocks-to-check 100)
+          flags=(--path "$RUNNER_TEMP/bytecode/$PROGRAM" --network testnet --endpoint "$ENDPOINT" --yes --max-wait 20 --blocks-to-check 100)
           if [ -n "$HEIGHTS" ]; then flags+=(--consensus-heights "$HEIGHTS"); fi
           if [ "$BROADCAST" = "true" ]; then
             flags+=(--broadcast)

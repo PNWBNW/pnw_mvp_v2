@@ -115,7 +115,7 @@ jobs:
             echo "::error::No key. Add ADMIN_PRIVATE_KEY to the testnet-staging environment's secrets."
             exit 1
           fi
-          addr=$(leo account import "$PRIVATE_KEY" --disable-update-check 2>/dev/null | grep -o 'aleo1[a-z0-9]\{58\}' | head -1)
+          addr=$(leo account import "$PRIVATE_KEY" 2>/dev/null | grep -o 'aleo1[a-z0-9]\{58\}' | head -1)
           if [ "$addr" != "$ADMIN_ADDRESS" ]; then
             echo "::error::That key belongs to ${addr:-an unknown account}, not the admin ${ADMIN_ADDRESS}. Put the admin key in ADMIN_PRIVATE_KEY."
             exit 1
@@ -143,7 +143,7 @@ jobs:
           set -o pipefail
           leo upgrade --help | sed -n '1,12p'
           # Wait up to ~5 minutes for the transaction to land (Leo's default is 12 blocks).
-          flags=(--path "$RUNNER_TEMP/bytecode/$PROGRAM" --network testnet --endpoint "$ENDPOINT" --yes --disable-update-check --max-wait 20 --blocks-to-check 100)
+          flags=(--path "$RUNNER_TEMP/bytecode/$PROGRAM" --network testnet --endpoint "$ENDPOINT" --yes --max-wait 20 --blocks-to-check 100)
           # Leo built on snarkVM 4.11 has V21/V22 as unscheduled placeholders; testnet
           # activated them at 20,234,000 and 20,415,000 (snarkVM 4.12.0).
           if [ -n "$HEIGHTS" ]; then flags+=(--consensus-heights "$HEIGHTS"); fi

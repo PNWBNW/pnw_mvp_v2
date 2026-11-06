@@ -20,6 +20,7 @@ jobs:
       LEO_SHA256: "7888ee2f03554590d9ac9d61ba02a8d0833e37b5b24666f79a735317a0ad8902"
       SNARKOS_SHA256: "31818f467c1b6bef6376c932c72fc47209f78a3a93662057f9c77cdef7913545"
       STRICT_VERSION_CHECK: "false"
+      NO_COLOR: "1"
 
     steps:
       - name: ⬇️ Checkout repository
@@ -84,16 +85,16 @@ jobs:
             pkg="$RUNNER_TEMP/rebuild/$prog"
             mkdir -p "$RUNNER_TEMP/rebuild"
             cp -r "src/layer1/$prog.aleo" "$pkg"
-            if ! (cd "$pkg" && leo build --disable-update-check >/dev/null 2>&1); then
+            if ! (cd "$pkg" && leo build >/dev/null 2>&1); then
               echo "$prog: does not build with $(leo --version | head -1)"; continue
             fi
             if ! curl -fsSL "https://api.explorer.provable.com/v2/testnet/program/$prog.aleo" | python3 -c 'import json,sys; sys.stdout.write(json.load(sys.stdin))' > "$pkg/live.aleo"; then
               echo "$prog: could not read the live program"; continue
             fi
-            if cmp -s "$pkg/build/main.aleo" "$pkg/live.aleo"; then
+            if cmp -s "$pkg/build/$prog/$prog.aleo" "$pkg/live.aleo"; then
               echo "$prog: same as deployed"
             else
-              echo "$prog: differs from deployed ($(diff "$pkg/build/main.aleo" "$pkg/live.aleo" | grep -c '^[<>]') lines)"
+              echo "$prog: differs from deployed ($(diff "$pkg/build/$prog/$prog.aleo" "$pkg/live.aleo" | grep -c '^[<>]') lines)"
             fi
           done
 
@@ -104,8 +105,8 @@ jobs:
           pkg="$RUNNER_TEMP/hewn_letters_v2"
           cp -r src/layer1/hewn_letters_v2.aleo "$pkg"
           cd "$pkg"
-          leo test --disable-update-check | tee "$RUNNER_TEMP/leo-test-v2.log"
-          grep -q "12 / 12 tests passed" "$RUNNER_TEMP/leo-test-v2.log"
+          leo test | tee "$RUNNER_TEMP/leo-test-v2.log"
+          grep -q "12 tests run: 12 passed, 0 failed" "$RUNNER_TEMP/leo-test-v2.log"
 
       - name: 🧪 Leo tests for hewn_jobs_v1 (negative cases included)
         run: |
@@ -116,8 +117,8 @@ jobs:
           cp -r src/stubs "$RUNNER_TEMP/jobs/stubs"
           cp -r src/layer1/hewn_jobs_v1.aleo "$pkg"
           cd "$pkg"
-          leo test --disable-update-check | tee "$RUNNER_TEMP/leo-test-jobs.log"
-          grep -q "31 / 31 tests passed" "$RUNNER_TEMP/leo-test-jobs.log"
+          leo test | tee "$RUNNER_TEMP/leo-test-jobs.log"
+          grep -q "31 tests run: 31 passed, 0 failed" "$RUNNER_TEMP/leo-test-jobs.log"
 
       - name: 🧪 Leo tests for employer_agreement_v5 (negative cases included)
         run: |
@@ -126,8 +127,8 @@ jobs:
           pkg="$RUNNER_TEMP/employer_agreement_v5"
           cp -r src/layer1/employer_agreement_v5.aleo "$pkg"
           cd "$pkg"
-          leo test --disable-update-check | tee "$RUNNER_TEMP/leo-test-agreement-v5.log"
-          grep -q "22 / 22 tests passed" "$RUNNER_TEMP/leo-test-agreement-v5.log"
+          leo test | tee "$RUNNER_TEMP/leo-test-agreement-v5.log"
+          grep -q "22 tests run: 22 passed, 0 failed" "$RUNNER_TEMP/leo-test-agreement-v5.log"
 
       - name: 🧪 Leo tests for hewn_cards_v1 (negative cases included)
         run: |
@@ -138,8 +139,8 @@ jobs:
           cp -r src/stubs "$RUNNER_TEMP/cards/stubs"
           cp -r src/layer1/hewn_cards_v1.aleo "$pkg"
           cd "$pkg"
-          leo test --disable-update-check | tee "$RUNNER_TEMP/leo-test-cards.log"
-          grep -q "22 / 22 tests passed" "$RUNNER_TEMP/leo-test-cards.log"
+          leo test | tee "$RUNNER_TEMP/leo-test-cards.log"
+          grep -q "22 tests run: 22 passed, 0 failed" "$RUNNER_TEMP/leo-test-cards.log"
 
       - name: 🧪 Leo tests for hewn_credentials_v1 (negative cases included)
         run: |
@@ -150,8 +151,8 @@ jobs:
           cp -r src/stubs "$RUNNER_TEMP/credentials/stubs"
           cp -r src/layer1/hewn_credentials_v1.aleo "$pkg"
           cd "$pkg"
-          leo test --disable-update-check | tee "$RUNNER_TEMP/leo-test-credentials.log"
-          grep -q "28 / 28 tests passed" "$RUNNER_TEMP/leo-test-credentials.log"
+          leo test | tee "$RUNNER_TEMP/leo-test-credentials.log"
+          grep -q "28 tests run: 28 passed, 0 failed" "$RUNNER_TEMP/leo-test-credentials.log"
 
       - name: 🧪 Leo tests for pnw_name_registry_v2 (negative cases included)
         run: |
@@ -169,8 +170,8 @@ jobs:
           sed -i 's/^    @admin(address = "aleo1a2qje865a7ccrrwg37z6e36uyjtqlm5vdj8yzlrhypvg60xhncqqlev4dx")$/    @noupgrade/' src/main.leo
           test "$(grep -c 'aleo1lmfaqae9nx2nxxm4f4fzv9cztv3fauhtvd8hwvg4pugjefpa0g9q9ctnfe' src/main.leo)" = "1"
           grep -q '^    @noupgrade$' src/main.leo
-          leo test --disable-update-check | tee "$RUNNER_TEMP/leo-test-registry.log"
-          grep -q "30 / 30 tests passed" "$RUNNER_TEMP/leo-test-registry.log"
+          leo test | tee "$RUNNER_TEMP/leo-test-registry.log"
+          grep -q "30 tests run: 30 passed, 0 failed" "$RUNNER_TEMP/leo-test-registry.log"
 
       - name: 🧪 Leo tests for pnw_name_registrar_v5 (negative cases included)
         run: |
@@ -209,8 +210,8 @@ jobs:
           }
           JSON
           cd "$pkg"
-          leo test --disable-update-check | tee "$RUNNER_TEMP/leo-test-registrar.log"
-          grep -q "24 / 24 tests passed" "$RUNNER_TEMP/leo-test-registrar.log"
+          leo test | tee "$RUNNER_TEMP/leo-test-registrar.log"
+          grep -q "24 tests run: 24 passed, 0 failed" "$RUNNER_TEMP/leo-test-registrar.log"
 
       - name: 🧪 Leo tests for pnw_worker_profiles_v2 (negative cases included)
         run: |
@@ -229,8 +230,8 @@ jobs:
           sed -i 's#"path": "../pnw_name_registry_v2.aleo"#"path": "../../stubs/pnw_name_registry_v2.aleo"#' "$pkg/program.json"
           grep -q 'stubs/pnw_name_registry_v2.aleo' "$pkg/program.json"
           cd "$pkg"
-          leo test --disable-update-check | tee "$RUNNER_TEMP/leo-test-profiles.log"
-          grep -q "19 / 19 tests passed" "$RUNNER_TEMP/leo-test-profiles.log"
+          leo test | tee "$RUNNER_TEMP/leo-test-profiles.log"
+          grep -q "19 tests run: 19 passed, 0 failed" "$RUNNER_TEMP/leo-test-profiles.log"
 
       - name: 🧪 Leo tests for employer_agreement_v4 (negative cases included)
         run: |
@@ -259,5 +260,5 @@ jobs:
           }
           JSON
           cd "$pkg"
-          leo test --disable-update-check | tee "$RUNNER_TEMP/leo-test-agreement4.log"
-          grep -q "31 / 31 tests passed" "$RUNNER_TEMP/leo-test-agreement4.log"
+          leo test | tee "$RUNNER_TEMP/leo-test-agreement4.log"
+          grep -q "31 tests run: 31 passed, 0 failed" "$RUNNER_TEMP/leo-test-agreement4.log"
