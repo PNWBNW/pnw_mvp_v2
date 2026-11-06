@@ -10,15 +10,15 @@ Pin and verify CLI tooling before wiring execution adapters:
 
 ## 0) Pinned versions for this repo
 
-Use these pins (updated 2026-04-01 for Leo v4 migration — ConsensusVersion::V14
-enforced on testnet; v3-compiled programs are rejected by new deploys):
+Use these pins (updated 2026-11-06; Leo and snarkOS moved from ProvableHQ to
+`aleo-labs-protocol` in late October 2026, and Leo's tags are `leo-lang-vX.Y.Z` since 4.1):
 
-- `LEO_VERSION=4.0.0`
-- `SNARKOS_VERSION=v4.6.0`
+- `LEO_VERSION=4.4.6`
+- `SNARKOS_VERSION=v4.12.0`
 
-Reference artifacts:
-- Leo: `https://github.com/ProvableHQ/leo/releases/download/v4.0.0/leo-release-4.0-x86_64-unknown-linux-gnu.zip`
-- snarkOS: `https://github.com/ProvableHQ/snarkOS/releases/download/v4.6.0/aleo-v4.6.0-x86_64-unknown-linux-gnu.zip`
+Reference artifacts (the checksums are in `.github/workflows/deploy.yml`):
+- Leo: `https://github.com/aleo-labs-protocol/leo/releases/download/leo-lang-v4.4.6/leo-lang-v4.4.6-x86_64-unknown-linux-gnu.zip`
+- snarkOS: `https://github.com/aleo-labs-protocol/snarkOS/releases/download/v4.12.0/aleo-v4.12.0-x86_64-unknown-linux-gnu.zip`
 
 ## CI workflow bootstrap (GitHub Actions)
 
@@ -139,16 +139,16 @@ scripts/resolve_provable_cli_latest.sh
 ```
 
 This attempts to read latest release tags from:
-- `ProvableHQ/leo`
-- `ProvableHQ/snarkOS`
+- `aleo-labs-protocol/leo`
+- `aleo-labs-protocol/snarkOS`
 
 > If your environment blocks GitHub, run this command on a machine with access and copy the tag values back into your local setup notes.
 
 ## 3) Export version pins in your shell
 
 ```bash
-export LEO_VERSION="3.5.0"
-export SNARKOS_VERSION="v4.5.0"
+export LEO_VERSION="4.4.6"
+export SNARKOS_VERSION="v4.12.0"
 ```
 
 Keep these pins consistent across contributors for deterministic behavior.
@@ -156,8 +156,8 @@ Keep these pins consistent across contributors for deterministic behavior.
 Optional hardening (recommended in CI):
 
 ```bash
-export LEO_SHA256="a0a8bdc3bfd4508f954a887f761131aa731dcbc76e9185b1c92cd105d314cd5e"
-export SNARKOS_SHA256="29c7bedc5c348190716c4556adc2095085f5481952bbb42c960fb2ba9d128504"
+export LEO_SHA256="7888ee2f03554590d9ac9d61ba02a8d0833e37b5b24666f79a735317a0ad8902"
+export SNARKOS_SHA256="31818f467c1b6bef6376c932c72fc47209f78a3a93662057f9c77cdef7913545"
 ```
 
 If set, CI validates downloaded artifacts with `sha256sum -c` before install.

@@ -112,8 +112,8 @@ In short:
 
 | Tool | Version | Note |
 |---|---|---|
-| Leo | 4.0.0 | What CI builds and tests with (`vars.LEO_SHA256`); the upgrade workflow bootstraps 4.0.0 then runs `leo update` because only a newer Leo knows the current consensus version |
-| snarkOS | v4.6.0 | The network enforces ConsensusVersion V14 and later; programs compiled with Leo before 4.0 are rejected |
+| Leo | 4.4.6 | What CI builds and tests with, and what compiles a new program for deploy: the release binary from `aleo-labs-protocol/leo` (tag `leo-lang-v4.4.6`), checksum pinned in the workflows. The upgrade workflow still compiles with 4.0.0, which built every deployed program, because an upgrade may only append to the deployed bytecode; the plan gate reports whether 4.4.6 rebuilds them byte for byte. Signing and sending use Leo built from crates.io (4.4.6 by default) |
+| snarkOS | v4.12.0 | The pair Leo 4.4.6's release names; from `aleo-labs-protocol/snarkOS`, checksum pinned. Leo and snarkOS moved there from ProvableHQ in late October 2026 (the old addresses redirect) |
 | Node | 20 | `actions/setup-node` |
 
 Endpoint: `https://api.explorer.provable.com/v2` as the base for `snarkos` and `leo`
