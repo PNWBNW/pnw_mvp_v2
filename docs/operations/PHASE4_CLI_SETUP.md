@@ -13,11 +13,11 @@ Pin and verify CLI tooling before wiring execution adapters:
 Use these pins (updated 2026-11-06; Leo and snarkOS moved from ProvableHQ to
 `aleo-labs-protocol` in late October 2026, and Leo's tags are `leo-lang-vX.Y.Z` since 4.1):
 
-- `LEO_VERSION=4.4.6`
+- `LEO_VERSION=4.0.0` (the language the programs are written in; Leo 4.4 refuses their source)
 - `SNARKOS_VERSION=v4.12.0`
 
 Reference artifacts (the checksums are in `.github/workflows/deploy.yml`):
-- Leo: `https://github.com/aleo-labs-protocol/leo/releases/download/leo-lang-v4.4.6/leo-lang-v4.4.6-x86_64-unknown-linux-gnu.zip`
+- Leo: `https://github.com/aleo-labs-protocol/leo/releases/download/v4.0.0/leo-master-x86_64-unknown-linux-gnu.zip`
 - snarkOS: `https://github.com/aleo-labs-protocol/snarkOS/releases/download/v4.12.0/aleo-v4.12.0-x86_64-unknown-linux-gnu.zip`
 
 ## CI workflow bootstrap (GitHub Actions)
@@ -147,7 +147,7 @@ This attempts to read latest release tags from:
 ## 3) Export version pins in your shell
 
 ```bash
-export LEO_VERSION="4.4.6"
+export LEO_VERSION="4.0.0"
 export SNARKOS_VERSION="v4.12.0"
 ```
 
@@ -156,7 +156,7 @@ Keep these pins consistent across contributors for deterministic behavior.
 Optional hardening (recommended in CI):
 
 ```bash
-export LEO_SHA256="7888ee2f03554590d9ac9d61ba02a8d0833e37b5b24666f79a735317a0ad8902"
+export LEO_SHA256="95bcda063c8f0abad5f7484f5f6dbf9e5608bf0e5ce78082e2da8469366df705"
 export SNARKOS_SHA256="31818f467c1b6bef6376c932c72fc47209f78a3a93662057f9c77cdef7913545"
 ```
 

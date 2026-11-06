@@ -112,7 +112,7 @@ In short:
 
 | Tool | Version | Note |
 |---|---|---|
-| Leo | 4.4.6 | What CI builds and tests with, and what compiles a new program for deploy: the release binary from `aleo-labs-protocol/leo` (tag `leo-lang-v4.4.6`), checksum pinned in the workflows. The upgrade workflow still compiles with 4.0.0, which built every deployed program, because an upgrade may only append to the deployed bytecode; the plan gate reports whether 4.4.6 rebuilds them byte for byte. Signing and sending use Leo built from crates.io (4.4.6 by default) |
+| Leo | 4.0.0 to compile and test; 4.4.6 to sign and send | 4.0.0 (release `v4.0.0` from `aleo-labs-protocol/leo`, checksum pinned) is the language our programs are written in: Leo 4.4 refuses their source (a `const` inside `program { }`, `self.signer`, now `std::ctx::signer()`), so moving it is a Leo change of its own (say so first, INV-22). The deploy and upgrade workflows sign and send with Leo built from crates.io, 4.4.6 by default, because only a newer Leo knows today's consensus; 4.4.6 removed self-update and `--disable-update-check`, prints `N tests run: N passed, 0 failed` and writes `build/<name>/<name>.aleo` |
 | snarkOS | v4.12.0 | The pair Leo 4.4.6's release names; from `aleo-labs-protocol/snarkOS`, checksum pinned. Leo and snarkOS moved there from ProvableHQ in late October 2026 (the old addresses redirect) |
 | Node | 20 | `actions/setup-node` |
 

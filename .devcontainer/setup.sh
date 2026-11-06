@@ -3,11 +3,12 @@
 # Installs Leo + snarkOS at the exact pinned versions used by CI.
 set -euo pipefail
 
-LEO_VERSION="4.4.6"
+LEO_VERSION="4.0.0"
 SNARKOS_VERSION="v4.12.0"
-LEO_URL="https://github.com/aleo-labs-protocol/leo/releases/download/leo-lang-v${LEO_VERSION}/leo-lang-v${LEO_VERSION}-x86_64-unknown-linux-gnu.zip"
+# 4.0.0: the language the programs are written in (Leo 4.4 refuses their source).
+LEO_URL="https://github.com/aleo-labs-protocol/leo/releases/download/v${LEO_VERSION}/leo-master-x86_64-unknown-linux-gnu.zip"
 SNARKOS_URL="https://github.com/aleo-labs-protocol/snarkOS/releases/download/${SNARKOS_VERSION}/aleo-${SNARKOS_VERSION}-x86_64-unknown-linux-gnu.zip"
-LEO_SHA256="7888ee2f03554590d9ac9d61ba02a8d0833e37b5b24666f79a735317a0ad8902"
+LEO_SHA256="95bcda063c8f0abad5f7484f5f6dbf9e5608bf0e5ce78082e2da8469366df705"
 SNARKOS_SHA256="31818f467c1b6bef6376c932c72fc47209f78a3a93662057f9c77cdef7913545"
 
 echo "=== Installing Leo ${LEO_VERSION} ==="

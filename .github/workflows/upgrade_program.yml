@@ -56,11 +56,10 @@ jobs:
         uses: actions/checkout@v4.2.2
 
       # Two Leos. 4.0.0 compiles our sources (they use its syntax, and its output is the
-      # bytecode checked against the deployed edition). It stays at 4.0.0 on purpose while the
-      # plan gate moved to 4.4.6 (2026-11-06): every upgradable program was deployed from 4.0.0's
-      # output, and an upgrade may only append to it, so a newer compiler's different bytecode for
-      # an existing function would be refused. Move it only once 4.4.6 is shown to build the
-      # deployed editions byte for byte. The newer one, built from crates.io
+      # bytecode checked against the deployed edition). Leo 4.4 refuses this source (a const
+      # inside program { }, self.signer) and removed --disable-update-check, so only the 4.0.0
+      # calls keep that flag; moving the source to 4.4 is a Leo change of its own (INV-22).
+      # The newer one, built from crates.io
       # because Leo no longer publishes binaries, signs and sends under today's consensus.
       - name: Pick Leo version
         id: leo-version

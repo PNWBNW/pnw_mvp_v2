@@ -57,9 +57,8 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v4.2.2
 
-      # Two Leos: the pinned release binary (4.4.6, the plan gate's, checksum verified) compiles
-      # and tests a new program, so what is deployed is what CI tested; the one built from
-      # crates.io signs and sends. (Until 2026-11-06 new programs compiled with 4.0.0.)
+      # Two Leos, as in upgrade-admin-program: 4.0.0 compiles and tests our sources; the
+      # newer one, built from crates.io, signs and sends under today's consensus.
       - name: Pick Leo version
         id: leo-version
         env:
@@ -97,11 +96,11 @@ jobs:
         run: |
           echo "$HOME/cargo-leo/bin" >> "$GITHUB_PATH"
           "$HOME/cargo-leo/bin/leo" --version
-          curl -fsSL "https://github.com/aleo-labs-protocol/leo/releases/download/leo-lang-v4.4.6/leo-lang-v4.4.6-x86_64-unknown-linux-gnu.zip" -o leo-build.zip
-          echo "7888ee2f03554590d9ac9d61ba02a8d0833e37b5b24666f79a735317a0ad8902  leo-build.zip" | sha256sum -c -
-          unzip -q leo-build.zip -d /tmp/leo-build
-          install -m 0755 /tmp/leo-build/leo "$HOME/leo-build"
-          "$HOME/leo-build" --version
+          curl -fsSL "https://github.com/aleo-labs-protocol/leo/releases/download/v4.0.0/leo-master-x86_64-unknown-linux-gnu.zip" -o leo400.zip
+          echo "95bcda063c8f0abad5f7484f5f6dbf9e5608bf0e5ce78082e2da8469366df705  leo400.zip" | sha256sum -c -
+          unzip -q leo400.zip -d /tmp/leo400
+          install -m 0755 /tmp/leo400/leo "$HOME/leo400"
+          "$HOME/leo400" --version
 
       - name: Stop if ${{ inputs.program }} is already deployed
         run: |
@@ -124,7 +123,7 @@ jobs:
           echo "The deploy fee comes from ${addr:-an unknown account}."
           echo "Its public balance: $(curl -fsSL "$ENDPOINT/testnet/program/credits.aleo/mapping/account/$addr" || echo unknown)"
 
-      - name: Compile and test ${{ inputs.program }} with Leo 4.4.6
+      - name: Compile and test ${{ inputs.program }} with Leo 4.0.0
         run: |
           mkdir -p "$HOME/.aleo"
           # Leo 4.4 reads any path ending in .aleo as a bytecode file; build from a copy without the suffix.
@@ -133,8 +132,8 @@ jobs:
           cp -r "src/layer1/$PROGRAM" "$pkg"
           # Local stubs of deployed programs (src/stubs), where a program.json points at ../../stubs: tests seed them.
           cp -r src/stubs "$RUNNER_TEMP/stubs"
-          (cd "$pkg" && "$HOME/leo-build" build --network testnet --endpoint "$ENDPOINT")
-          (cd "$pkg" && "$HOME/leo-build" test)
+          (cd "$pkg" && "$HOME/leo400" build --disable-update-check --network testnet --endpoint "$ENDPOINT")
+          (cd "$pkg" && "$HOME/leo400" test --disable-update-check)
           # The deployed bytecode is compiled against the real dependencies on testnet, never a stub.
           if grep -q '"location": "local"' "$pkg/program.json"; then
             python3 - "$pkg/program.json" <<'PY'
@@ -149,10 +148,9 @@ jobs:
           json.dump(m, open(p, "w"), indent=2)
           PY
             rm -rf "$pkg/build" "$pkg/tests"
-            (cd "$pkg" && "$HOME/leo-build" build --network testnet --endpoint "$ENDPOINT")
+            (cd "$pkg" && "$HOME/leo400" build --disable-update-check --network testnet --endpoint "$ENDPOINT")
           fi
-          # Leo 4.4 writes each program to build/<name>/<name>.aleo (4.0 wrote build/main.aleo).
-          cp "$pkg/build/${PROGRAM%.aleo}/$PROGRAM" "$RUNNER_TEMP/bytecode/$PROGRAM"
+          cp "$pkg/build/main.aleo" "$RUNNER_TEMP/bytecode/$PROGRAM"
           echo "Functions in the compiled program:"
           grep -E '^(function|closure|constructor)' "$RUNNER_TEMP/bytecode/$PROGRAM"
           sha256sum "$RUNNER_TEMP/bytecode/$PROGRAM"

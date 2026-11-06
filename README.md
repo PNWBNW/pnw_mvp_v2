@@ -73,10 +73,11 @@ Each program's folder has a README with its functions and public state; the laye
 
 ## Working here
 
-Toolchain: Leo 4.4.6, snarkOS v4.12.0, Node 20 (pinned with their checksums in
-`.github/workflows/deploy.yml`; `.devcontainer/` installs them), from `aleo-labs-protocol`, where
-Leo and snarkOS moved from ProvableHQ in late October 2026. Upgrades of deployed programs still
-compile with Leo 4.0.0, which built them (`upgrade_program.yml` says why).
+Toolchain: Leo 4.0.0 to compile and test (the language the programs are written in; Leo 4.4
+refuses their source), Leo 4.4.6 to sign and send in the deploy and upgrade workflows, snarkOS
+v4.12.0, Node 20. Pinned with their checksums in `.github/workflows/deploy.yml`; `.devcontainer/`
+installs them; all from `aleo-labs-protocol`, where Leo and snarkOS moved from ProvableHQ in late
+October 2026.
 
 ```bash
 # Test a program (Leo reads a path ending in .aleo as bytecode, so test from a copy without it)
