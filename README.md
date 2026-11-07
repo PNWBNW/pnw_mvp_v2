@@ -114,4 +114,12 @@ Copyright (C) 2025-2026 Joshua Daniel Day.
 
 Free software under the **GNU Affero General Public License, version 3** (`AGPL-3.0-only`); see
 [`LICENSE`](LICENSE). Distributed WITHOUT ANY WARRANTY; without even the implied warranty of
-MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. The Hewn name and logo are not covered.
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
+
+One additional term applies under the licence's section 7(b) (see [`NOTICE`](NOTICE)): every copy
+keeps the attribution **"Hewn by Joshua Day"**, linked to https://github.com/PNWBNW/hewn, in its
+documentation and `NOTICE`. A **commercial licence**, for a closed or proprietary product built on
+these programs, is available for purchase from Joshua Daniel Day (hewnsupport@gmail.com).
+Contributions come in under Hewn's contributor licence agreement. All of it is in
+[`LICENSING.md`](LICENSING.md). The **Hewn**™ name and logo are trademarks of Joshua Daniel Day,
+not covered by the licence.
