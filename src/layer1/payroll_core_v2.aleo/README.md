@@ -129,3 +129,17 @@ This program intentionally does **not**:
 - enforce jurisdiction-specific labor law
 - store historical payroll data
 - support
+
+---
+
+## A note on `execute_payroll`'s outputs (2026-11-07)
+
+`execute_payroll` names the two `Token` records it gets back from
+`test_usdcx_stablecoin.aleo::transfer_private` as `(worker_usdcx, remaining_usdcx)`, but the
+deployed stablecoin returns them the other way round: the sender's change first, the
+recipient's token second (read from its bytecode while fixing the local stand-in,
+`src/stubs/README.md`). The records themselves are right, since the stablecoin sets each
+owner; only the names in this source, and so the order of this transition's second and
+third outputs, are swapped. The program is deployed and never edited (CLAUDE.md), and Hewn
+doesn't call it (it pays with one private transfer per worker, 2026-10-14); a successor
+version would name them the right way round.

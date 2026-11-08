@@ -97,6 +97,19 @@ jobs:
           leo test --disable-update-check | tee "$RUNNER_TEMP/leo-test-jobs.log"
           grep -q "31 / 31 tests passed" "$RUNNER_TEMP/leo-test-jobs.log"
 
+      - name: 🧪 Leo tests for the USDCx stand-in (negative cases included)
+        run: |
+          mkdir -p "$HOME/.aleo"
+          # The stand-in for the testnet stablecoin (src/stubs/README.md): a devnode rehearses Hewn's
+          # payroll against it, so it must move value the way the deployed program does. No imports;
+          # test from a copy without the .aleo suffix.
+          pkg="$RUNNER_TEMP/usdcx_stub/test_usdcx_stablecoin"
+          mkdir -p "$RUNNER_TEMP/usdcx_stub"
+          cp -r src/stubs/test_usdcx_stablecoin.aleo "$pkg"
+          cd "$pkg"
+          leo test --disable-update-check | tee "$RUNNER_TEMP/leo-test-usdcx-stub.log"
+          grep -q "11 / 11 tests passed" "$RUNNER_TEMP/leo-test-usdcx-stub.log"
+
       - name: 🧪 Leo tests for employer_agreement_v5 (negative cases included)
         run: |
           mkdir -p "$HOME/.aleo"

@@ -1,7 +1,7 @@
 {
   "program": "test_usdcx_stablecoin.aleo",
   "version": "0.1.0",
-  "description": "Local stub for test_usdcx_stablecoin.aleo. Provides the minimal interface (Token record, transfer_public, transfer_private) needed for leo build without a live testnet fetch. Matches the deployed program's interface.",
+  "description": "Local stand-in for test_usdcx_stablecoin.aleo, the testnet USDCx stablecoin: the same records, transitions, input and output order as the deployed program for everything our programs and Hewn's pay queue call, plus a test-only mint. Never deployed; a devnode rehearses payroll against it.",
   "license": "AGPL-3.0-only",
   "dependencies": []
 }

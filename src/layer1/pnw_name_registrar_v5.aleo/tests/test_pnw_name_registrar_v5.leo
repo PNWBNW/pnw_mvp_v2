@@ -89,8 +89,8 @@ program test_pnw_name_registrar_v5.aleo {
         let f3: Final = pnw_name_registry_v2.aleo::assert_is_owner(W1, self.signer);
         return final {
             f1.run(); f2.run(); f3.run();
-            assert_eq(test_usdcx_stablecoin.aleo::account.get(TREASURY), PRICE);
-            assert_eq(test_usdcx_stablecoin.aleo::account.get(me), 0u128);
+            assert_eq(test_usdcx_stablecoin.aleo::balances.get(TREASURY), PRICE);
+            assert_eq(test_usdcx_stablecoin.aleo::balances.get(me), 0u128);
             assert_eq(pnw_name_registrar_v5.aleo::name_plaintext.get(W1), ENC1);
         };
     }
@@ -102,7 +102,7 @@ program test_pnw_name_registrar_v5.aleo {
         let f2: Final = pnw_name_registrar_v5.aleo::register_worker_name(W1, ENC1);
         return final {
             f1.run(); f2.run();
-            assert_eq(test_usdcx_stablecoin.aleo::account.get(me), 5u128);
+            assert_eq(test_usdcx_stablecoin.aleo::balances.get(me), 5u128);
         };
     }
 
@@ -115,7 +115,7 @@ program test_pnw_name_registrar_v5.aleo {
         let f4: Final = pnw_name_registry_v2.aleo::assert_employer_owner(E1, self.signer, CODE);
         return final {
             f1.run(); f2.run(); f3.run(); f4.run();
-            assert_eq(test_usdcx_stablecoin.aleo::account.get(TREASURY), PRICE);
+            assert_eq(test_usdcx_stablecoin.aleo::balances.get(TREASURY), PRICE);
             assert_eq(pnw_name_registrar_v5.aleo::name_plaintext.get(E1), ENC1);
         };
     }
