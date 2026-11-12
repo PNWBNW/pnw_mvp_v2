@@ -68,7 +68,7 @@ Each program's folder has a README with its functions and public state; the laye
 | [`config/`](config/README.md) | `testnet.manifest.json`, the source of truth for what is deployed; scenario fixtures |
 | [`docs/`](docs/README.md) | The architecture spec, a migration note per deployed change, the CLI operations guide, the archive |
 | [`scripts/`](scripts/README.md) | CI checks and the command-line test harness |
-| `.github/workflows/` | The plan gate (every PR), deploy and upgrade (manual, admin key), the execute gate |
+| `.github/workflows/` | The plan gate (every PR), deploy and upgrade (manual, from `main`, admin key) |
 | [`CLAUDE.md`](CLAUDE.md) | The rules and context for anyone, person or agent, working here |
 
 ## Working here

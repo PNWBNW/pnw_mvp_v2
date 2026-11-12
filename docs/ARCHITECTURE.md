@@ -200,11 +200,9 @@ CI is split into two independent gates with a hard security boundary between the
 - Runs: TypeScript typecheck (Phase 3 + Phase 4 tsconfigs), adapter codec tests, testnet manifest schema validation, Layer 1 public-state leakage guards (ensures no plaintext wages/addresses in public mappings), scenario/file mismatch negative-path guards
 - Failure blocks merge — this is the quality gate for all code changes
 
-**Execute Gate (`execute_testnet.yml`):**
-- Triggers only on manual `workflow_dispatch` or push to the protected `work` branch
-- Requires secrets: `ALEO_PRIVATE_KEY`, `ALEO_VIEW_KEY`, `ALEO_ADDRESS`, `WORKER_ADDRESS`, `ENDPOINT`, `USDCX_PROGRAM_ID`, broadcast command payloads
-- Runs: full testnet scenario execution with real broadcast, receipt verification against the Aleo REST API, evidence bundle generation with SHA integrity checks
-- Protected by GitHub environment (`testnet-staging`) with concurrency controls — only one execute run at a time per ref
+**The execute gate** (`execute_testnet.yml`) was removed on 2026-11-12: it ran the command-line
+harness inside GitHub with an account's keys. The harness still runs from an operator's own
+machine (`docs/operations/PHASE4_CLI_SETUP.md`).
 
 **Why the split exists:**
 - Plan-gate runs must never risk spending testnet funds, leaking credentials, or creating on-chain state as a side effect of a PR review

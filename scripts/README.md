@@ -17,13 +17,13 @@ Helpers for CI and for operating the programs from a terminal. Three groups.
 | `check_phase4_negative_path_guards.sh` | Checks a scenario of the wrong kind is refused |
 | `validate_workflow_yaml.sh` | Lints the workflow files |
 
-**The execute gate** (`.github/workflows/execute_testnet.yml`, manual dispatch with secrets).
-This is the command-line path, kept as a testing harness; Hewn signs everything in the wallet.
+**The command-line harness.** Run from your own machine with your own environment; its GitHub
+workflow was removed on 2026-11-12 (`docs/archive/README.md`). Hewn signs everything in the wallet.
 
 | Script | Does |
 |---|---|
 | `require_phase4_execute_env.sh` | Refuses to run without the environment it needs |
-| `dispatch_phase4_execute.sh`, `run_phase4_execute_scenario.sh`, `run_phase4_testnet_happy_path.sh` | Run a scenario from `config/scenarios/` and collect an evidence bundle |
+| `run_phase4_execute_scenario.sh`, `run_phase4_testnet_happy_path.sh` | Run a scenario from `config/scenarios/` and collect an evidence bundle |
 | `build_onboarding_broadcast_commands.py`, `validate_phase4_broadcast_commands.py` | Build and check the `snarkos developer execute` commands a scenario needs |
 | `validate_phaseA_scenario.py`, `derive_phaseA_name_hash.py` | Check a scenario file; derive a name hash the way the programs do |
 | `verify_phase4_execute_artifacts.py`, `verify_phase4_receipts.py` | Check the bundle's integrity and look its transactions up on the network |

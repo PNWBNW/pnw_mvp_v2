@@ -52,6 +52,14 @@ jobs:
       PROGRAM: ${{ inputs.program }}
       BROADCAST: ${{ inputs.broadcast }}
     steps:
+      # The admin key signs here, so the code that runs must be main's (a ruleset protects main,
+      # and the testnet-staging environment accepts only main and waits for Joshua's approval).
+      - name: Only from main
+        if: github.ref != 'refs/heads/main'
+        run: |
+          echo "::error::This workflow signs with the admin key and runs only from main; it was started on $GITHUB_REF_NAME."
+          exit 1
+
       - name: Checkout
         uses: actions/checkout@v4.2.2
 
@@ -108,7 +116,7 @@ jobs:
 
       - name: Check the key is the admin key
         env:
-          PRIVATE_KEY: ${{ secrets.ADMIN_PRIVATE_KEY || secrets.ALEO_PRIVATE_KEY }}
+          PRIVATE_KEY: ${{ secrets.ADMIN_PRIVATE_KEY }}
         run: |
           if [ -z "$PRIVATE_KEY" ]; then
             echo "::error::No key. Add ADMIN_PRIVATE_KEY to the testnet-staging environment's secrets."
@@ -136,7 +144,7 @@ jobs:
 
       - name: Upgrade ${{ inputs.program }} from its bytecode
         env:
-          PRIVATE_KEY: ${{ secrets.ADMIN_PRIVATE_KEY || secrets.ALEO_PRIVATE_KEY }}
+          PRIVATE_KEY: ${{ secrets.ADMIN_PRIVATE_KEY }}
           HEIGHTS: ${{ inputs.consensus_heights }}
         run: |
           set -o pipefail
