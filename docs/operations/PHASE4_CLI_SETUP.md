@@ -20,115 +20,27 @@ Reference artifacts (the checksums are in `.github/workflows/deploy.yml`):
 - Leo: `https://github.com/aleo-labs-protocol/leo/releases/download/v4.0.0/leo-master-x86_64-unknown-linux-gnu.zip`
 - snarkOS: `https://github.com/aleo-labs-protocol/snarkOS/releases/download/v4.12.0/aleo-v4.12.0-x86_64-unknown-linux-gnu.zip`
 
-## CI workflow bootstrap (GitHub Actions)
+## CI (GitHub Actions)
 
-This repo now uses split workflows:
-- `.github/workflows/deploy.yml` for plan/test gates only
-- `.github/workflows/execute_testnet.yml` for testnet execute gate
+`.github/workflows/deploy.yml` is the plan gate: it installs the pinned Leo and snarkOS, verifies
+their versions and runs the checks and the Leo tests on every pull request and push to `main`. It
+uses no secrets.
 
-`deploy.yml` installs pinned Leo/snarkOS binaries, verifies versions, and runs planner/typecheck/test guards (triggered on pull requests and pushes to `main`).
-`execute_testnet.yml` runs execute-mode scenarios on `work` pushes or manual `workflow_dispatch`.
+There is no execute workflow any more (removed 2026-11-12, `docs/archive/README.md`). It ran the
+scripts below inside GitHub with an account's keys, on a push to a branch named `work` or by
+hand. The harness still runs from your own machine with your own environment (section 8); no key
+goes into GitHub for it.
 
 Optional local workflow YAML validation (no PyYAML required):
 
 ```bash
 scripts/validate_workflow_yaml.sh .github/workflows/deploy.yml
-scripts/validate_workflow_yaml.sh .github/workflows/execute_testnet.yml
 ```
-
-
-### Dispatch execute runs from an app/backend
-
-If you are building a React/dApp UI, trigger workflow dispatch from a backend service (not directly from browser code).
-
-Helper script:
-
-```bash
-GH_TOKEN="<github-token>" \
-  scripts/dispatch_phase4_execute.sh \
-  --repo "<owner>/<repo>" \
-  --ref "main" \
-  --scenario "payroll_smoke" \
-  --scenario-file "config/scenarios/testnet/min_spend.payroll.json" \
-  --execute-broadcast "false" \
-  --broadcast-commands-file "config/scenarios/testnet/broadcast_commands.sample.json" \
-  # OR pass inline JSON from this interface:
-  # --broadcast-commands-json "{\"schema_version\":\"phase4.broadcast_commands.v1\",\"commands\":[{\"name\":\"submit\",\"command\":\"<real command>\"}]}"
-```
-
-This sends the selected `scenario` into `.github/workflows/execute_testnet.yml`.
-
-`execute_gate` runs automatically on pushes to the `work` branch (testnet-staging environment), or by manual workflow dispatch.
-
-You can preview the exact dispatch payload without calling GitHub using `--dry-run`.
-
-The workflow is streamlined to a single operator choice (`scenario`). Scenario payload path is resolved automatically by workflow mapping.
-
-Broadcast mode is hardcoded ON in this lane (`EXECUTE_BROADCAST=true`) with strict receipt verification (`RECEIPT_VERIFICATION_MODE=required`) for testnet-ready execution evidence.
-
-
-> **Important:** execute runs in this workflow are configured for broadcast + strict receipts.
->
-> Provide `PHASE4_BROADCAST_COMMANDS_JSON` as a protected environment secret containing real submit commands that emit real tx ids.
->
-> Keep `RPC_URL` explicitly set to your intended node endpoint (for testnet, e.g. `https://api.explorer.provable.com/v2`) so endpoint intent is captured in execute verification metadata.
-> Set `SNARKOS_ENDPOINT` to the snarkOS REST endpoint used by `snarkos developer execute --endpoint ...` (provider/CLI combos may expect either `.../v2` or `.../v2/testnet`).
-
-
-For `onboarding_smoke`, generate this secret payload from deterministic codec inputs:
-
-```bash
-python3 scripts/build_onboarding_broadcast_commands.py \
-  --args-file config/scenarios/testnet/onboarding_mint_args.sample.json \
-  --submit-prefix 'snarkos developer execute --endpoint "https://api.explorer.provable.com/v2" --network 1 --broadcast --private-key "$ALEO_PRIVATE_KEY" credential_nft.aleo mint_credential_nft' \
-  --out artifacts/phase4_broadcast_commands.required.json
-```
-
-This sends the selected `scenario` into `.github/workflows/execute_testnet.yml`.
-
-`execute_gate` runs automatically on pushes to the `work` and `main` branches (testnet-staging environment), or by manual workflow dispatch.
-
-You can preview the exact dispatch payload without calling GitHub using `--dry-run`.
-
-The workflow is streamlined to a single operator choice (`scenario`). Scenario payload path is resolved automatically by workflow mapping.
-
-Broadcast mode is hardcoded ON in this lane (`EXECUTE_BROADCAST=true`) with strict receipt verification (`RECEIPT_VERIFICATION_MODE=required`) for testnet-ready execution evidence.
-
-
-> **Important:** execute runs in this workflow are configured for broadcast + strict receipts.
->
-> You can provide broadcast inputs in either mode:
-> 1. `PHASE4_BROADCAST_COMMANDS_JSON` (full command payload secret), or
-> 2. for `onboarding_smoke`, `PHASE4_ONBOARDING_MINT_ARGS_JSON` (typed args JSON) and the workflow will generate broadcast commands on the fly.
-> Optional override: set `PHASE4_SUBMIT_ENDPOINT` if your submit endpoint differs from `RPC_URL`.
->
-> Keep `RPC_URL` explicitly set to your intended node endpoint (for testnet, e.g. `https://api.explorer.provable.com/v2`) so endpoint intent is captured in execute verification metadata.
-> Set `SNARKOS_ENDPOINT` for tooling that requires it. Onboarding submit generation in `execute_testnet.yml` defaults to `RPC_URL` for `snarkos developer execute --endpoint ...` (override with `PHASE4_SUBMIT_ENDPOINT` when needed).
-
-
-For `onboarding_smoke`, generate this secret payload from deterministic codec inputs:
-
-```bash
-python3 scripts/build_onboarding_broadcast_commands.py \
-  --args-file config/scenarios/testnet/onboarding_mint_args.sample.json \
-  --submit-prefix 'snarkos developer execute --endpoint "https://api.explorer.provable.com/v2" --network 1 --broadcast --private-key "$ALEO_PRIVATE_KEY" credential_nft.aleo mint_credential_nft' \
-  --out artifacts/phase4_broadcast_commands.required.json
-```
-
-Then copy the JSON file contents into the protected `PHASE4_BROADCAST_COMMANDS_JSON` secret.
-
-Alternative (recommended for onboarding): store the args JSON itself in `PHASE4_ONBOARDING_MINT_ARGS_JSON` and let the workflow generate `artifacts/phase4_broadcast_commands.required.json` during execute.
-
-> **Broadcast flag gotcha (important):** for `snarkos developer execute`, use `--broadcast` as a flag.
-> Do **not** pass a URL argument like `--broadcast "$SNARKOS_ENDPOINT/testnet/transaction/broadcast"`.
-> Keep the target URI in `--endpoint` only.
-> Avoid forcing `--network` in onboarding submit-prefix unless you have validated the provider-specific mapping; network/endpoint mismatches can produce opaque JSON error-shape failures.
-
 
 ## 1) Scaffold status in this repo
 
 The TypeScript adapter scaffold that used to live in `portal/` was deleted on 2026-11-04
-(`docs/archive/README.md`). The execute gate runs the pre-built commands in `config/scenarios/`.
+(`docs/archive/README.md`). The harness runs the pre-built commands in `config/scenarios/`.
 
 ## 2) Resolve latest upstream tags (optional helper)
 
@@ -228,5 +140,5 @@ scripts/run_phase4_testnet_happy_path.sh \
 
 This wraps manifest validation, execute env checks, scenario execution, and emits a compact artifact summary.
 
-`execute_testnet.yml` now also verifies execute evidence bundle integrity before artifact upload via `scripts/verify_phase4_execute_artifacts.py`.
-`execute_testnet.yml` now also performs best-effort receipt verification via `scripts/verify_phase4_receipts.py` (writes `artifacts/phase4_execute_bundle/receipt_verification.json`).
+`scripts/verify_phase4_execute_artifacts.py` checks the evidence bundle's integrity.
+`scripts/verify_phase4_receipts.py` does a best-effort receipt verification (writes `artifacts/phase4_execute_bundle/receipt_verification.json`).

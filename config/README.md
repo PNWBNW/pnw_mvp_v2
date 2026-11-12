@@ -8,6 +8,6 @@ request as the migration note under `docs/migrations/`.
 
 `scripts/validate_testnet_manifest.py` checks it on every pull request.
 
-**`scenarios/`** holds the inputs for the command-line execute gate (see its own README): a schema
+**`scenarios/`** holds the inputs for the command-line harness (see its own README): a schema
 and sample payloads for onboarding and payroll on testnet. They are test fixtures with
 placeholder values, not records of real people.

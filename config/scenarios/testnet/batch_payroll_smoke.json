@@ -82,7 +82,7 @@
   },
   "notes": [
     "WORKER1_ADDRESS, WORKER2_ADDRESS, WORKER3_ADDRESS are GitHub Secrets — kept private even though addresses appear on-chain.",
-    "ALEO_ADDRESS is a GitHub Variable; ALEO_PRIVATE_KEY and ALEO_VIEW_KEY are GitHub Secrets.",
+    "ALEO_ADDRESS, ALEO_PRIVATE_KEY and ALEO_VIEW_KEY come from your own environment on your own machine, never from GitHub.",
     "Tx 1 (batch_tx): execute_payroll_batch_2 pays worker1 + worker2 from a single employer USDCx record. employer_usdcx_record.amount must be >= worker1.net_amount + worker2.net_amount.",
     "Tx 2 (single_tx): execute_payroll pays worker3 from a separate employer USDCx record (the remaining_usdcx output from Tx 1 can be reused here).",
     "All hash values in this file are placeholder scaffolds. Replace with outputs from commitments/canonical_encoder.ts before broadcast execution.",

@@ -53,7 +53,7 @@ the README in `src/layer1/`, `src/layer2/` and `src/stubs/`, then Hewn's `CLAUDE
 
 **Working here**
 - Hewn's app is the caller. Every transaction is signed in the user's Shield wallet; the
-  command-line path (`scripts/`, `execute_testnet.yml`) is a test harness, not a
+  command-line path (`scripts/`) is a test harness run from your own machine, not a
   product path.
 - Commit messages are plain descriptive text, `<scope>: <what changed>`. Never append a
   `https://claude.ai/...` session link.
@@ -93,7 +93,7 @@ In short:
 | `src/stubs/` | Local stand-ins for the stablecoin and the registry, for offline builds and tests |
 | `src/layer1/archive/`, `src/layer2/archive/` | Superseded versions and pre-upgrade snapshots, unchanged |
 | `config/testnet.manifest.json` | What is deployed: ids, transactions, notes |
-| `config/scenarios/` | Fixtures for the command-line execute gate |
+| `config/scenarios/` | Fixtures for the command-line harness |
 | `docs/` | `ARCHITECTURE.md` (the spec), `PUBLIC_STATE.md` (every public mapping, what it reveals, Hewn's use, tests), `migrations/` (every deployed change), `operations/` (the CLI path), `archive/` (the record of what was retired) |
 | `scripts/` | CI checks and the execute harness; see its README |
 | `.github/workflows/` | See below |
@@ -103,9 +103,8 @@ In short:
 | Workflow | Trigger | Does |
 |---|---|---|
 | `deploy.yml` (the plan gate) | Every push and pull request | The secrets scan, pinned CLI check, manifest schema, the leakage guard, the public-state map check (`docs/PUBLIC_STATE.md`), the archive check, the link check, the Layer 2 funds check, Leo tests for `hewn_letters_v2`, `hewn_jobs_v1`, `employer_agreement_v5`, `hewn_cards_v1`, `hewn_credentials_v1`, `pnw_name_registry_v2`, `pnw_name_registrar_v5`, `pnw_worker_profiles_v2` and `employer_agreement_v4` |
-| `deploy_program.yml` (deploy-new-program) | Manual | Deploys one program from `src/layer1/` with the admin key, swapping stubs for the deployed dependencies first |
-| `upgrade_program.yml` (upgrade-admin-program) | Manual | Upgrades an `@admin` program in place; run once with broadcast off, then on |
-| `execute_testnet.yml` (the execute gate) | Manual, or the `work` branch | Runs a scenario through the CLI harness and verifies receipts |
+| `deploy_program.yml` (deploy-new-program) | Manual, from `main` only | Deploys one program from `src/layer1/` with the admin key, swapping stubs for the deployed dependencies first |
+| `upgrade_program.yml` (upgrade-admin-program) | Manual, from `main` only | Upgrades an `@admin` program in place; run once with broadcast off, then on |
 | `generate_sha256.yml` | Manual | Checksums for new Leo and snarkOS artifacts when the pins move |
 
 ## Toolchain
