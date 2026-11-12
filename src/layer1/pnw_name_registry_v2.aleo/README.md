@@ -3,7 +3,8 @@
 The registry of names: which wallet owns which name hash, whether it is a worker's or an
 employer's, and an employer's industry suffix (codes 1 to 40). It stores names and nothing else;
 paying for one is the registrar's job (`pnw_name_registrar_v5.aleo`), which is the only program
-allowed to write here.
+allowed to write here. The admin account can write too: it sets which program is the registrar,
+and the three writing functions accept the registrar or the admin.
 
 Upgrades: `@admin`. Deployed on testnet (`config/testnet.manifest.json`).
 

@@ -13,5 +13,5 @@ in [`archive/`](archive/README.md).
 |---|---|---|
 | [`payroll_nfts_v2.aleo`](payroll_nfts_v2.aleo/README.md) | `@noupgrade` | A `PayrollNFT` per cycle, quarter, year to date or year end, anchored to its batch root; revoke and supersede. |
 | [`credential_nft_v3.aleo`](credential_nft_v3.aleo/README.md) | `@admin` | A `CredentialNFT` binding a worker to a scope and a document, mintable only by the employer who holds an active agreement with that worker. |
-| [`credential_nft_v4.aleo`](credential_nft_v4.aleo/README.md) | `@admin`, staged | v3 plus a check that the employer's licence is still verified. |
+| [`credential_nft_v4.aleo`](credential_nft_v4.aleo/README.md) | `@admin`, deployed (edition 0), not called | v3 plus a check that the employer's licence is still verified. |
 | [`audit_nft.aleo`](audit_nft.aleo/README.md) | `@noupgrade` | Dual-consent audit authorisations that expire by block height, and anchored attestations. |

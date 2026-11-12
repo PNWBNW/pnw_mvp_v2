@@ -75,6 +75,24 @@ def main() -> None:
             if not isinstance(value, str) or not RE_ALEO.match(value):
                 fail(f"'program_ids.{group}.{key}' must be a *.aleo program id")
 
+    # What is on chain, as scripts/check_chain.py records it: every program says either the
+    # edition and the hash of its text there, or that it isn't on chain.
+    deployments = manifest.get("deployments")
+    if not isinstance(deployments, dict):
+        fail("'deployments' must be an object")
+    for program, entry in deployments.items():
+        if not RE_ALEO.match(program) or not isinstance(entry, dict):
+            fail(f"'deployments.{program}' must be an object keyed by a *.aleo program id")
+        if entry.get("on_chain") is False:
+            if "edition" in entry or "sha256" in entry:
+                fail(f"'deployments.{program}' says it isn't on chain and records an edition or a hash")
+            continue
+        edition, digest = entry.get("edition"), entry.get("sha256")
+        if not isinstance(edition, int) or isinstance(edition, bool) or edition < 0:
+            fail(f"'deployments.{program}.edition' must be the edition on chain (scripts/check_chain.py --write)")
+        if not isinstance(digest, str) or not re.fullmatch(r"[0-9a-f]{64}", digest):
+            fail(f"'deployments.{program}.sha256' must be the SHA-256 of the program text on chain (scripts/check_chain.py --write)")
+
     print(
         "manifest validation: PASS"
         f" (schema_version={schema_version}, network={network}, path={path})"
