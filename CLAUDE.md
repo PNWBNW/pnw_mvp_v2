@@ -109,16 +109,16 @@ In short:
 | Workflow | Trigger | Does |
 |---|---|---|
 | `deploy.yml` (the plan gate) | Every push and pull request | The secrets scan, pinned CLI check, manifest schema, the chain check (`scripts/check_chain.py`), the leakage guard, the public-state map check (`docs/PUBLIC_STATE.md`), the archive check, the link check, the Layer 2 funds check, Leo tests for `hewn_letters_v2`, `hewn_jobs_v1`, `employer_agreement_v5`, `hewn_cards_v1`, `hewn_credentials_v1`, `pnw_name_registry_v2`, `pnw_name_registrar_v5`, `pnw_worker_profiles_v2` and `employer_agreement_v4` |
-| `deploy_program.yml` (deploy-new-program) | Manual, from `main` only | Deploys one program from `src/layer1/` with the admin key, swapping stubs for the deployed dependencies first |
-| `upgrade_program.yml` (upgrade-admin-program) | Manual, from `main` only | Upgrades an `@admin` program in place; run once with broadcast off, then on |
+| `deploy_program.yml` (deploy-new-program) | Manual, from `main` only | Deploys one program from `src/layer1/` with the admin key, swapping stubs for the deployed dependencies first. Same two jobs and two runs as the upgrade: the build job's summary shows the program's text and SHA-256 |
+| `upgrade_program.yml` (upgrade-admin-program) | Manual, from `main` only | Upgrades an `@admin` program in place. A build job with no key compiles it and writes a summary (the bytecode's SHA-256 and its difference from the edition on chain); the sign job gets the key after approval. Run once with broadcast off, then on with that SHA-256 in `expected_sha256` |
 | `chain_watch.yml` (chain-watch) | Daily, or by hand | Reads every program from the explorer and fails if its edition or text differs from the manifest (`scripts/check_chain.py`); no secret |
-| `generate_sha256.yml` | Manual | Checksums for new Leo and snarkOS artifacts when the pins move |
+| `generate_sha256.yml` | Manual | Checksums for new Leo and snarkOS release assets when the pins move (release URLs on github.com only, passed as variables); compare with a second download before pinning |
 
 ## Toolchain
 
 | Tool | Version | Note |
 |---|---|---|
-| Leo | 4.0.0 to compile and test; 4.4.6 to sign and send | 4.0.0 (release `v4.0.0` from `aleo-labs-protocol/leo`, checksum pinned) is the language our programs are written in: Leo 4.4 refuses their source (a `const` inside `program { }`, `self.signer`, now `std::ctx::signer()`), so moving it is a Leo change of its own (say so first, INV-22). The deploy and upgrade workflows sign and send with Leo built from crates.io, 4.4.6 by default, because only a newer Leo knows today's consensus; 4.4.6 removed self-update and `--disable-update-check`, prints `N tests run: N passed, 0 failed` and writes `build/<name>/<name>.aleo` |
+| Leo | 4.0.0 to compile and test; 4.4.6 to sign and send | 4.0.0 (release `v4.0.0` from `aleo-labs-protocol/leo`, checksum pinned) is the language our programs are written in: Leo 4.4 refuses their source (a `const` inside `program { }`, `self.signer`, now `std::ctx::signer()`), so moving it is a Leo change of its own (say so first, INV-22). The deploy and upgrade workflows sign and send with the 4.4.6 release, downloaded and checked against the SHA-256 written in the workflow (never a cache or a build), because only a newer Leo knows today's consensus; 4.4.6 removed self-update and `--disable-update-check`, prints `N tests run: N passed, 0 failed` and writes `build/<name>/<name>.aleo` |
 | snarkOS | v4.12.0 | The pair Leo 4.4.6's release names; from `aleo-labs-protocol/snarkOS`, checksum pinned. Leo and snarkOS moved there from ProvableHQ in late October 2026 (the old addresses redirect) |
 | Node | 20 | `actions/setup-node` |
 

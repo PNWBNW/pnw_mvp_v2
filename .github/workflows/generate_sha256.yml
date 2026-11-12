@@ -19,21 +19,33 @@ jobs:
       contents: read
 
     steps:
+      # The URLs reach the shell only as environment variables, never pasted into the script,
+      # and only release assets on github.com are fetched.
       - name: Download artifacts + compute SHA256
         shell: bash
+        env:
+          LEO_URL: ${{ inputs.leo_url }}
+          SNARKOS_URL: ${{ inputs.snarkos_url }}
         run: |
           set -euo pipefail
+          release='^https://github\.com/aleo-labs-protocol/(leo|snarkOS)/releases/download/[A-Za-z0-9._-]+/[A-Za-z0-9._-]+\.zip$'
+          for url in "$LEO_URL" "$SNARKOS_URL"; do
+            if ! [[ "$url" =~ $release ]]; then
+              echo "::error::Not a Leo or snarkOS release asset on github.com: $url"
+              exit 1
+            fi
+          done
 
           echo "Downloading Leo..."
-          curl -fsSL "${{ inputs.leo_url }}" -o leo.zip
+          curl -fsSL "$LEO_URL" -o leo.zip
           LEO_SHA256="$(sha256sum leo.zip | awk '{print $1}')"
 
           echo "Downloading snarkOS..."
-          curl -fsSL "${{ inputs.snarkos_url }}" -o snarkos.zip
+          curl -fsSL "$SNARKOS_URL" -o snarkos.zip
           SNARKOS_SHA256="$(sha256sum snarkos.zip | awk '{print $1}')"
 
           echo ""
-          echo "========== COPY THESE INTO REPO VARIABLES =========="
+          echo "========== CHECKSUMS (compare with a second download before pinning) =========="
           echo "LEO_SHA256=${LEO_SHA256}"
           echo "SNARKOS_SHA256=${SNARKOS_SHA256}"
-          echo "===================================================="
+          echo "================================================================================"
