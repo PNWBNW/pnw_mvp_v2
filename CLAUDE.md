@@ -23,10 +23,16 @@ the README in `src/layer1/`, `src/layer2/` and `src/stubs/`, then Hewn's `CLAUDE
   `src/layer1/archive/` or `src/layer2/archive/`, with a row in that folder's README and its
   hashes in that folder's `SHA256SUMS` (`scripts/check_archive.py --write`; CI fails on an edit).
 - An `@admin` program may be upgraded in place (`upgrade_program.yml`) only when the migration
-  note explains why that is safe and Joshua has said go. An upgrade can append functions but can't
-  change what an existing finalize takes in (`docs/migrations/2026-10-14-open-registration.md`).
+  note explains why that is safe and Joshua has said go. An upgrade can add functions, mappings,
+  records and imports, and it can change the logic inside any existing function or finalize; it
+  can't remove anything, change a function's inputs or outputs, or change what an existing
+  finalize takes in (snarkVM `check_upgrade_is_valid`;
+  `docs/migrations/2026-10-14-open-registration.md`). So whoever holds the admin key decides what
+  every `@admin` program does next.
 - `config/testnet.manifest.json` is the single source of truth for what is live. It changes in
-  the same pull request as the deploy or upgrade it records.
+  the same pull request as the deploy or upgrade it records, and it records each program's
+  edition and the hash of its text on chain (`scripts/check_chain.py --write`). The plan gate and
+  the daily `chain-watch` run compare it with the chain, so an upgrade nobody recorded fails.
 
 **Privacy**
 - No plaintext identity, wage, address or business data in public state. Mappings hold hashes,
@@ -80,7 +86,7 @@ In short:
 | `hewn_cards_v1.aleo` | The cards every account gets: issue height and shown, by name | Not yet: the app issues cards at setup next |
 | `hewn_credentials_v1.aleo` | A worker's credentials, deployed 2026-10-25: a business vouching for a person it has an agreement with, two private records, a public commitment with its status | Team page (issue, revoke) and a worker's Profile (accept, decline); drawn as landmarks |
 | `employer_license_registry.aleo`, `employer_profiles_v2.aleo`, `pnw_router_v4.aleo`, `payroll_core_v2.aleo`, `paystub_receipts.aleo`, `payroll_audit_log.aleo` | Licences, employer profiles, routing, one-proof payroll, receipts, audit anchors | Deployed, not called |
-| `payroll_nfts_v2.aleo`, `credential_nft_v3.aleo`, `credential_nft_v4.aleo` (staged), `audit_nft.aleo` | Layer 2 anchors | Deployed, not called: waiting on the audit design and credentials |
+| `payroll_nfts_v2.aleo`, `credential_nft_v3.aleo`, `credential_nft_v4.aleo`, `audit_nft.aleo` | Layer 2 anchors | Deployed, not called: waiting on the audit design and credentials |
 
 `hewn_letters_v1.aleo` is archived and still deployed; Hewn still reads letters sent with it.
 
@@ -102,9 +108,10 @@ In short:
 
 | Workflow | Trigger | Does |
 |---|---|---|
-| `deploy.yml` (the plan gate) | Every push and pull request | The secrets scan, pinned CLI check, manifest schema, the leakage guard, the public-state map check (`docs/PUBLIC_STATE.md`), the archive check, the link check, the Layer 2 funds check, Leo tests for `hewn_letters_v2`, `hewn_jobs_v1`, `employer_agreement_v5`, `hewn_cards_v1`, `hewn_credentials_v1`, `pnw_name_registry_v2`, `pnw_name_registrar_v5`, `pnw_worker_profiles_v2` and `employer_agreement_v4` |
+| `deploy.yml` (the plan gate) | Every push and pull request | The secrets scan, pinned CLI check, manifest schema, the chain check (`scripts/check_chain.py`), the leakage guard, the public-state map check (`docs/PUBLIC_STATE.md`), the archive check, the link check, the Layer 2 funds check, Leo tests for `hewn_letters_v2`, `hewn_jobs_v1`, `employer_agreement_v5`, `hewn_cards_v1`, `hewn_credentials_v1`, `pnw_name_registry_v2`, `pnw_name_registrar_v5`, `pnw_worker_profiles_v2` and `employer_agreement_v4` |
 | `deploy_program.yml` (deploy-new-program) | Manual, from `main` only | Deploys one program from `src/layer1/` with the admin key, swapping stubs for the deployed dependencies first |
 | `upgrade_program.yml` (upgrade-admin-program) | Manual, from `main` only | Upgrades an `@admin` program in place; run once with broadcast off, then on |
+| `chain_watch.yml` (chain-watch) | Daily, or by hand | Reads every program from the explorer and fails if its edition or text differs from the manifest (`scripts/check_chain.py`); no secret |
 | `generate_sha256.yml` | Manual | Checksums for new Leo and snarkOS artifacts when the pins move |
 
 ## Toolchain

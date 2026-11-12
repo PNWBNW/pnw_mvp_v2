@@ -58,6 +58,11 @@ jobs:
       - name: 📋 Validate testnet manifest schema
         run: python3 scripts/validate_testnet_manifest.py config/testnet.manifest.json
 
+      # Reads the public explorer; no secret. An explorer that can't be reached is a warning
+      # here (the daily chain-watch run is strict), a difference is a failure.
+      - name: ⛓️ Every program on chain is the edition and text the manifest records
+        run: python3 -I scripts/check_chain.py --offline-ok
+
       - name: 🛡️ Enforce Layer 1 public-state leakage guard
         run: python3 scripts/check_layer1_public_leakage_guards.py
 

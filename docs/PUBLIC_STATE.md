@@ -79,11 +79,11 @@ None of these is called by Hewn today; they wait on the audit design.
 | `credential_nft_v3.aleo` | `credential_revoked_height` | `[u8; 32]` → `u32` | When it was revoked | no | no |
 | `credential_nft_v3.aleo` | `credential_issuer` | `[u8; 32]` → `address` | The issuing account, in public. One reason `hewn_credentials_v1` replaced it | no | no |
 | `credential_nft_v3.aleo` | `scope_anchor_height` | `[u8; 32]` → `u32` | That a scope hash was anchored, and when | no | no |
-| `credential_nft_v4.aleo` | `credential_anchor_height` | `[u8; 32]` → `u32` | Staged, never deployed. As v3 | no | no |
-| `credential_nft_v4.aleo` | `credential_status` | `[u8; 32]` → `u8` | Staged. As v3 | no | no |
-| `credential_nft_v4.aleo` | `credential_revoked_height` | `[u8; 32]` → `u32` | Staged. As v3 | no | no |
-| `credential_nft_v4.aleo` | `credential_issuer` | `[u8; 32]` → `address` | Staged. As v3: the issuing account in public | no | no |
-| `credential_nft_v4.aleo` | `scope_anchor_height` | `[u8; 32]` → `u32` | Staged. As v3 | no | no |
+| `credential_nft_v4.aleo` | `credential_anchor_height` | `[u8; 32]` → `u32` | Deployed (edition 0), not called by the app. As v3 | no | no |
+| `credential_nft_v4.aleo` | `credential_status` | `[u8; 32]` → `u8` | Deployed, not called. As v3 | no | no |
+| `credential_nft_v4.aleo` | `credential_revoked_height` | `[u8; 32]` → `u32` | Deployed, not called. As v3 | no | no |
+| `credential_nft_v4.aleo` | `credential_issuer` | `[u8; 32]` → `address` | Deployed, not called. As v3: the issuing account in public | no | no |
+| `credential_nft_v4.aleo` | `scope_anchor_height` | `[u8; 32]` → `u32` | Deployed, not called. As v3 | no | no |
 | `payroll_nfts_v2.aleo` | `nft_anchor_height` | `[u8; 32]` → `u32` | That a payroll-cycle anchor exists, and when | no | no |
 | `payroll_nfts_v2.aleo` | `nft_status` | `[u8; 32]` → `u8` | Its status | no | no |
 | `payroll_nfts_v2.aleo` | `superseded_by` | `[u8; 32]` → `[u8; 32]` | Which anchor replaced it | no | no |

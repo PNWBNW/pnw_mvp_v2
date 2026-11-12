@@ -7,7 +7,8 @@ Helpers for CI and for operating the programs from a terminal. Three groups.
 | Script | Does |
 |---|---|
 | `verify_provable_cli.sh` | Checks the installed `leo` and `snarkos` match the pinned versions |
-| `validate_testnet_manifest.py` | Checks `config/testnet.manifest.json` against its schema |
+| `validate_testnet_manifest.py` | Checks `config/testnet.manifest.json` against its schema, including that every program records its edition and text hash |
+| `check_chain.py` | Reads every program from the public explorer and fails if its edition or text differs from what the manifest records, if one the manifest says isn't on chain is there, or if a program folder has no manifest entry. `--write` records what the chain holds, for the pull request of a deploy or upgrade. The plan gate runs it with `--offline-ok`; the daily `chain-watch` workflow runs it strict |
 | `check_secrets.py` | Fails if a tracked file holds something shaped like an Aleo private or view key, a GitHub or AWS token, a PEM private key or a literal secret, or if a `.env` file other than `.env.example` is tracked. Reports file and line, never the match. The same script runs in Hewn |
 | `check_archive.py` | Fails if a folder in `src/layer*/archive/` has no row in that archive's README, or an archived file is edited, added or removed without its line in that archive's `SHA256SUMS` (`--write` records it, in the same PR as the README row) |
 | `check_links.py` | Fails if a link in a Markdown file points at a missing file or a heading that isn't there; skips web links, code and the archives. The same file runs in Hewn |
