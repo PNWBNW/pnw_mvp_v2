@@ -6,6 +6,10 @@ on:
   pull_request:
     branches: [main]
 
+# Checks only: nothing here writes to the repository or holds a secret.
+permissions:
+  contents: read
+
 jobs:
   build-and-validate:
     runs-on: ubuntu-24.04
