@@ -297,5 +297,27 @@
       "edition": 0,
       "sha256": "d88f6288beb01107b65431f79c92a48c23ac3002c91cb0f8597acf42af207a17"
     }
+  },
+  "watched": {
+    "test_usdcx_stablecoin.aleo": {
+      "notes": "the stablecoin every Hewn payment runs; its issuer can upgrade it (the constructor takes any edition its multisig core approved)",
+      "edition": 2,
+      "sha256": "eb251dddb0c5a7790a1aeb2128dd725bf252848eb38b895265a32c6e92aa90b0"
+    },
+    "test_usdcx_freezelist.aleo": {
+      "notes": "imported by the stablecoin; upgradable the same way",
+      "edition": 1,
+      "sha256": "9235a601bfecadcc9f4d55aacc42bc150346d7f825d7280fc65c8140769e8a53"
+    },
+    "test_usdcx_multisig_core.aleo": {
+      "notes": "approves the stablecoin's and the freeze list's upgrades; upgradable by its own upgrader",
+      "edition": 0,
+      "sha256": "8e52bb7f03ba9c6b5c922e6fb114a1d2b0e8117c05cada0b43cdb8340f7dd517"
+    },
+    "merkle_tree.aleo": {
+      "notes": "imported by the stablecoin and the freeze list; no constructor",
+      "edition": 1,
+      "sha256": "8a2bae818bda4e194de82d4b0f2aa227cd9fdb09fad94ae1cd43dd3553306897"
+    }
   }
 }
