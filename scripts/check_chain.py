@@ -12,7 +12,9 @@ It fails when:
     manifest was edited);
   - a program the manifest says is not on chain is there, or one it says is there is gone;
   - a program folder under src/layer1, src/layer2 or their archives has no entry under
-    `deployments`, so nothing would watch it.
+    `deployments`, so nothing would watch it;
+  - a program under `watched` (one we rely on and don't own, such as the stablecoin every Hewn
+    payment runs) is at another edition or text than recorded: its owner upgraded it.
 
     python3 -I scripts/check_chain.py               # compare; exit 1 on a difference, 2 if the explorer can't be reached
     python3 -I scripts/check_chain.py --offline-ok  # the plan gate: an unreachable explorer is a warning, not a failure
@@ -101,8 +103,11 @@ def main(argv: list[str]) -> int:
             else:
                 problems.append(f"{program}: has a folder in the tree but no entry under deployments, so nothing watches it")
 
+    watched = manifest.get("watched", {})
+    entries = list(deployments.items()) + list(watched.items())
+
     try:
-        for program, entry in deployments.items():
+        for program, entry in entries:
             found = on_chain(program)
             if write:
                 entry.pop("edition", None)
@@ -126,6 +131,8 @@ def main(argv: list[str]) -> int:
             edition, digest = found
             if edition != entry["edition"]:
                 what = "It was upgraded: read the new text before anything else" if edition > entry["edition"] else "The manifest is ahead of the chain"
+                if program in watched and edition > entry["edition"]:
+                    what += "; it isn't ours, so Hewn's pins (@pnw/config EXTERNAL_EDITIONS) stop payments until a release lists it"
                 problems.append(f"{program}: edition {edition} on chain, {entry['edition']} in the manifest. {what}")
             elif digest != entry["sha256"]:
                 problems.append(f"{program}: edition {edition} as recorded, but its text on chain has a different hash")
@@ -139,7 +146,7 @@ def main(argv: list[str]) -> int:
     if write:
         MANIFEST.write_text(json.dumps(manifest, indent=2, ensure_ascii=False) + "\n", encoding="utf-8")
         there = sum(1 for e in deployments.values() if "edition" in e)
-        print(f"chain check: wrote {there} programs' editions and hashes, {len(deployments) - there} not on chain; review the diff")
+        print(f"chain check: wrote {there} programs' editions and hashes, {len(deployments) - there} not on chain, and {len(watched)} watched; review the diff")
         return 0
     if problems:
         print("chain check: FAIL", file=sys.stderr)
@@ -148,7 +155,7 @@ def main(argv: list[str]) -> int:
         return 1
     there = sum(1 for e in deployments.values() if "edition" in e)
     upgraded = sorted(p for p, e in deployments.items() if e.get("edition", 0) > 0)
-    print(f"chain check: PASS - {there} programs on chain are the edition and text recorded ({len(deployments) - there} recorded as not on chain); past edition 0: {', '.join(upgraded) or 'none'}")
+    print(f"chain check: PASS - {there} programs on chain are the edition and text recorded ({len(deployments) - there} recorded as not on chain), and {len(watched)} watched programs too; past edition 0: {', '.join(upgraded) or 'none'}")
     return 0
 
 

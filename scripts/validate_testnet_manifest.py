@@ -93,6 +93,18 @@ def main() -> None:
         if not isinstance(digest, str) or not re.fullmatch(r"[0-9a-f]{64}", digest):
             fail(f"'deployments.{program}.sha256' must be the SHA-256 of the program text on chain (scripts/check_chain.py --write)")
 
+    watched = manifest.get("watched", {})
+    if not isinstance(watched, dict):
+        fail("'watched' must be an object keyed by a *.aleo program id")
+    for program, entry in watched.items():
+        if not program.endswith(".aleo") or not isinstance(entry, dict):
+            fail(f"'watched.{program}' must be an object keyed by a *.aleo program id")
+        edition, digest = entry.get("edition"), entry.get("sha256")
+        if not isinstance(edition, int) or isinstance(edition, bool) or edition < 0:
+            fail(f"'watched.{program}.edition' must be the edition on chain (scripts/check_chain.py --write)")
+        if not isinstance(digest, str) or not re.fullmatch(r"[0-9a-f]{64}", digest):
+            fail(f"'watched.{program}.sha256' must be the SHA-256 of the program text on chain (scripts/check_chain.py --write)")
+
     print(
         "manifest validation: PASS"
         f" (schema_version={schema_version}, network={network}, path={path})"

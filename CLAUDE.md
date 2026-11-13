@@ -33,6 +33,8 @@ the README in `src/layer1/`, `src/layer2/` and `src/stubs/`, then Hewn's `CLAUDE
   the same pull request as the deploy or upgrade it records, and it records each program's
   edition and the hash of its text on chain (`scripts/check_chain.py --write`). The plan gate and
   the daily `chain-watch` run compare it with the chain, so an upgrade nobody recorded fails.
+  Under `watched` it records the same for programs Hewn relies on and doesn't own (the
+  stablecoin and what it imports), so their owners' upgrades fail it too.
 
 **Privacy**
 - No plaintext identity, wage, address or business data in public state. Mappings hold hashes,
@@ -111,7 +113,7 @@ In short:
 | `deploy.yml` (the plan gate) | Every push and pull request | The secrets scan, pinned CLI check, manifest schema, the chain check (`scripts/check_chain.py`), the leakage guard, the public-state map check (`docs/PUBLIC_STATE.md`), the archive check, the link check, the Layer 2 funds check, Leo tests for `hewn_letters_v2`, `hewn_jobs_v1`, `employer_agreement_v5`, `hewn_cards_v1`, `hewn_credentials_v1`, `pnw_name_registry_v2`, `pnw_name_registrar_v5`, `pnw_worker_profiles_v2` and `employer_agreement_v4` |
 | `deploy_program.yml` (deploy-new-program) | Manual, from `main` only | Deploys one program from `src/layer1/` with the admin key, swapping stubs for the deployed dependencies first. Same two jobs and two runs as the upgrade: the build job's summary shows the program's text and SHA-256 |
 | `upgrade_program.yml` (upgrade-admin-program) | Manual, from `main` only | Upgrades an `@admin` program in place. A build job with no key compiles it and writes a summary (the bytecode's SHA-256 and its difference from the edition on chain); the sign job gets the key after approval. Run once with broadcast off, then on with that SHA-256 in `expected_sha256` |
-| `chain_watch.yml` (chain-watch) | Daily, or by hand | Reads every program from the explorer and fails if its edition or text differs from the manifest (`scripts/check_chain.py`); no secret |
+| `chain_watch.yml` (chain-watch) | Daily, or by hand | Reads every program from the explorer, ours and the `watched` ones (the stablecoin and its imports), and fails if its edition or text differs from the manifest (`scripts/check_chain.py`); no secret |
 | `generate_sha256.yml` | Manual | Checksums for new Leo and snarkOS release assets when the pins move (release URLs on github.com only, passed as variables); compare with a second download before pinning |
 
 ## Toolchain
